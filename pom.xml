@@ -254,6 +254,12 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       </activation>
     </profile>
     <profile>
+      <id>edge</id>
+      <properties>
+        <browser.name>edge</browser.name>
+      </properties>
+    </profile>
+    <profile>
       <id>firefox</id>
       <properties>
         <browser.name>firefox</browser.name>
