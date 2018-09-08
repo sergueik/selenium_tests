@@ -555,8 +555,8 @@ public class XMLHttpRequestAsyncTest {
 			FirefoxProfile profile = new FirefoxProfile();
 			profile.setAcceptUntrustedCertificates(true);
 			profile.setAssumeUntrustedCertificateIssuer(true);
-			profile.setEnableNativeEvents(false);
-
+			// profile.setEnableNativeEvents(false);
+			// removed starting 3.8.x
 			System.out.println(System.getProperty("user.dir"));
 			capabilities.setCapability(FirefoxDriver.PROFILE, profile);
 			try {
