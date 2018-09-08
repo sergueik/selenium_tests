@@ -116,9 +116,9 @@ public class BaseTest {
 	private static final Map<String, String> browserDrivers = new HashMap<>();
 	static {
 		browserDrivers.put("chrome",
-				osName.contains("windows") ? "chromedriver.exe" : "chromedriver");
+				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
 		browserDrivers.put("firefox",
-				osName.contains("windows") ? "geckodriver.exe" : "geckodriver");
+				osName.equals("windows") ? "geckodriver.exe" : "geckodriver");
 		browserDrivers.put("edge", "MicrosoftWebDriver.exe");
 	}
 
@@ -216,7 +216,7 @@ public class BaseTest {
 		*/
 		System.err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
-			System.setProperty("webdriver.chrome.driver", osName.contains("windows")
+			System.setProperty("webdriver.chrome.driver", osName.equals("windows")
 					? (new File("c:/java/selenium/chromedriver.exe")).getAbsolutePath()
 					: String.format("%s/Downloads/chromedriver", System.getenv("HOME")));
 
@@ -297,12 +297,12 @@ public class BaseTest {
 
 			// https://developer.mozilla.org/en-US/Firefox/Headless_mode
 			// 3.5.3 and later
-			System.setProperty("webdriver.gecko.driver", osName.contains("windows")
+			System.setProperty("webdriver.gecko.driver", osName.equals("windows")
 					? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
 					: String.format("%s/Downloads/geckodriver", System.getenv("HOME")));
 			System
 					.setProperty("webdriver.firefox.bin",
-							osName.contains("windows") ? new File(
+							osName.equals("windows") ? new File(
 									"c:/Program Files (x86)/Mozilla Firefox/firefox.exe")
 											.getAbsolutePath()
 									: "/usr/bin/firefox");
@@ -330,7 +330,9 @@ public class BaseTest {
 			profile.setAcceptUntrustedCertificates(true);
 			profile.setAssumeUntrustedCertificateIssuer(true);
 
-			profile.setPreference("webdriver.firefox.logfile", "/dev/nul");
+			profile.setPreference("webdriver.firefox.logfile", "/dev/null");
+			System.setProperty("webdriver.firefox.logfile",
+					osName.equals("windows") ? "nul" : "/dev/null");
 			// The setting appears to have no effect.
 			// NOTE: does one need os-specific definition of /dev/null (like nul in
 			// Windows case) ?
