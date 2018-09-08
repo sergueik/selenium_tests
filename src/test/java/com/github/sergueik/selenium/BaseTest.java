@@ -10,6 +10,9 @@ import java.io.InputStreamReader;
 
 import java.lang.reflect.Method;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,8 +61,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.internal.Nullable;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Selected test scenarios for Selenium WebDriver
@@ -104,7 +105,7 @@ public class BaseTest {
 			getPropertyEnv("USERPROFILE", "C:\\Users\\Serguei"));
 
 	private static final String browser = getPropertyEnv("webdriver.driver",
-			"chrome");
+			"chrome"); // use -P profile to override
 	private static final boolean headless = Boolean
 			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
 
@@ -309,7 +310,7 @@ public class BaseTest {
 			DesiredCapabilities capabilities = DesiredCapabilities.firefox();
 			// use legacy FirefoxDriver
 			// for Firefox v.59 no longer possible ?
-			// capabilities.setCapability("marionette", false);
+			capabilities.setCapability("marionette", false);
 			// http://www.programcreek.com/java-api-examples/index.php?api=org.openqa.selenium.firefox.FirefoxProfile
 			capabilities.setCapability("locationContextEnabled", false);
 			capabilities.setCapability("acceptSslCerts", true);
@@ -328,7 +329,14 @@ public class BaseTest {
 			profile.setPreference("browser.download.manager.alertOnEXEOpen", false);
 			profile.setAcceptUntrustedCertificates(true);
 			profile.setAssumeUntrustedCertificateIssuer(true);
-			profile.setEnableNativeEvents(false);
+
+			profile.setPreference("webdriver.firefox.logfile", "/dev/nul");
+			// The setting appears to have no effect.
+			// NOTE: does one need os-specific definition of /dev/null (like nul in
+			// Windows case) ?
+
+			// no longer supported as of Selenium 3.8.x
+			// profile.setEnableNativeEvents(false);
 			profile.setPreference("dom.webnotifications.enabled", false);
 			// optional
 			/*
