@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+
+        <encoder>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg %n
+            </Pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>TRACE</level>
+        </filter>
+    </appender>
+
+    <appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <FileNamePattern>log/log.%d{yyyy-MM-dd}.log</FileNamePattern>
+
+             <!--keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <Pattern>%d{HH:mm:ss} %-5level %logger{35} - %msg %n</Pattern>
+        </encoder>
+        <maxFileSize>5MB</maxFileSize>
+    </appender>
+
+    <logger name="org.codingpedia" additivity="false" encoding="UTF8">
+        <level value="INFO" />
+        <appender-ref ref="consoleAppender" />
+    </logger>
+
+    <root>
+        <level value="DEBUG" encoding="UTF8" />
+        <appender-ref ref="consoleAppender" />
+        <appender-ref ref="fileAppender"/>
+    </root>
+</configuration>

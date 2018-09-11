@@ -21,9 +21,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import org.apache.commons.codec.binary.Base64;
-
+// NOTE:
+// import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,8 +47,12 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.internal.Coordinates;
+
+// NOTE: deprecated. Used in scrolltoElement
 import org.openqa.selenium.internal.Locatable;
 
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -282,6 +288,19 @@ public class BaseTest {
 			capabilities.setCapability(
 					org.openqa.selenium.chrome.ChromeOptions.CAPABILITY, chromeOptions);
 			capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
+			// https://stackoverflow.com/questions/48851036/how-to-configure-log-level-for-selenium
+			// https://stackoverflow.com/questions/28572783/no-log4j2-configuration-file-found-using-default-configuration-logging-only-er
+			LoggingPreferences logPrefs = new LoggingPreferences();
+			logPrefs.enable(LogType.PERFORMANCE, Level.INFO);
+			logPrefs.enable(LogType.BROWSER, Level.INFO);
+			logPrefs.enable(LogType.DRIVER, Level.INFO);
+			/* 
+				logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+				logPrefs.enable(LogType.BROWSER, Level.ALL);
+				logPrefs.enable(LogType.DRIVER, Level.ALL);
+			*/
+			capabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+
 			loadChromeExtensionsBase64Encoded(chromeOptions);
 			// see also:
 			// https://github.com/pulkitsinghal/selenium/blob/master/java/client/src/org/openqa/selenium/chrome/ChromeOptions.java
@@ -291,6 +310,7 @@ public class BaseTest {
 			   new URL("http://localhost:4444/wd/hub"), capabilities);
 			*/
 			driver = new ChromeDriver(capabilities);
+			// driver.setLogLevel(Level.ALL);
 		} else if (browser.equals("firefox"))
 
 		{
@@ -330,6 +350,17 @@ public class BaseTest {
 			profile.setAcceptUntrustedCertificates(true);
 			profile.setAssumeUntrustedCertificateIssuer(true);
 
+			// NOTE: ERROR StatusLogger No log4j2 configuration file found. Using
+			// default configuration: logging only errors to the console.
+			LoggingPreferences logPrefs = new LoggingPreferences();
+			logPrefs.enable(LogType.PERFORMANCE, Level.INFO);
+			logPrefs.enable(LogType.PROFILER, Level.INFO);
+			logPrefs.enable(LogType.BROWSER, Level.INFO);
+			logPrefs.enable(LogType.CLIENT, Level.INFO);
+			logPrefs.enable(LogType.DRIVER, Level.INFO);
+			logPrefs.enable(LogType.SERVER, Level.INFO);
+			capabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+
 			profile.setPreference("webdriver.firefox.logfile", "/dev/null");
 			System.setProperty("webdriver.firefox.logfile",
 					osName.equals("windows") ? "nul" : "/dev/null");
@@ -349,6 +380,7 @@ public class BaseTest {
 			capabilities.setCapability(FirefoxDriver.PROFILE, profile);
 			try {
 				driver = new FirefoxDriver(capabilities);
+				// driver.setLogLevel(FirefoxDriverLogLevel.ERROR);
 			} catch (WebDriverException e) {
 				e.printStackTrace();
 				throw new RuntimeException(
