@@ -68,6 +68,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.internal.Nullable;
 
+import com.github.sergueik.selenium.DriverWrapper;
+
 /**
  * Selected test scenarios for Selenium WebDriver
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
@@ -309,11 +311,12 @@ public class BaseTest {
 			RemoteWebDriver driver = new RemoteWebDriver(
 			   new URL("http://localhost:4444/wd/hub"), capabilities);
 			*/
-			driver = new ChromeDriver(capabilities);
-			// driver.setLogLevel(Level.ALL);
-		} else if (browser.equals("firefox"))
 
-		{
+			DriverWrapper.add("chrome", capabilities);
+			driver = DriverWrapper.current();
+
+			// driver.setLogLevel(Level.ALL);
+		} else if (browser.equals("firefox")) {
 
 			// https://developer.mozilla.org/en-US/Firefox/Headless_mode
 			// 3.5.3 and later
@@ -379,7 +382,8 @@ public class BaseTest {
 			// System.err.println(System.getProperty("user.dir"));
 			capabilities.setCapability(FirefoxDriver.PROFILE, profile);
 			try {
-				driver = new FirefoxDriver(capabilities);
+				DriverWrapper.add("firefox", capabilities);
+				driver = DriverWrapper.current();
 				// driver.setLogLevel(FirefoxDriverLogLevel.ERROR);
 			} catch (WebDriverException e) {
 				e.printStackTrace();
