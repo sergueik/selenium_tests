@@ -99,36 +99,43 @@ public class PhpTravelTest extends BaseTest {
 				String childTitle = driver.getTitle();
 				if (DEBUG)
 					System.err.println("Title of page/tab: " + childTitle);
+				if (childTitle.contains("Administator Login")) {
 
-				if (DEBUG) {
-					System.err.println("Page source: " + driver.getPageSource());
-					WebElement body = wait.until(ExpectedConditions
-							.visibilityOf(driver.findElement(By.xpath("//body"))));
-					assertThat(body, notNullValue());
-					System.err.println("Body html:" + body.getAttribute("innerHTML"));
+					if (DEBUG) {
+						System.err.println("Page source: " + driver.getPageSource());
+						WebElement body = wait.until(ExpectedConditions
+								.visibilityOf(driver.findElement(By.xpath("//body"))));
+						assertThat(body, notNullValue());
+						System.err.println("Body html:" + body.getAttribute("innerHTML"));
+					}
+					// Act
+					WebElement form = wait.until(ExpectedConditions
+							.visibilityOf(driver.findElement(By.tagName("form"))));
+					assertThat(form, notNullValue());
+					if (DEBUG)
+						System.err.println("Form html:" + form.getAttribute("outerHTML"));
+					WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
+							form.findElement(By.xpath("//input[@name='email']"))));
+					assertThat(emailInput, notNullValue());
+					highlight(emailInput);
+					emailInput.sendKeys(userName);
+					WebElement passwordInput = form.findElement(By.name("password"));
+					assertThat(passwordInput, notNullValue());
+					highlight(passwordInput);
+					passwordInput.sendKeys(password);
+					WebElement loginButton = form
+							.findElement(By.cssSelector("button[type='submit']"));
+					flash(loginButton);
+					loginButton.click();
+					// Assert
+					wait.until(ExpectedConditions
+							.visibilityOf(driver.findElement(By.className("dash"))));
+					// log out
+					driver
+							.findElement(By.xpath(
+									"//a[contains(@class,'btn-danger')][contains(text(), 'Log Out')]"))
+							.click();
 				}
-				// Act
-				WebElement form = wait.until(ExpectedConditions
-						.visibilityOf(driver.findElement(By.tagName("form"))));
-				assertThat(form, notNullValue());
-				if (DEBUG)
-					System.err.println("Form html:" + form.getAttribute("outerHTML"));
-				WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
-						form.findElement(By.xpath("//input[@name='email']"))));
-				assertThat(emailInput, notNullValue());
-				highlight(emailInput);
-				emailInput.sendKeys(userName);
-				WebElement passwordInput = form.findElement(By.name("password"));
-				assertThat(passwordInput, notNullValue());
-				highlight(passwordInput);
-				passwordInput.sendKeys(password);
-				WebElement loginButton = form
-						.findElement(By.cssSelector("button[type='submit']"));
-				flash(loginButton);
-				loginButton.click();
-				// Assert
-				wait.until(ExpectedConditions
-						.visibilityOf(driver.findElement(By.className("dash"))));
 			}
 		}
 	}
@@ -159,81 +166,86 @@ public class PhpTravelTest extends BaseTest {
 			if (!windowHandle.equals(parentWindowHandle)) {
 				driver.switchTo().window(windowHandle);
 				String childTitle = driver.getTitle();
-				sleep(1000);
 				if (DEBUG)
 					System.err.println("Title of page/tab: " + childTitle);
-				// TODO: wait for
-				// <div class="progress">
-				// to disappear ?
-				if (DEBUG) {
-					// debugging
-					// NOTE: avoid wait here
-					WebElement navbar = driver.findElement(By.xpath("//body/*"));
-					assertThat(navbar, notNullValue());
-					System.err.println("Body html:" + navbar.getAttribute("innerHTML"));
-				}
-
-				if (DEBUG)
-					System.err.println("Page source: " + driver.getPageSource());
-				if (DEBUG_FAILING) {
-					try {
-						wait.until(ExpectedConditions.visibilityOf(
-								driver.findElement(By.xpath("//li[@id='li_myaccount']"))));
-						// "//div[@class='clearfix']" ?
-					} catch (TimeoutException e) {
-						// The above ExpectedCondition wait appears to always fail with
-						// org.openqa.selenium.TimeoutException
-						// with or without a hard sleep above it
-						System.err.println("Exception (ignored): " + e.getMessage());
+				if (childTitle.contains("PHPTRAVELS")) {
+					sleep(1000);
+					if (DEBUG)
+						System.err.println("Title of page/tab: " + childTitle);
+					// TODO: wait for
+					// <div class="progress">
+					// to disappear ?
+					if (DEBUG) {
+						// debugging
+						// NOTE: avoid wait here
+						WebElement navbar = driver.findElement(By.xpath("//body/*"));
+						assertThat(navbar, notNullValue());
+						System.err.println("Body html:" + navbar.getAttribute("innerHTML"));
 					}
-				}
-				WebElement myAccount = wait.until(ExpectedConditions.visibilityOf(
-						driver.findElement(By.cssSelector("nav.navbar li#li_myaccount"))));
-				assertThat(myAccount, notNullValue());
-				if (DEBUG)
+
+					if (DEBUG)
+						System.err.println("Page source: " + driver.getPageSource());
+					if (DEBUG_FAILING) {
+						try {
+							wait.until(ExpectedConditions.visibilityOf(
+									driver.findElement(By.xpath("//li[@id='li_myaccount']"))));
+							// "//div[@class='clearfix']" ?
+						} catch (TimeoutException e) {
+							// The above ExpectedCondition wait appears to always fail with
+							// org.openqa.selenium.TimeoutException
+							// with or without a hard sleep above it
+							System.err.println("Exception (ignored): " + e.getMessage());
+						}
+					}
+					WebElement myAccount = wait
+							.until(ExpectedConditions.visibilityOf(driver
+									.findElement(By.cssSelector("nav.navbar li#li_myaccount"))));
+					assertThat(myAccount, notNullValue());
+					if (DEBUG)
+						System.err.println(
+								"My account html: " + myAccount.getAttribute("innerHTML")
+										+ "\n xpath: " + xpathOfElement(myAccount));
+					highlight(myAccount);
+					myAccount.click();
+
+					sleep(100);
+					WebElement myLogin = wait
+							.until(ExpectedConditions.visibilityOf(myAccount
+									.findElement(By.xpath("ul[@class='dropdown-menu']/li/a"))));
+					assertThat(myLogin, notNullValue());
+					// Act
+					highlight(myLogin);
+					if (DEBUG)
+						System.err.println(
+								"My account login html: " + myLogin.getAttribute("innerHTML")
+										+ " \ncssSelector: " + cssSelectorOfElement(myLogin));
+					myLogin.click();
+					wait.until(
+							ExpectedConditions.urlToBe("https://www.phptravels.net/login"));
+					sleep(100);
+					WebElement form = wait.until(ExpectedConditions
+							.presenceOfElementLocated(By.cssSelector("#loginfrm")));
+					assertThat(form, notNullValue());
 					System.err
-							.println("My account html: " + myAccount.getAttribute("innerHTML")
-									+ "\n xpath: " + xpathOfElement(myAccount));
-				highlight(myAccount);
-				myAccount.click();
+							.println("Login form html: " + form.getAttribute("innerHTML"));
 
-				sleep(100);
-				WebElement myLogin = wait
-						.until(ExpectedConditions.visibilityOf(myAccount
-								.findElement(By.xpath("ul[@class='dropdown-menu']/li/a"))));
-				assertThat(myLogin, notNullValue());
-				// Act
-				highlight(myLogin);
-				if (DEBUG)
-					System.err.println(
-							"My account login html: " + myLogin.getAttribute("innerHTML")
-									+ " \ncssSelector: " + cssSelectorOfElement(myLogin));
-				myLogin.click();
-				wait.until(
-						ExpectedConditions.urlToBe("https://www.phptravels.net/login"));
-				sleep(100);
-				WebElement form = wait.until(ExpectedConditions
-						.presenceOfElementLocated(By.cssSelector("#loginfrm")));
-				assertThat(form, notNullValue());
-				System.err
-						.println("Login form html: " + form.getAttribute("innerHTML"));
-
-				WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
-						form.findElement(By.xpath("//input[@type='email']"))));
-				assertThat(emailInput, notNullValue());
-				highlight(emailInput);
-				emailInput.sendKeys(userName);
-				WebElement passwordInput = form.findElement(By.name("password"));
-				assertThat(passwordInput, notNullValue());
-				highlight(passwordInput);
-				passwordInput.sendKeys(password);
-				WebElement loginButton = form
-						.findElement(By.cssSelector("button[type='submit']"));
-				flash(loginButton); // NOTE: no visual cue
-				loginButton.click();
-				// Assert
-				wait.until(ExpectedConditions.urlMatches(".*/account/.*$"));
-				sleep(1000);
+					WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
+							form.findElement(By.xpath("//input[@type='email']"))));
+					assertThat(emailInput, notNullValue());
+					highlight(emailInput);
+					emailInput.sendKeys(userName);
+					WebElement passwordInput = form.findElement(By.name("password"));
+					assertThat(passwordInput, notNullValue());
+					highlight(passwordInput);
+					passwordInput.sendKeys(password);
+					WebElement loginButton = form
+							.findElement(By.cssSelector("button[type='submit']"));
+					flash(loginButton); // NOTE: no visual cue
+					loginButton.click();
+					// Assert
+					wait.until(ExpectedConditions.urlMatches(".*/account/.*$"));
+					sleep(1000);
+				}
 			}
 		}
 	}
