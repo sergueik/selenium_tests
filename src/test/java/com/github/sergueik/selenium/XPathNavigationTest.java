@@ -37,9 +37,9 @@ import org.testng.internal.Nullable;
 
 /**
  * Selected test scenarios for Selenium WebDriver
- * based on:  https://testerslittlehelper.wordpress.com/
+ * Use XPath ancestor axis and CSSSelector 'closest' method for navigation and manipulating heavily styled page.
+ * based on: https://testerslittlehelper.wordpress.com/
  * 
- * use XPath ancestor navigation to manipulate heavily styled page.
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
@@ -64,7 +64,7 @@ public class XPathNavigationTest extends BaseTest {
 
 	@Test(enabled = true)
 	public void test1() {
-		// does not work very with headless browser
+		// does not work very well with headless browser
 		// Arrange
 		String baseURL = "https://spb.rt.ru/packages/tariffs";
 		driver.get(baseURL);
@@ -318,8 +318,10 @@ public class XPathNavigationTest extends BaseTest {
 		});
 	}
 
-	// based on https://stackoverflow.com/questions/5806690/is-there-an-iconv-with-translit-equivalent-in-java
-	// and http://tocrva.blogspot.com/2015/03/java-transliterate-cyrillic-to-latin.html
+	// based on
+	// https://stackoverflow.com/questions/5806690/is-there-an-iconv-with-translit-equivalent-in-java
+	// and
+	// http://tocrva.blogspot.com/2015/03/java-transliterate-cyrillic-to-latin.html
 	public static class Translit {
 
 		private static final Charset UTF8 = Charset.forName("UTF-8");
