@@ -1,48 +1,28 @@
 package com.github.sergueik.selenium;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
-import org.openqa.selenium.InvalidSelectorException;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.testng.Assert.assertTrue;
-
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.internal.Nullable;
 
 /**
  * Selected test scenarios for Selenium WebDriver
  * based on:  https://phptravels.com/demo/ demo site
+ * question on https://groups.google.com/forum/#!topic/selenium-users/VJ_Uy327LXc
  * tab enumeration
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
@@ -54,6 +34,10 @@ public class PhpTravelTest extends BaseTest {
 	private static String userName = null;
 	private static String password = null;
 	private static final boolean DEBUG = false;
+	// flag to turn on/ off verbose logging
+	private static final boolean DEBUG_FAILING = false;
+	// flag to decorate and conditionally enable failing or debugging code which
+	// would also slow down the test
 	private static String baseURL = "https://phptravels.com/demo/";
 	private static Set<String> windowHandles = new HashSet<>();
 	private static String parentWindowHandle = null;
@@ -67,32 +51,44 @@ public class PhpTravelTest extends BaseTest {
 	@BeforeMethod
 	public void BeforeMethod() {
 		driver.get(baseURL);
+		parentWindowHandle = driver.getWindowHandle();
 	}
 
-	@Test(enabled = false)
+	@AfterMethod
+	public void afterMethod() {
+		if (parentWindowHandle != null) {
+			driver.close();
+			driver.switchTo().window(parentWindowHandle);
+			parentWindowHandle = null;
+		}
+		driver.get("about:blank");
+		super.afterMethod();
+	}
+
+	@Test(enabled = true)
 	public void adminLoginTest() {
 
 		// Arrange
 		userName = "admin@phptravels.com";
 		password = "demoadmin";
 
-		parentWindowHandle = driver.getWindowHandle();
 		if (DEBUG)
 			System.err.println("Parent window: " + parentWindowHandle);
 
 		WebElement adminLoginButton = driver
-				.findElements(By.className("btn-primary")).stream().map(e -> {
-					if (DEBUG)
-						System.err.println(e.getText());
-					return e;
-				}).filter(e -> e.getText().matches(".*/ADMIN"))
+				.findElements(By.className("btn-primary")).stream()
+				/* .map(e -> {
+				if (DEBUG)
+				System.err.println(e.getText());
+				return e;
+				})*/ .filter(e -> e.getText().matches("(?i).*/ADMIN"))
 				.collect(Collectors.toList()).get(0);
 		assertThat(adminLoginButton, notNullValue());
 		highlight(adminLoginButton);
 		windowHandles = driver.getWindowHandles();
-		int windowCount = windowHandles.size();
 		adminLoginButton.click();
-		wait.until(ExpectedConditions.numberOfWindowsToBe(windowCount + 1));
+		wait.until(
+				ExpectedConditions.numberOfWindowsToBe(windowHandles.size() + 1));
 		windowHandles = driver.getWindowHandles();
 		for (String windowHandle : windowHandles) {
 
@@ -104,13 +100,6 @@ public class PhpTravelTest extends BaseTest {
 				if (DEBUG)
 					System.err.println("Title of page/tab: " + childTitle);
 
-				/*
-				// from original user login scenario
-				WebElement myAccount = wait
-						.until(ExpectedConditions.visibilityOf(driver.findElement(
-								By.xpath("//a[@class='dropdown-toggle go-text-right']"))));
-				myAccount.click();
-				*/
 				if (DEBUG) {
 					System.err.println("Page source: " + driver.getPageSource());
 					WebElement body = wait.until(ExpectedConditions
@@ -118,18 +107,12 @@ public class PhpTravelTest extends BaseTest {
 					assertThat(body, notNullValue());
 					System.err.println("Body html:" + body.getAttribute("innerHTML"));
 				}
+				// Act
 				WebElement form = wait.until(ExpectedConditions
 						.visibilityOf(driver.findElement(By.tagName("form"))));
 				assertThat(form, notNullValue());
 				if (DEBUG)
 					System.err.println("Form html:" + form.getAttribute("outerHTML"));
-				/*
-				// #loginfrm > div.panel.panel-default
-				WebElement loginForm = wait.until(ExpectedConditions
-						.visibilityOf(driver.findElement(By.id("loginfrm"))));
-				assertThat(loginForm, notNullValue());
-				highlight(loginForm);
-				*/
 				WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
 						form.findElement(By.xpath("//input[@name='email']"))));
 				assertThat(emailInput, notNullValue());
@@ -139,21 +122,21 @@ public class PhpTravelTest extends BaseTest {
 				assertThat(passwordInput, notNullValue());
 				highlight(passwordInput);
 				passwordInput.sendKeys(password);
-				sleep(1000);
-				// org.openqa.selenium.ElementNotVisibleException:
-				// element not visible:
-				// <div style="margin-top:10px" class="resultlogin"></div>
-				// form.findElement(By.className("resultlogin")).click();
 				WebElement loginButton = form
 						.findElement(By.cssSelector("button[type='submit']"));
-				flash(loginButton); // NOTE: no visual cue
+				flash(loginButton);
 				loginButton.click();
-				sleep(3000);
-				driver.close();
-				driver.switchTo().window(parentWindowHandle);
-
+				// Assert
+				wait.until(ExpectedConditions
+						.visibilityOf(driver.findElement(By.className("dash"))));
 			}
 		}
+	}
+
+	@Test(enabled = false)
+	public void userLoginDemoPageTest() {
+		// NOTE: there is also "LOGIN" link on the demo page
+		// "//a[@class = 'login'][@href = 'http://phptravels.org']"
 	}
 
 	@Test(enabled = true)
@@ -161,44 +144,96 @@ public class PhpTravelTest extends BaseTest {
 		// Arrange
 		userName = "user@phptravels.com";
 		password = "demouser";
-		parentWindowHandle = driver.getWindowHandle();
 
 		WebElement userLoginButton = driver.findElement(
 				By.xpath("//a[@class='btn btn-primary btn-lg btn-block']"));
-		/* "//a[@class = 'login'][@href='http://phptravels.org']" */
 		assertThat(userLoginButton, notNullValue());
 		highlight(userLoginButton);
 		windowHandles = driver.getWindowHandles();
-		int windowCount = windowHandles.size();
 		userLoginButton.click();
-		wait.until(ExpectedConditions.numberOfWindowsToBe(windowCount + 1));
+		wait.until(
+				ExpectedConditions.numberOfWindowsToBe(windowHandles.size() + 1));
 		windowHandles = driver.getWindowHandles();
 		for (String windowHandle : windowHandles) {
 
 			if (!windowHandle.equals(parentWindowHandle)) {
 				driver.switchTo().window(windowHandle);
 				String childTitle = driver.getTitle();
+				sleep(1000);
 				if (DEBUG)
 					System.err.println("Title of page/tab: " + childTitle);
+				// TODO: wait for
+				// <div class="progress">
+				// to disappear ?
+				if (DEBUG) {
+					// debugging
+					// NOTE: avoid wait here
+					WebElement navbar = driver.findElement(By.xpath("//body/*"));
+					assertThat(navbar, notNullValue());
+					System.err.println("Body html:" + navbar.getAttribute("innerHTML"));
+				}
 
-				WebElement myAccount = wait
-						.until(ExpectedConditions.visibilityOf(driver.findElement(
-								By.xpath("//*[@id='li_myaccount']"))));
+				if (DEBUG)
+					System.err.println("Page source: " + driver.getPageSource());
+				if (DEBUG_FAILING) {
+					try {
+						wait.until(ExpectedConditions.visibilityOf(
+								driver.findElement(By.xpath("//li[@id='li_myaccount']"))));
+						// "//div[@class='clearfix']" ?
+					} catch (TimeoutException e) {
+						// The above ExpectedCondition wait appears to always fail with
+						// org.openqa.selenium.TimeoutException
+						// with or without a hard sleep above it
+						System.err.println("Exception (ignored): " + e.getMessage());
+					}
+				}
+				WebElement myAccount = wait.until(ExpectedConditions.visibilityOf(
+						driver.findElement(By.cssSelector("nav.navbar li#li_myaccount"))));
 				assertThat(myAccount, notNullValue());
+				if (DEBUG)
+					System.err
+							.println("My account html: " + myAccount.getAttribute("innerHTML")
+									+ "\n xpath: " + xpathOfElement(myAccount));
 				highlight(myAccount);
 				myAccount.click();
-				
-				sleep(3000);
-				WebElement myLogin = wait
-						.until(ExpectedConditions.visibilityOf(driver.findElement(
-								By.xpath("//*[@id='li_myaccount']/ul[@class='dropdown-menu']/li[1]/a"))));
-				assertThat(myLogin, notNullValue());
-				highlight(myLogin);
-				myLogin.click();
-		
-				driver.close();
-				driver.switchTo().window(parentWindowHandle);
 
+				sleep(100);
+				WebElement myLogin = wait
+						.until(ExpectedConditions.visibilityOf(myAccount
+								.findElement(By.xpath("ul[@class='dropdown-menu']/li/a"))));
+				assertThat(myLogin, notNullValue());
+				// Act
+				highlight(myLogin);
+				if (DEBUG)
+					System.err.println(
+							"My account login html: " + myLogin.getAttribute("innerHTML")
+									+ " \ncssSelector: " + cssSelectorOfElement(myLogin));
+				myLogin.click();
+				wait.until(
+						ExpectedConditions.urlToBe("https://www.phptravels.net/login"));
+				sleep(100);
+				WebElement form = wait.until(ExpectedConditions
+						.presenceOfElementLocated(By.cssSelector("#loginfrm")));
+				assertThat(form, notNullValue());
+				System.err
+						.println("Login form html: " + form.getAttribute("innerHTML"));
+
+				WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
+						form.findElement(By.xpath("//input[@type='email']"))));
+				assertThat(emailInput, notNullValue());
+				highlight(emailInput);
+				emailInput.sendKeys(userName);
+				WebElement passwordInput = form.findElement(By.name("password"));
+				assertThat(passwordInput, notNullValue());
+				highlight(passwordInput);
+				passwordInput.sendKeys(password);
+				WebElement loginButton = form
+						.findElement(By.cssSelector("button[type='submit']"));
+				flash(loginButton); // NOTE: no visual cue
+				loginButton.click();
+				// Assert
+				wait.until(ExpectedConditions.urlMatches(".*/account/.*$"));
+				sleep(1000);
 			}
 		}
 	}

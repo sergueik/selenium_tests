@@ -432,6 +432,15 @@ public class BaseTest {
 		System.err.println("Test Name: " + methodName + "\n");
 	}
 
+	// INFO: Unable to drain process streams. Ignoring but the exception being
+	// swallowed follows.
+	// org.apache.commons.exec.ExecuteException:
+	// The stop timeout of 2000 ms was exceeded (Exit value: -559038737)
+	// aftert the test completion one discovers lefrover browser processes
+	// quickly starting to consume the 100 % CPU
+	// observed with a number of chrome driver, browser version combinations
+	// e.g.
+	// Chrome browser version: 69, driver version: 42
 	@AfterMethod
 	public void afterMethod() {
 		// driver.get("about:blank");
@@ -932,9 +941,8 @@ public class BaseTest {
 		}
 	}
 
-	// for the ancient versions of Selenium Webdriver when
-	// ExpectedConditions alertIaPresent
-	// not yet availabe (that is pre v2.20.0)
+	// for the pre-2.20.0 versions of Selenium Webdriver before
+	// ExpectedConditions alertIsPresent becomes available
 	public Alert getAlert(final long time) {
 		return new WebDriverWait(driver, time, 200)
 				.until(new ExpectedCondition<Alert>() {
