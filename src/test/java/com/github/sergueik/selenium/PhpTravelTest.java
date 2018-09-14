@@ -51,10 +51,12 @@ public class PhpTravelTest extends BaseTest {
 
 	private static final StringBuffer verificationErrors = new StringBuffer();
 	private static final Logger log = LogManager.getLogger(PhpTravelTest.class);
-	private static String userName = "user@phptravels";
-	private static String password = "demouser";
+	private static String userName = null;
+	private static String password = null;
 	private static final boolean DEBUG = false;
-	private static String baseURL = "about:blank";
+	private static String baseURL = "https://phptravels.com/demo/";
+	private static Set<String> windowHandles = new HashSet<>();
+	private static String parentWindowHandle = null;
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -67,19 +69,16 @@ public class PhpTravelTest extends BaseTest {
 		driver.get(baseURL);
 	}
 
-	// INFO: Unable to drain process streams. Ignoring but the exception being
-	// swallowed follows.
-	// org.apache.commons.exec.ExecuteException:
-	// The stop timeout of 2000 ms was exceeded (Exit value: -559038737)
-	@Test(enabled = true)
-	public void adminLoginFailingTest() {
+	@Test(enabled = false)
+	public void adminLoginTest() {
+
 		// Arrange
-		password = "demouser";
-		String baseURL = "https://phptravels.com/demo/";
-		driver.get(baseURL);
-		String parentWindowHandler = driver.getWindowHandle();
+		userName = "admin@phptravels.com";
+		password = "demoadmin";
+
+		parentWindowHandle = driver.getWindowHandle();
 		if (DEBUG)
-			System.err.println("Parent window: " + parentWindowHandler);
+			System.err.println("Parent window: " + parentWindowHandle);
 
 		WebElement adminLoginButton = driver
 				.findElements(By.className("btn-primary")).stream().map(e -> {
@@ -90,13 +89,14 @@ public class PhpTravelTest extends BaseTest {
 				.collect(Collectors.toList()).get(0);
 		assertThat(adminLoginButton, notNullValue());
 		highlight(adminLoginButton);
+		windowHandles = driver.getWindowHandles();
+		int windowCount = windowHandles.size();
 		adminLoginButton.click();
-		wait.until(ExpectedConditions.numberOfWindowsToBe(2));
-		Set<String> windowHandles = new HashSet<>();
+		wait.until(ExpectedConditions.numberOfWindowsToBe(windowCount + 1));
 		windowHandles = driver.getWindowHandles();
 		for (String windowHandle : windowHandles) {
 
-			if (!windowHandle.equals(parentWindowHandler)) {
+			if (!windowHandle.equals(parentWindowHandle)) {
 				if (DEBUG)
 					System.err.println("child window: " + windowHandle);
 				driver.switchTo().window(windowHandle);
@@ -149,9 +149,57 @@ public class PhpTravelTest extends BaseTest {
 				flash(loginButton); // NOTE: no visual cue
 				loginButton.click();
 				sleep(3000);
+				driver.close();
+				driver.switchTo().window(parentWindowHandle);
 
 			}
 		}
 	}
 
+	@Test(enabled = true)
+	public void userLoginTest() {
+		// Arrange
+		userName = "user@phptravels.com";
+		password = "demouser";
+		parentWindowHandle = driver.getWindowHandle();
+
+		WebElement userLoginButton = driver.findElement(
+				By.xpath("//a[@class='btn btn-primary btn-lg btn-block']"));
+		/* "//a[@class = 'login'][@href='http://phptravels.org']" */
+		assertThat(userLoginButton, notNullValue());
+		highlight(userLoginButton);
+		windowHandles = driver.getWindowHandles();
+		int windowCount = windowHandles.size();
+		userLoginButton.click();
+		wait.until(ExpectedConditions.numberOfWindowsToBe(windowCount + 1));
+		windowHandles = driver.getWindowHandles();
+		for (String windowHandle : windowHandles) {
+
+			if (!windowHandle.equals(parentWindowHandle)) {
+				driver.switchTo().window(windowHandle);
+				String childTitle = driver.getTitle();
+				if (DEBUG)
+					System.err.println("Title of page/tab: " + childTitle);
+
+				WebElement myAccount = wait
+						.until(ExpectedConditions.visibilityOf(driver.findElement(
+								By.xpath("//*[@id='li_myaccount']"))));
+				assertThat(myAccount, notNullValue());
+				highlight(myAccount);
+				myAccount.click();
+				
+				sleep(3000);
+				WebElement myLogin = wait
+						.until(ExpectedConditions.visibilityOf(driver.findElement(
+								By.xpath("//*[@id='li_myaccount']/ul[@class='dropdown-menu']/li[1]/a"))));
+				assertThat(myLogin, notNullValue());
+				highlight(myLogin);
+				myLogin.click();
+		
+				driver.close();
+				driver.switchTo().window(parentWindowHandle);
+
+			}
+		}
+	}
 }
