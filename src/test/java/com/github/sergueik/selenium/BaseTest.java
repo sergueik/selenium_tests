@@ -553,10 +553,9 @@ public class BaseTest {
 		}
 	}
 
-	public void sleep(Integer seconds) {
-		long secondsLong = (long) seconds;
+	public void sleep(Integer milliSeconds) {
 		try {
-			Thread.sleep(secondsLong);
+			Thread.sleep((long) milliSeconds);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
