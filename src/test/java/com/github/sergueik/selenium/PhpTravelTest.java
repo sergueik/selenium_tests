@@ -146,7 +146,7 @@ public class PhpTravelTest extends BaseTest {
 		// "//a[@class = 'login'][@href = 'http://phptravels.org']"
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void userLoginTest() {
 		// Arrange
 		userName = "user@phptravels.com";
@@ -226,8 +226,9 @@ public class PhpTravelTest extends BaseTest {
 					WebElement form = wait.until(ExpectedConditions
 							.presenceOfElementLocated(By.cssSelector("#loginfrm")));
 					assertThat(form, notNullValue());
-					System.err
-							.println("Login form html: " + form.getAttribute("innerHTML"));
+					if (DEBUG)
+						System.err
+								.println("Login form html: " + form.getAttribute("innerHTML"));
 
 					WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
 							form.findElement(By.xpath("//input[@type='email']"))));
@@ -245,6 +246,59 @@ public class PhpTravelTest extends BaseTest {
 					// Assert
 					wait.until(ExpectedConditions.urlMatches(".*/account/.*$"));
 					sleep(1000);
+				}
+			}
+		}
+	}
+
+	// replica of userLoginTest with debug code and custom methods removed
+	@Test(enabled = true)
+	public void userLoginShortenedTest() {
+		// Arrange
+		userName = "user@phptravels.com";
+		password = "demouser";
+
+		WebElement userLoginButton = driver.findElement(
+				By.xpath("//a[@class='btn btn-primary btn-lg btn-block']"));
+		windowHandles = driver.getWindowHandles();
+		userLoginButton.click();
+		wait.until(
+				ExpectedConditions.numberOfWindowsToBe(windowHandles.size() + 1));
+		windowHandles = driver.getWindowHandles();
+		for (String windowHandle : windowHandles) {
+
+			if (!windowHandle.equals(parentWindowHandle)) {
+				driver.switchTo().window(windowHandle);
+				String childTitle = driver.getTitle();
+				if (childTitle.contains("PHPTRAVELS")) {
+					WebElement myAccount = wait
+							.until(ExpectedConditions.visibilityOf(driver
+									.findElement(By.cssSelector("nav.navbar li#li_myaccount"))));
+					myAccount.click();
+					WebElement myLogin = wait
+							.until(ExpectedConditions.visibilityOf(myAccount
+									.findElement(By.xpath("ul[@class='dropdown-menu']/li/a"))));
+					myLogin.click();
+					wait.until(
+							ExpectedConditions.urlToBe("https://www.phptravels.net/login"));
+					WebElement form = wait.until(ExpectedConditions
+							.presenceOfElementLocated(By.cssSelector("#loginfrm")));
+					WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
+							form.findElement(By.xpath("//input[@type='email']"))));
+					emailInput.sendKeys(userName);
+					WebElement passwordInput = form.findElement(By.name("password"));
+					passwordInput.sendKeys(password);
+					WebElement loginButton = form
+							.findElement(By.cssSelector("button[type='submit']"));
+					loginButton.click();
+					// Assert
+					wait.until(ExpectedConditions.urlMatches(".*/account/.*$"));
+					sleep(1000);
+					if (parentWindowHandle != null) {
+						driver.close();
+						driver.switchTo().window(parentWindowHandle);
+						parentWindowHandle = null;
+					}
 				}
 			}
 		}
