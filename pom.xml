@@ -32,9 +32,9 @@
     <phantomjsdriver.version>1.2.1</phantomjsdriver.version>
     <selenium.version>3.13.0</selenium.version>
     <selenium-firefox-driver.version>3.13.0</selenium-firefox-driver.version>
-<!-- TODO: 
+    <!-- TODO:
 with 2.53.1
-java.lang.NoClassDefFoundError: org/openqa/selenium/remote/DesiredCapabilities 
+java.lang.NoClassDefFoundError: org/openqa/selenium/remote/DesiredCapabilities
 with 3.13.0
 java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
 -->
@@ -122,7 +122,7 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <version>${phantomjsdriver.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- 
+    <!--
     <dependency>
      <groupId>org.seleniumhq.selenium</groupId>
      <artifactId>selenium-server-standalone</artifactId>
@@ -180,10 +180,19 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
-          <encoding>utf-8</encoding>
-          <!-- need to change cosole code page to work with cyrillic page -->
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <!-- On windows one needs to update console code page outside of maven
+to work with cyrillic pages:
+chcp 65001
+set JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8
+rem ${project.build.sourceEncoding}
+ -->
           <compilerArgument>-Xlint:all</compilerArgument>
           <compilerArgument>-Xlint:-processing</compilerArgument>
+          <!--
+   <compilerArgument>-Dfile.encoding=${project.build.sourceEncoding}</compilerArgument>
+Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
+-->
           <showWarnings>true</showWarnings>
           <showDeprecation>true</showDeprecation>
         </configuration>
@@ -208,6 +217,11 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <suiteXmlFiles>
+            <suiteXmlFile>src/test/resources/suites/testng.xml</suiteXmlFile>
+          </suiteXmlFiles>
+          <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
           <!-- Skip the default running of this plug-in (or everything is run twice...see below) -->
           <skip>true</skip>
         </configuration>
@@ -226,6 +240,13 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
       </plugin>
     </plugins>
   </build>
