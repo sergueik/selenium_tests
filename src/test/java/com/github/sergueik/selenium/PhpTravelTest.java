@@ -146,7 +146,8 @@ public class PhpTravelTest extends BaseTest {
 		// "//a[@class = 'login'][@href = 'http://phptravels.org']"
 	}
 
-	@Test(enabled = false)
+	// TODO: clear cookie or log out to allow several login tests within the class
+	@Test(enabled = true)
 	public void userLoginTest() {
 		// Arrange
 		userName = "user@phptravels.com";
@@ -169,7 +170,7 @@ public class PhpTravelTest extends BaseTest {
 				if (DEBUG)
 					System.err.println("Title of page/tab: " + childTitle);
 				if (childTitle.contains("PHPTRAVELS")) {
-					sleep(1000);
+					sleep(5000);
 					if (DEBUG)
 						System.err.println("Title of page/tab: " + childTitle);
 					// TODO: wait for
@@ -185,21 +186,10 @@ public class PhpTravelTest extends BaseTest {
 
 					if (DEBUG)
 						System.err.println("Page source: " + driver.getPageSource());
-					if (DEBUG_FAILING) {
-						try {
-							wait.until(ExpectedConditions.visibilityOf(
-									driver.findElement(By.xpath("//li[@id='li_myaccount']"))));
-							// "//div[@class='clearfix']" ?
-						} catch (TimeoutException e) {
-							// The above ExpectedCondition wait appears to always fail with
-							// org.openqa.selenium.TimeoutException
-							// with or without a hard sleep above it
-							System.err.println("Exception (ignored): " + e.getMessage());
-						}
-					}
-					WebElement myAccount = wait
-							.until(ExpectedConditions.visibilityOf(driver
-									.findElement(By.cssSelector("nav.navbar li#li_myaccount"))));
+
+					WebElement myAccount = wait.until(ExpectedConditions
+							.visibilityOfElementLocated(By.linkText("MY ACCOUNT")));
+
 					assertThat(myAccount, notNullValue());
 					if (DEBUG)
 						System.err.println(
@@ -208,10 +198,8 @@ public class PhpTravelTest extends BaseTest {
 					highlight(myAccount);
 					myAccount.click();
 
-					sleep(100);
-					WebElement myLogin = wait
-							.until(ExpectedConditions.visibilityOf(myAccount
-									.findElement(By.xpath("ul[@class='dropdown-menu']/li/a"))));
+					WebElement myLogin = wait.until(ExpectedConditions
+							.visibilityOfElementLocated(By.linkText("Login")));
 					assertThat(myLogin, notNullValue());
 					// Act
 					highlight(myLogin);
@@ -230,8 +218,7 @@ public class PhpTravelTest extends BaseTest {
 						System.err
 								.println("Login form html: " + form.getAttribute("innerHTML"));
 
-					WebElement emailInput = wait.until(ExpectedConditions.visibilityOf(
-							form.findElement(By.xpath("//input[@type='email']"))));
+					WebElement emailInput = form.findElement(By.name("username"));
 					assertThat(emailInput, notNullValue());
 					highlight(emailInput);
 					emailInput.sendKeys(userName);
@@ -252,7 +239,7 @@ public class PhpTravelTest extends BaseTest {
 	}
 
 	// replica of userLoginTest with debug code and custom methods removed
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void userLoginShortenedTest() {
 		// Arrange
 		userName = "user@phptravels.com";

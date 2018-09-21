@@ -10,6 +10,10 @@ import java.io.InputStreamReader;
 
 import java.lang.reflect.Method;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -224,9 +228,12 @@ public class BaseTest {
 		*/
 		System.err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
-			System.setProperty("webdriver.chrome.driver", osName.equals("windows")
-					? (new File("c:/java/selenium/chromedriver.exe")).getAbsolutePath()
-					: String.format("%s/Downloads/chromedriver", System.getenv("HOME")));
+			System.setProperty("webdriver.chrome.driver",
+					osName.equals("windows")
+							? (new File("c:/java/selenium/chromedriver.exe"))
+									.getAbsolutePath()
+							: Paths.get(System.getProperty("user.home")).resolve("Downloads")
+									.resolve("chromedriver").toAbsolutePath().toString());
 
 			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 			ChromeOptions chromeOptions = new ChromeOptions();
@@ -322,7 +329,9 @@ public class BaseTest {
 			// 3.5.3 and later
 			System.setProperty("webdriver.gecko.driver", osName.equals("windows")
 					? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
-					: String.format("%s/Downloads/geckodriver", System.getenv("HOME")));
+					: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME"))*/ 
+						Paths.get(System.getProperty("user.home")).resolve("Downloads")
+						.resolve("geckodriver").toAbsolutePath().toString());
 			System
 					.setProperty("webdriver.firefox.bin",
 							osName.equals("windows") ? new File(
