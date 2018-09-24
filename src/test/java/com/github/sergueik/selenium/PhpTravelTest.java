@@ -167,10 +167,8 @@ public class PhpTravelTest extends BaseTest {
 			if (!windowHandle.equals(parentWindowHandle)) {
 				driver.switchTo().window(windowHandle);
 				String childTitle = driver.getTitle();
-				if (DEBUG)
-					System.err.println("Title of page/tab: " + childTitle);
 				if (childTitle.contains("PHPTRAVELS")) {
-					sleep(5000);
+					sleep(5000); // hard wait to prevent exception in waiting for visibility of MY ACCOUNT
 					if (DEBUG)
 						System.err.println("Title of page/tab: " + childTitle);
 					// TODO: wait for
