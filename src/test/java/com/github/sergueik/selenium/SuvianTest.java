@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.testng.Assert.assertTrue;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,7 +66,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 
 /**
  * Selected test scenarios for Selenium WebDriver
@@ -590,8 +590,8 @@ public class SuvianTest extends BaseTest {
 		// using flexible wait with a lambda is possible
 		// at a cost of giving up all Selenium ExpectedConditions
 		Wait<WebElement> waitElementChildren = new FluentWait<WebElement>(
-				formElement).withTimeout(flexibleWait, TimeUnit.SECONDS)
-						.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS)
+				formElement).withTimeout(Duration.ofSeconds(flexibleWait))
+						.pollingEvery(Duration.ofMillis(pollingInterval))
 						.ignoring(NoSuchElementException.class);
 		checkBoxElement = waitElementChildren
 				.until(new Function<WebElement, WebElement>() {
@@ -1041,7 +1041,7 @@ public class SuvianTest extends BaseTest {
 						.stream().filter(o -> o.isSelected()).count() == hobbies.size());
 	}
 
-		@Test(enabled = true)
+	@Test(enabled = true)
 	public void test10_1() {
 		// Arrange
 		// Arrange

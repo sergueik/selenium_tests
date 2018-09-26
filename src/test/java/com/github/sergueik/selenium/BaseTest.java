@@ -59,6 +59,8 @@ import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+// import org.openqa.selenium.support.ui.Duration;
+import java.time.Duration;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -104,7 +106,7 @@ public class BaseTest {
 	public int scriptTimeout = 5;
 	public int flexibleWait = 60; // too long
 	public int implicitWait = 1;
-	public long pollingInterval = 500;
+	public int pollingInterval = 500;
 	private static long highlightInterval = 100;
 
 	public String baseURL = "about:blank";
@@ -151,6 +153,10 @@ public class BaseTest {
 	}
 
 	public void setPollingInterval(long value) {
+		this.pollingInterval = (int) value;
+	}
+
+	public void setPollingInterval(int value) {
 		this.pollingInterval = value;
 	}
 
@@ -329,9 +335,9 @@ public class BaseTest {
 			// 3.5.3 and later
 			System.setProperty("webdriver.gecko.driver", osName.equals("windows")
 					? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
-					: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME"))*/ 
-						Paths.get(System.getProperty("user.home")).resolve("Downloads")
-						.resolve("geckodriver").toAbsolutePath().toString());
+					: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME"))*/
+					Paths.get(System.getProperty("user.home")).resolve("Downloads")
+							.resolve("geckodriver").toAbsolutePath().toString());
 			System
 					.setProperty("webdriver.firefox.bin",
 							osName.equals("windows") ? new File(
@@ -406,7 +412,7 @@ public class BaseTest {
 				TimeUnit.SECONDS);
 		// Declare a wait time
 		wait = new WebDriverWait(driver, flexibleWait);
-		wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
+		wait.pollingEvery(Duration.ofMillis(pollingInterval));
 		screenshot = ((TakesScreenshot) driver);
 		js = ((JavascriptExecutor) driver);
 		// driver.manage().window().maximize();
@@ -468,7 +474,10 @@ public class BaseTest {
 		if (wait == null) {
 			wait = new WebDriverWait(driver, flexibleWait);
 		}
-		wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
+		// https://stackoverflow.com/questions/49687699/how-to-remove-deprecation-warning-on-timeout-and-polling-in-selenium-java-client
+		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
+		wait.pollingEvery(Duration.ofMillis((int) pollingInterval));
+
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
 			executeScript("arguments[0].style.border='3px solid yellow'", element);

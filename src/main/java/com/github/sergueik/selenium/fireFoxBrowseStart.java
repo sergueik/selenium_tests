@@ -5,6 +5,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ import static org.testng.AssertJUnit.fail;
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
-public class fireFoxBrowseStart {
+public class FireFoxBrowseStart {
 	private static WebDriver driver;
 	private static WebDriverWait wait;
 	private static Actions actions;
@@ -101,7 +102,7 @@ public class fireFoxBrowseStart {
 	private static Predicate<WebElement> hasText;
 	private static int flexibleWait = 5;
 	private static int implicitWait = 1;
-	private static long pollingInterval = 500;
+	private static int pollingInterval = 500;
 	private static String baseUrl = "http://antenna.io/demo/jquery-bar-rating/examples/";
 	private static String osName;
 
@@ -125,7 +126,7 @@ public class fireFoxBrowseStart {
 						: "/usr/bin/firefox");
 		driver = new FirefoxDriver();
 		wait = new WebDriverWait(driver, flexibleWait);
-		wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
+		wait.pollingEvery(Duration.ofMillis(pollingInterval));
 		actions = new Actions(driver);
 		resetBrowser();
 		loadPage();
@@ -182,7 +183,8 @@ public class fireFoxBrowseStart {
 		if (wait == null) {
 			wait = new WebDriverWait(driver, flexibleWait);
 		}
-		wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
+		wait.pollingEvery(Duration.ofMillis(pollingInterval));
+
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
 			if (driver instanceof JavascriptExecutor) {

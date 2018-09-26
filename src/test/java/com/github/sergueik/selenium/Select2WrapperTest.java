@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.testng.Assert.assertTrue;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -426,7 +427,7 @@ public class Select2WrapperTest extends BaseTest {
 		private boolean isMulti = false;
 		private String elementCssSelector;
 		private int flexibleWait = 5;
-		private long pollingInterval = 500;
+		private int pollingInterval = 500;
 
 		public WebElement getWrappedElement() {
 			return this.element;
@@ -435,9 +436,9 @@ public class Select2WrapperTest extends BaseTest {
 		public Select2Object(WebDriver driver, String elementCssSelector) {
 			this.elementCssSelector = elementCssSelector;
 			this.driver = driver;
-			this.wait = new WebDriverWait(driver, this.flexibleWait);
-			this.wait.pollingEvery(this.pollingInterval, TimeUnit.MILLISECONDS);
-			this.element = wait.until(ExpectedConditions.visibilityOf(
+			wait = new WebDriverWait(driver, this.flexibleWait);
+			wait.pollingEvery(Duration.ofMillis(pollingInterval));
+			element = wait.until(ExpectedConditions.visibilityOf(
 					driver.findElement(By.cssSelector(this.elementCssSelector))));
 		}
 
