@@ -141,17 +141,19 @@ public class FindingIdFromLabelForTest extends BaseTest {
 			this.wait = value;
 		}
 
-		public String getValue(String labelText) {
+		public String getValue(final String labelText) {
 			if (!cachedValues.containsKey(labelText)) {
 				labelElements = driver.findElements(By.xpath(
 						String.format("//label[contains(text(), '%s')]", labelText)));
-				assertTrue(labelElements.size() > 0);
+				if (debug)
+					assertTrue(labelElements.size() > 0);
 				labelElement = labelElements.get(0);
 				selector = labelElement.getAttribute("for");
 				try {
 					inputElement = driver.findElement(By.id(selector));
 					// Assert
-					assertThat(inputElement, notNullValue());
+					if (debug)
+						assertThat(inputElement, notNullValue());
 					String valueText = inputElement.getAttribute("value") != null
 							? inputElement.getAttribute("value") : inputElement.getText();
 					if (debug)
@@ -176,16 +178,18 @@ public class FindingIdFromLabelForTest extends BaseTest {
 					: null;
 		}
 
-		public void setValue(String labelText, String value) {
+		public void setValue(final String labelText, final String value) {
 
 			labelElements = driver.findElements(By
 					.xpath(String.format("//label[contains(text(), '%s')]", labelText)));
-			assertTrue(labelElements.size() > 0);
+			if (debug)
+				assertTrue(labelElements.size() > 0);
 			labelElement = labelElements.get(0);
 			selector = labelElement.getAttribute("for");
 			try {
 				inputElement = driver.findElement(By.id(selector));
-				assertThat(inputElement, notNullValue());
+				if (debug)
+					assertThat(inputElement, notNullValue());
 				inputElement.sendKeys(value);
 				try {
 					Thread.sleep(timeout);
@@ -194,7 +198,8 @@ public class FindingIdFromLabelForTest extends BaseTest {
 				}
 				String valueText = inputElement.getAttribute("value") != null
 						? inputElement.getAttribute("value") : inputElement.getText();
-				assertThat(valueText, equalTo(value));
+				if (debug)
+					assertThat(valueText, equalTo(value));
 				if (debug)
 					System.err.println(String.format(
 							"Label with text \"%s\" is for input with id: \"%s\" value set to \"%s\"",

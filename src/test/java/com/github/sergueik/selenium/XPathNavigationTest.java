@@ -23,6 +23,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -62,194 +63,10 @@ public class XPathNavigationTest extends BaseTest {
 		driver.get(baseURL);
 	}
 
-	@Test(enabled = true)
-	public void test1() {
-		// does not work very well with headless browser
-		// Arrange
-		String baseURL = "https://spb.rt.ru/packages/tariffs";
-		driver.get(baseURL);
-		List<WebElement> elements = new ArrayList<>();
-		elements = driver.findElements(By.cssSelector("*[data-fee]"));
-
-		List<String> fees = elements.stream().map(_e -> _e.getAttribute("data-fee"))
-				.collect(Collectors.toList());
-		fees.stream().forEach(System.err::println);
-		List<WebElement> buttons = fees.stream()
-				.filter(fee -> Integer.parseInt(fee) > 0).map(fee -> {
-					String xpath = String.format(
-							"//*[@data-fee='%s']/ancestor::div[contains(@class,'js-price')]//a[contains(@class, 'button')]",
-							fee);
-					WebElement buttonElement = null;
-					try {
-						buttonElement = driver.findElement(By.xpath(xpath));
-						executeScript(
-								"arguments[0].scrollIntoView({ behavior: \"smooth\" });",
-								buttonElement);
-						highlight(buttonElement.findElement(By.xpath("..")));
-						// System.err.println(buttonElement.getAttribute("outerHTML"));
-						// System.err.println(buttonElement.findElement(By.xpath("..")).getAttribute("outerHTML"));
-						System.err.println(String.format("Connection fee: %s", fee));
-						// NOTE: funny console output of cyrillic word:
-						// Подключить
-						// чить
-						// ь
-						assertThat(buttonElement.getText(), equalTo("Подключить"));
-						System.err.println(
-								String.format("Button Text: |%s|", buttonElement.getText()));
-						System.err.println(xpathOfElement(buttonElement));
-					} catch (Exception e) {
-						// temporarily catch all exceptions.
-						System.err.println("Exception: " + e.toString());
-					}
-					return buttonElement;
-				}).collect(Collectors.toList());
-	}
-
-	// a debug version of test1.
-	// NOTE: slower
-	@Test(enabled = true)
-	public void test2() {
-		// Arrange
-		String baseURL = "https://spb.rt.ru/packages/tariffs";
-		driver.get(baseURL);
-		List<WebElement> elements = new ArrayList<>();
-		elements = driver.findElements(By.cssSelector("*[data-fee]"));
-
-		List<WebElement> buttons = elements.stream().map(_element -> {
-			String fee = _element.getAttribute("data-fee");
-			WebElement containerElement = null;
-			WebElement buttonElement = null;
-			if (Integer.parseInt(fee) > 0) {
-				String xpath = String
-						.format("ancestor::div[contains(@class,'js-price')]", fee);
-				try {
-					containerElement = _element.findElement(By.xpath(xpath));
-					if (containerElement != null) {
-
-						// System.err.println("Container element: "
-						// + containerElement.getAttribute("innerHTML"));
-						try {
-							buttonElement = containerElement
-									.findElement(By.cssSelector("a[class *= 'button']"));
-							if (buttonElement != null) {
-								executeScript(
-										"arguments[0].scrollIntoView({ behavior: \"smooth\" });",
-										buttonElement);
-								highlight(buttonElement.findElement(By.xpath("..")));
-								System.err.println(String.format("Connection fee: %s", fee));
-								assertThat(buttonElement.getText(), equalTo("Подключить"));
-								// https://stackoverflow.com/questions/5806690/is-there-an-iconv-with-translit-equivalent-in-java
-								System.err.println(
-										String.format("Button Text assertion passed: |%s|%s|%s|",
-												buttonElement.getText(), "Подключить",
-												Translit.toAscii("Подключить")));
-								System.err.println(String.format("Button Text: |%s|",
-										buttonElement.getText()));
-								System.err.println(cssSelectorOfElement(buttonElement));
-
-							}
-						} catch (TimeoutException e2) {
-							System.err.println(
-									"Exception finding the button element: " + e2.toString());
-						}
-					}
-				} catch (TimeoutException e1) {
-					System.err.println(
-							"Exception finding the container element: " + e1.toString());
-				}
-			}
-			return buttonElement;
-		}).collect(Collectors.toList());
-	}
-
-	// https://habr.com/company/ruvds/blog/416539/
-	// https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
-	@Test(enabled = false)
-	public void test3() {
-		// Arrange
-		String baseURL = "https://spb.rt.ru/packages/tariffs";
-		driver.get(baseURL);
-
-		List<WebElement> elements = new ArrayList<>();
-		elements = driver.findElements(By.cssSelector("*[data-fee]"));
-
-		List<String> fees = elements.stream().map(_e -> _e.getAttribute("data-fee"))
-				.collect(Collectors.toList());
-		fees.stream().forEach(System.err::println);
-		fees.stream().filter(fee -> Integer.parseInt(fee) > 0).forEach(fee -> {
-			String xpath = String.format("//*[@data-fee='%s']", fee);
-			WebElement element = driver.findElement(By.xpath(xpath));
-
-			boolean debug = false;
-			List<String> scripts = new ArrayList<>();
-			if (debug) {
-				scripts = new ArrayList<>(Arrays.asList(new String[] {
-						// immediate ancestor, not the one test is looking for, but
-						// helped finding the following one
-						"var element = arguments[0];\n"
-								+ "var locator = 'div.tariff-desc__cost_m-cell';"
-								+ "var targetElement = element.closest(locator);\n"
-								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
-								+ "return targetElement.outerHTML;",
-						// next in the ancestor chain, located and printed the outerHTML of
-						// element for debugging purposes
-						"var element = arguments[0];\n"
-								+ "var locator = 'div.tariff-desc__cost.tariff-desc__cost_reset.js-price-blocks';"
-								+ "var targetElement = element.closest(locator);\n"
-								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
-								+ "return targetElement.outerHTML;",
-						// relevant ancestor chain, chained with a quesySelector call
-						// but with full classes making it hard to read and fragile
-						"var element = arguments[0];\n"
-								+ "var locator = 'div.tariff-desc__cost.tariff-desc__cost_reset.js-price-blocks';"
-								+ "var targetElement = element.closest(locator).querySelector('a.button-3');\n"
-								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
-								+ "return targetElement.innerHTML;",
-						// final selector
-						"var element = arguments[0];\n"
-								+ "var locator = 'div.js-price-blocks';"
-								+ "var targetElement = element.closest(locator).querySelector('a.button-3');\n"
-								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
-								+ "return targetElement.innerHTML;" }));
-				for (String script : scripts) {
-					System.err.println("Running the script:\n" + script);
-					try {
-						String result = (String) js.executeScript(script, element);
-						System.err.println("Found:\n" + result);
-						// assertThat(result, equalTo("text to find"));
-					} catch (Exception e) {
-						// temporarily catch all exceptions.
-						System.err.println("Exception: " + e.toString());
-					}
-				}
-			} else {
-				// convert to function
-				String script = "var element = arguments[0];\n"
-						+ "var ancestorLocator = arguments[1];"
-						+ "var targetElementLocator = arguments[2];"
-						+ "/* alert('ancestorLocator = ' + ancestorLocator); */"
-						+ "var targetElement = element.closest(ancestorLocator).querySelector(targetElementLocator);\n"
-						+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
-						+ "return targetElement.text;";
-				try {
-					System.err.println("Running the script:\n" + script);
-					String result = (String) js.executeScript(script, element,
-							"div.js-price-blocks", "a.button-3");
-					System.err.println("Found:\n" + result);
-					// assertThat(result, equalTo("text to find"));
-				} catch (Exception e) {
-					// temporarily catch all exceptions.
-					System.err.println("Exception: " + e.toString());
-				}
-
-			}
-		});
-	}
-
 	// https://habr.com/company/ruvds/blog/416539/
 	// https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
 	@Test(enabled = true)
-	public void test4() {
+	public void demoqaTest1() {
 		String baseURL = "http://store.demoqa.com/products-page/";
 		driver.get(baseURL);
 
@@ -318,65 +135,76 @@ public class XPathNavigationTest extends BaseTest {
 		});
 	}
 
-	// based on
-	// https://stackoverflow.com/questions/5806690/is-there-an-iconv-with-translit-equivalent-in-java
-	// and
-	// http://tocrva.blogspot.com/2015/03/java-transliterate-cyrillic-to-latin.html
-	public static class Translit {
+	// refactored "scrollIntoView" in the method demoqaTest1
+	@Test(enabled = true)
+	public void demoqaTest2() {
+		String baseURL = "http://store.demoqa.com/products-page/";
+		driver.get(baseURL);
 
-		private static final Charset UTF8 = Charset.forName("UTF-8");
-		private static final char[] alphabetCyrillic = { ' ', 'а', 'б', 'в', 'г',
-				'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р',
-				'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю',
-				'я', 'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л',
-				'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ',
-				'Ъ', 'Ы', 'Б', 'Э', 'Ю', 'Я', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-				'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-				'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-				'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-				'Y', 'Z' };
-
-		private static final String[] alphabetTranslit = { " ", "a", "b", "v", "g",
-				"d", "e", "e", "zh", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r",
-				"s", "t", "u", "f", "h", "ts", "ch", "sh", "sch", "", "i", "", "e",
-				"ju", "ja", "A", "B", "V", "G", "D", "E", "E", "Zh", "Z", "I", "Y", "K",
-				"L", "M", "N", "O", "P", "R", "S", "T", "U", "F", "H", "Ts", "Ch", "Sh",
-				"Sch", "", "I", "", "E", "Ju", "Ja", "a", "b", "c", "d", "e", "f", "g",
-				"h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-				"v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-				"J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
-				"X", "Y", "Z" };
-
-		private static String toAscii(final String input) {
-			final CharsetEncoder charsetEncoder = UTF8.newEncoder();
-			final char[] decomposed = Normalizer
-					.normalize(input, Normalizer.Form.NFKD).toCharArray();
-			final StringBuilder sb = new StringBuilder(decomposed.length);
-
-			// NOTE: evaluating the character charcount is unnecessary with Cyrillic
-			for (int i = 0; i < decomposed.length;) {
-				final int codePoint = Character.codePointAt(decomposed, i);
-				final int charCount = Character.charCount(codePoint);
-
-				if (charsetEncoder
-						.canEncode(CharBuffer.wrap(decomposed, i, charCount))) {
-					sb.append(decomposed, i, charCount);
-				}
-
-				i += charCount;
-			}
-
-			StringBuilder builder = new StringBuilder();
-
-			for (int i = 0; i < sb.length(); i++) {
-				for (int x = 0; x < alphabetCyrillic.length; x++)
-					if (sb.charAt(i) == alphabetCyrillic[x]) {
-						builder.append(alphabetTranslit[x]);
+		// Arrange
+		List<WebElement> elements = new ArrayList<>();
+		elements = driver
+				.findElements(By.cssSelector("span.currentprice:nth-of-type(1)"));
+		elements.stream().forEach(element -> {
+			super.setDebug(true);
+			System.err.println("super.scrollIntoView");
+			super.scrollIntoView(element);
+			System.err.println("after super.scrollIntoView");
+			highlight(element, 1000);
+			boolean debug = false;
+			if (debug) {
+				List<String> scripts = new ArrayList<>(Arrays.asList(new String[] {
+						// immediate ancestor, not the one test is looking for, but
+						// helped finding the following one
+						"var element = arguments[0];\n"
+								+ "var locator = 'div.wpsc_product_price';"
+								+ "var targetElement = element.closest(locator);\n"
+								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
+								+ "return targetElement.outerHTML;",
+						// next in the ancestor chain, located and printed the outerHTML of
+						// element for debugging purposes
+						"var element = arguments[0];\n" + "var locator = 'form';\n"
+								+ "var targetElement = element.closest(locator);\n"
+								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
+								+ "return targetElement.outerHTML;",
+						// relevant ancestor chain, chained with a quesySelector call
+						// but with full classes making it hard to read and fragile
+						"var element = arguments[0];\n"
+								+ "var ancestorLocator = 'div.productcol';"
+								+ "var targetElementLocator = 'div[class=\"input-button-buy\"]';"
+								+ "var targetElement = element.closest(ancestorLocator).querySelector(targetElementLocator);\n"
+								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
+								+ "return targetElement.innerHTML;" }));
+				for (String script : scripts) {
+					System.err.println("Running the script:\n" + script);
+					try {
+						String result = (String) js.executeScript(script, element);
+						System.err.println("Found:\n" + result);
+						// assertThat(result, equalTo("text to find"));
+					} catch (Exception e) {
+						// temporarily catch all exceptions.
+						System.err.println("Exception: " + e.toString());
 					}
+				}
+			} else {
+				String script = "var element = arguments[0];\n"
+						+ "var ancestorLocator = arguments[1];"
+						+ "var targetElementLocator = arguments[2];"
+						+ "/* alert('ancestorLocator = ' + ancestorLocator); */"
+						+ "var targetElement = element.closest(ancestorLocator).querySelector(targetElementLocator);\n"
+						+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
+						+ "return targetElement.text || targetElement.getAttribute('value');";
+				try {
+					System.err.println("Running the script:\n" + script);
+					String result = (String) js.executeScript(script, element, "form",
+							"input[type='submit']");
+					System.err.println("Found:\n" + result);
+					assertTrue(result.equalsIgnoreCase("add to cart"), result);
+				} catch (Exception e) {
+					// temporarily catch all exceptions.
+					System.err.println("Exception: " + e.toString());
+				}
 			}
-			return builder.toString();
-
-		}
+		});
 	}
-
 }

@@ -91,6 +91,12 @@ public class BaseTest {
 	public TakesScreenshot screenshot;
 	private static String handle = null;
 
+	private boolean debug = false;
+
+	public void setDebug(boolean value) {
+		this.debug = value;
+	}
+
 	public String getHandle() {
 		return handle;
 	}
@@ -412,7 +418,11 @@ public class BaseTest {
 				TimeUnit.SECONDS);
 		// Declare a wait time
 		wait = new WebDriverWait(driver, flexibleWait);
+
+		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		wait.pollingEvery(Duration.ofMillis(pollingInterval));
+		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
+
 		screenshot = ((TakesScreenshot) driver);
 		js = ((JavascriptExecutor) driver);
 		// driver.manage().window().maximize();
@@ -474,9 +484,10 @@ public class BaseTest {
 		if (wait == null) {
 			wait = new WebDriverWait(driver, flexibleWait);
 		}
+		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		// https://stackoverflow.com/questions/49687699/how-to-remove-deprecation-warning-on-timeout-and-polling-in-selenium-java-client
-		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
 		wait.pollingEvery(Duration.ofMillis((int) pollingInterval));
+		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
 
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
@@ -796,6 +807,35 @@ public class BaseTest {
 			return handle;
 		}
 		return null;
+	}
+
+	// DOM method:
+	// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+	public void scrollIntoView(WebElement element) {
+		try {
+			// plain
+			// executeScript("arguments[0].scrollIntoView({ behavior: \"smooth\" });",
+			// element);
+			// based on
+			// http://www.performantdesign.com/2009/08/26/scrollintoview-but-only-if-out-of-view/
+			// referenced in
+			// https://stackoverflow.com/questions/6215779/scroll-if-element-is-not-visible
+			//
+			String result = (String) executeScript(
+					getScriptContent("scrollIntoViewIfOutOfView.js"), element, debug);
+
+			if (debug) {
+				System.err.println("Result: " + result);
+			}
+			highlight(element.findElement(By.xpath("..")));
+			if (debug) {
+				System.err.println(xpathOfElement(element));
+			}
+		} catch (Exception e) {
+			// temporarily catch all exceptions.
+			System.err.println("Exception: " + e.toString());
+		}
+
 	}
 
 	private void confirmHanldeNotClosed(String windowHandle) {
