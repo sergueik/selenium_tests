@@ -138,7 +138,7 @@ public class XPathNavigationTest extends BaseTest {
 	// refactored "scrollIntoView" in the method demoqaTest1
 	@Test(enabled = true)
 	public void demoqaTest2() {
-		String baseURL = "http://store.demoqa.com/products-page/";
+		String baseURL = "http://store.demoqa.com/products-page/product-category/?view_type=default";
 		driver.get(baseURL);
 
 		// Arrange
@@ -147,10 +147,9 @@ public class XPathNavigationTest extends BaseTest {
 				.findElements(By.cssSelector("span.currentprice:nth-of-type(1)"));
 		elements.stream().forEach(element -> {
 			super.setDebug(true);
-			System.err.println("super.scrollIntoView");
+			highlight(element, 500, "solid green");
 			super.scrollIntoView(element);
-			System.err.println("after super.scrollIntoView");
-			highlight(element, 1000);
+			highlight(element, 500, "solid blue");
 			boolean debug = false;
 			if (debug) {
 				List<String> scripts = new ArrayList<>(Arrays.asList(new String[] {
@@ -159,13 +158,11 @@ public class XPathNavigationTest extends BaseTest {
 						"var element = arguments[0];\n"
 								+ "var locator = 'div.wpsc_product_price';"
 								+ "var targetElement = element.closest(locator);\n"
-								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
 								+ "return targetElement.outerHTML;",
 						// next in the ancestor chain, located and printed the outerHTML of
 						// element for debugging purposes
 						"var element = arguments[0];\n" + "var locator = 'form';\n"
 								+ "var targetElement = element.closest(locator);\n"
-								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
 								+ "return targetElement.outerHTML;",
 						// relevant ancestor chain, chained with a quesySelector call
 						// but with full classes making it hard to read and fragile
@@ -173,7 +170,6 @@ public class XPathNavigationTest extends BaseTest {
 								+ "var ancestorLocator = 'div.productcol';"
 								+ "var targetElementLocator = 'div[class=\"input-button-buy\"]';"
 								+ "var targetElement = element.closest(ancestorLocator).querySelector(targetElementLocator);\n"
-								+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
 								+ "return targetElement.innerHTML;" }));
 				for (String script : scripts) {
 					System.err.println("Running the script:\n" + script);
@@ -183,7 +179,7 @@ public class XPathNavigationTest extends BaseTest {
 						// assertThat(result, equalTo("text to find"));
 					} catch (Exception e) {
 						// temporarily catch all exceptions.
-						System.err.println("Exception: " + e.toString());
+						System.err.println("Exception (ignored) : " + e.toString());
 					}
 				}
 			} else {
@@ -192,7 +188,6 @@ public class XPathNavigationTest extends BaseTest {
 						+ "var targetElementLocator = arguments[2];"
 						+ "/* alert('ancestorLocator = ' + ancestorLocator); */"
 						+ "var targetElement = element.closest(ancestorLocator).querySelector(targetElementLocator);\n"
-						+ "targetElement.scrollIntoView({ behavior: 'smooth' });\n"
 						+ "return targetElement.text || targetElement.getAttribute('value');";
 				try {
 					System.err.println("Running the script:\n" + script);
@@ -202,7 +197,7 @@ public class XPathNavigationTest extends BaseTest {
 					assertTrue(result.equalsIgnoreCase("add to cart"), result);
 				} catch (Exception e) {
 					// temporarily catch all exceptions.
-					System.err.println("Exception: " + e.toString());
+					System.err.println("Exception (ignored) : " + e.toString());
 				}
 			}
 		});

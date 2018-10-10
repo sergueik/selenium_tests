@@ -126,7 +126,9 @@ public class FireFoxBrowseStart {
 						: "/usr/bin/firefox");
 		driver = new FirefoxDriver();
 		wait = new WebDriverWait(driver, flexibleWait);
+		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		wait.pollingEvery(Duration.ofMillis(pollingInterval));
+		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
 		actions = new Actions(driver);
 		resetBrowser();
 		loadPage();
@@ -183,7 +185,9 @@ public class FireFoxBrowseStart {
 		if (wait == null) {
 			wait = new WebDriverWait(driver, flexibleWait);
 		}
+		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		wait.pollingEvery(Duration.ofMillis(pollingInterval));
+		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
 
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));

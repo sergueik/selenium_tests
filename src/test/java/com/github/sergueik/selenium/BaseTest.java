@@ -477,10 +477,17 @@ public class BaseTest {
 	}
 
 	public void highlight(WebElement element) {
-		highlight(element, 100);
+		highlight(element, 100, "solid yellow");
 	}
 
 	public void highlight(WebElement element, long highlightInterval) {
+		highlight(element, highlightInterval, "solid yellow");
+
+	}
+
+	public void highlight(WebElement element, long highlightInterval,
+			String color) {
+		System.err.println("Color: " + color);
 		if (wait == null) {
 			wait = new WebDriverWait(driver, flexibleWait);
 		}
@@ -491,7 +498,8 @@ public class BaseTest {
 
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
-			executeScript("arguments[0].style.border='3px solid yellow'", element);
+			executeScript(String.format("arguments[0].style.border='3px %s'", color),
+					element);
 			Thread.sleep(highlightInterval);
 			executeScript("arguments[0].style.border=''", element);
 		} catch (InterruptedException e) {
@@ -500,9 +508,14 @@ public class BaseTest {
 	}
 
 	public void highlight(By locator) throws InterruptedException {
+		highlight(locator, "solid yellow");
+	}
+
+	public void highlight(By locator, String color) throws InterruptedException {
 		log.info("Highlighting element {}", locator);
 		WebElement element = driver.findElement(locator);
-		executeScript("arguments[0].style.border='3px solid yellow'", element);
+		executeScript(String.format("arguments[0].style.border='3px %s'", color),
+				element);
 		Thread.sleep(highlightInterval);
 		executeScript("arguments[0].style.border=''", element);
 	}
@@ -809,9 +822,13 @@ public class BaseTest {
 		return null;
 	}
 
+	public void scrollIntoView(WebElement element) {
+		scrollIntoView(element, true);
+	}
+
 	// DOM method:
 	// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
-	public void scrollIntoView(WebElement element) {
+	public void scrollIntoView(WebElement element, boolean force) {
 		try {
 			// plain
 			// executeScript("arguments[0].scrollIntoView({ behavior: \"smooth\" });",
@@ -822,7 +839,8 @@ public class BaseTest {
 			// https://stackoverflow.com/questions/6215779/scroll-if-element-is-not-visible
 			//
 			String result = (String) executeScript(
-					getScriptContent("scrollIntoViewIfOutOfView.js"), element, debug);
+					getScriptContent("scrollIntoViewIfOutOfView.js"), element, debug,
+					force);
 
 			if (debug) {
 				System.err.println("Result: " + result);
