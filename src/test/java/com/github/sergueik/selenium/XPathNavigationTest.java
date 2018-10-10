@@ -1,40 +1,25 @@
 package com.github.sergueik.selenium;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
+import static org.hamcrest.core.StringContains.containsString;
+
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
-import org.openqa.selenium.InvalidSelectorException;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.testng.Assert.assertTrue;
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.internal.Nullable;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Selected test scenarios for Selenium WebDriver
@@ -49,6 +34,10 @@ public class XPathNavigationTest extends BaseTest {
 	private static final StringBuffer verificationErrors = new StringBuffer();
 	private static final Logger log = LogManager
 			.getLogger(XPathNavigationTest.class);
+
+	// passes with debug true
+	// private static boolean debug = true;
+	private static boolean debug = false;
 
 	private static String baseURL = "about:blank";
 
@@ -78,7 +67,6 @@ public class XPathNavigationTest extends BaseTest {
 			executeScript("arguments[0].scrollIntoView({ behavior: \"smooth\" });",
 					element);
 			highlight(element, 1000);
-			boolean debug = false;
 			if (debug) {
 				List<String> scripts = new ArrayList<>(Arrays.asList(new String[] {
 						// immediate ancestor, not the one test is looking for, but
@@ -106,8 +94,10 @@ public class XPathNavigationTest extends BaseTest {
 					System.err.println("Running the script:\n" + script);
 					try {
 						String result = (String) js.executeScript(script, element);
+						// commented: we are not finding the right element. Kept around for
+						// later debugging
+						// assertThat(result, containsString("add to cart"));
 						System.err.println("Found:\n" + result);
-						// assertThat(result, equalTo("text to find"));
 					} catch (Exception e) {
 						// temporarily catch all exceptions.
 						System.err.println("Exception: " + e.toString());
@@ -125,8 +115,8 @@ public class XPathNavigationTest extends BaseTest {
 					System.err.println("Running the script:\n" + script);
 					String result = (String) js.executeScript(script, element, "form",
 							"input[type='submit']");
+					assertThat(result, equalToIgnoringCase("add to cart"));
 					System.err.println("Found:\n" + result);
-					assertTrue(result.equalsIgnoreCase("add to cart"), result);
 				} catch (Exception e) {
 					// temporarily catch all exceptions.
 					System.err.println("Exception: " + e.toString());
@@ -146,37 +136,35 @@ public class XPathNavigationTest extends BaseTest {
 		elements = driver
 				.findElements(By.cssSelector("span.currentprice:nth-of-type(1)"));
 		elements.stream().forEach(element -> {
-			super.setDebug(true);
-			highlight(element, 500, "solid green");
+			super.setDebug(debug);
 			super.scrollIntoView(element);
-			highlight(element, 500, "solid blue");
-			boolean debug = false;
+			// removed scroll DOM method call from element evaluation scripts
 			if (debug) {
-				List<String> scripts = new ArrayList<>(Arrays.asList(new String[] {
-						// immediate ancestor, not the one test is looking for, but
-						// helped finding the following one
+				// Java 9 way : Map.of
+				Map<String, String> scriptsMap = ImmutableMap.of("immediate ancestor",
 						"var element = arguments[0];\n"
 								+ "var locator = 'div.wpsc_product_price';"
 								+ "var targetElement = element.closest(locator);\n"
 								+ "return targetElement.outerHTML;",
-						// next in the ancestor chain, located and printed the outerHTML of
-						// element for debugging purposes
+						"next in the ancestor chain",
 						"var element = arguments[0];\n" + "var locator = 'form';\n"
 								+ "var targetElement = element.closest(locator);\n"
 								+ "return targetElement.outerHTML;",
-						// relevant ancestor chain, chained with a quesySelector call
-						// but with full classes making it hard to read and fragile
+						"another relevant ancestor chain",
 						"var element = arguments[0];\n"
 								+ "var ancestorLocator = 'div.productcol';"
 								+ "var targetElementLocator = 'div[class=\"input-button-buy\"]';"
 								+ "var targetElement = element.closest(ancestorLocator).querySelector(targetElementLocator);\n"
-								+ "return targetElement.innerHTML;" }));
-				for (String script : scripts) {
-					System.err.println("Running the script:\n" + script);
+								+ "return targetElement.innerHTML;");
+				for (String scriptKey : scriptsMap.keySet()) {
+					System.err.println("Running the script:\n" + scriptKey);
 					try {
-						String result = (String) js.executeScript(script, element);
+						String result = (String) js.executeScript(scriptsMap.get(scriptKey),
+								element);
+						// commented: we are not finding the right element. Kept around for
+						// later debugging
+						// assertThat(result, containsString("add to cart"));
 						System.err.println("Found:\n" + result);
-						// assertThat(result, equalTo("text to find"));
 					} catch (Exception e) {
 						// temporarily catch all exceptions.
 						System.err.println("Exception (ignored) : " + e.toString());
@@ -193,8 +181,8 @@ public class XPathNavigationTest extends BaseTest {
 					System.err.println("Running the script:\n" + script);
 					String result = (String) js.executeScript(script, element, "form",
 							"input[type='submit']");
+					assertThat(result, equalToIgnoringCase("add to cart"));
 					System.err.println("Found:\n" + result);
-					assertTrue(result.equalsIgnoreCase("add to cart"), result);
 				} catch (Exception e) {
 					// temporarily catch all exceptions.
 					System.err.println("Exception (ignored) : " + e.toString());

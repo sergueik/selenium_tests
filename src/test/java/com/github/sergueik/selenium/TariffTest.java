@@ -63,29 +63,22 @@ public class TariffTest extends BaseTest {
 		driver.get(baseURL);
 	}
 
-	@Test(enabled = true)
-	public void html5shivTest1() {
-		driver.navigate().to(getPageContent("html5shiv_test.htm"));
-		// wait.until(ExpectedConditions.urlMatches(baseURL));
-		sleep(10000);
-	}
-
 	// NOTE: this test is unstable
 	// 1. does not work very well with headless browser
 	// even in the visible browser test scenario gets forcibly redirected to
 	// https://spb.rt.ru/fault-browser/
+	// https://stackoverflow.com/questions/41430406/what-is-the-meaning-of-lt-in-if-lt-ie-9
+	/*
+	 <!--[if lt IE 9]>
+	    <script type="text/javascript">window.location = '/fault-browser/'</script>
+	<![endif]-->
+	 */
 	@Test(enabled = true)
 	public void tariffsTest1() {
 		// Arrange
 		String baseURL = "https://spb.rt.ru/packages/tariffs";
 		// driver.get(baseURL);
 		driver.navigate().to(baseURL);
-		// https://stackoverflow.com/questions/41430406/what-is-the-meaning-of-lt-in-if-lt-ie-9
-		/*
-		 <!--[if lt IE 9]>
-		    <script type="text/javascript">window.location = '/fault-browser/'</script>
-		<![endif]-->
-		 */
 		// Сожалеем, но сайт RT.ru несовместим с вашим браузером
 		wait.until(ExpectedConditions.urlMatches(baseURL));
 		List<WebElement> elements = new ArrayList<>();
