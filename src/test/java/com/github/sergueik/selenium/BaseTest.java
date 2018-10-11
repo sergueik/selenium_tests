@@ -258,9 +258,12 @@ public class BaseTest {
 			chromePrefs.put("download.prompt_for_download", "false");
 			chromePrefs.put("download.directory_upgrade", "true");
 			chromePrefs.put("plugins.always_open_pdf_externally", "true");
-
 			chromePrefs.put("download.default_directory", downloadFilepath);
 			chromePrefs.put("enableNetwork", "true");
+			// https://stackoverflow.com/questions/18106588/how-to-disable-cookies-using-webdriver-for-chrome-and-firefox-java
+			// chromePrefs.put("profile.default_content_settings.cookies", 2);
+			// no cookies are allowed
+
 			chromeOptions.setExperimentalOption("prefs", chromePrefs);
 			// TODO: jni
 			if (System.getProperty("os.arch").contains("64")) {
@@ -360,6 +363,10 @@ public class BaseTest {
 			capabilities.setCapability("acceptSslCerts", true);
 			capabilities.setCapability("elementScrollBehavior", 1);
 			FirefoxProfile profile = new FirefoxProfile();
+			// NOTE: the setting below may be too restrictive
+			// http://kb.mozillazine.org/Network.cookie.cookieBehavior
+			// profile.setPreference("network.cookie.cookieBehavior", 2);
+			// no cookies are allowed
 			profile.setPreference("browser.helperApps.neverAsk.saveToDisk",
 					"application/octet-stream,text/csv");
 			profile.setPreference("browser.helperApps.neverAsk.openFile",
@@ -571,7 +578,7 @@ public class BaseTest {
 	public void flash(WebElement element) {
 		String bgcolor = element.getCssValue("backgroundColor");
 		for (int i = 0; i < 3; i++) {
-			changeColor("rgb(0,200,0)", element);
+			changeColor("rgb(000,0)", element);
 			changeColor(bgcolor, element);
 		}
 	}
