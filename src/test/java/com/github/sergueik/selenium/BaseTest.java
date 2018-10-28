@@ -124,7 +124,7 @@ public class BaseTest {
 			"%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
 			getPropertyEnv("USERPROFILE", "C:\\Users\\Serguei"));
 
-	private static final String browser = getPropertyEnv("browser.name",
+	private static final String browser = getPropertyEnv("webdriver.driver",
 			"chrome"); // use -P profile to override
 	private static final boolean headless = Boolean
 			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
@@ -238,8 +238,6 @@ public class BaseTest {
 				 Windows: Internet Explorer, Mozilla Firefox, Google Chrome. Mac:
 				 Safari".
 		*/
-		System.err.println(String.format("%s=%s", "browser.name",
-				System.getProperty("browser.name")));
 		System.err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
 			System.setProperty("webdriver.chrome.driver",
