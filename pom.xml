@@ -218,7 +218,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
         <configuration>
           <trimStackTrace>false</trimStackTrace>
           <encoding>${project.build.sourceEncoding}</encoding>
-	  <!--
+          <!--
 	  NOTE: specifying the suite XML file prevents surefile from scannint all tests casses and execute everything with the method name mask match
           <suiteXmlFiles>
             <suiteXmlFile>src/test/resources/suites/testng.xml</suiteXmlFile>
@@ -254,6 +254,40 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
     </plugins>
   </build>
   <profiles>
+    <profile>
+      <id>properties</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>properties-maven-plugin</artifactId>
+            <version>1.0.0</version>
+            <executions>
+              <execution>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>write-project-properties</goal>
+                </goals>
+                <configuration>
+                  <outputFile>
+                ${project.build.outputDirectory}/test.properties
+              </outputFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <properties>
+        <!-- https://www.mojohaus.org/properties-maven-plugin/usage.html -->
+        <username>sergueik2016</username>
+        <password>${env.TEST_PASSWORD}</password>
+        <!-- when not set will result in the verbatim value 'password' = '${env.TEST_PASSWORD}'-->
+      </properties>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+    </profile>
     <profile>
       <id>chrome</id>
       <properties>

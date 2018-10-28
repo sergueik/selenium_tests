@@ -124,7 +124,7 @@ public class BaseTest {
 			"%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
 			getPropertyEnv("USERPROFILE", "C:\\Users\\Serguei"));
 
-	private static final String browser = getPropertyEnv("webdriver.driver",
+	private static final String browser = getPropertyEnv("browser.name",
 			"chrome"); // use -P profile to override
 	private static final boolean headless = Boolean
 			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
@@ -238,6 +238,8 @@ public class BaseTest {
 				 Windows: Internet Explorer, Mozilla Firefox, Google Chrome. Mac:
 				 Safari".
 		*/
+		System.err.println(String.format("%s=%s", "browser.name",
+				System.getProperty("browser.name")));
 		System.err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
 			System.setProperty("webdriver.chrome.driver",
@@ -318,7 +320,7 @@ public class BaseTest {
 			logPrefs.enable(LogType.PERFORMANCE, Level.INFO);
 			logPrefs.enable(LogType.BROWSER, Level.INFO);
 			logPrefs.enable(LogType.DRIVER, Level.INFO);
-			/* 
+			/*
 				logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
 				logPrefs.enable(LogType.BROWSER, Level.ALL);
 				logPrefs.enable(LogType.DRIVER, Level.ALL);
@@ -393,11 +395,11 @@ public class BaseTest {
 			capabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
 
 			profile.setPreference("webdriver.firefox.logfile", "/dev/null");
+			// NOTE: the next setting appears to have no effect.
+			// does one really need os-specific definition?
+			// like /dev/null for Linux vs. nul for Windows
 			System.setProperty("webdriver.firefox.logfile",
 					osName.equals("windows") ? "nul" : "/dev/null");
-			// The setting appears to have no effect.
-			// NOTE: does one need os-specific definition of /dev/null (like nul in
-			// Windows case) ?
 
 			// no longer supported as of Selenium 3.8.x
 			// profile.setEnableNativeEvents(false);
