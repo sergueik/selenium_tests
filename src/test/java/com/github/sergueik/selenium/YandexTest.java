@@ -54,7 +54,11 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-// NOTE: this test restarts the browser
+/*
+ * Practice Selenium Cookies with session-based [mailbox](https://www.yandex.ru/) login 
+ */
+// NOTE: this test restarts the browser. Therefore not inheriting from the 
+// BaseTest class
 public class YandexTest {
 
 	private static WebDriver driver;
@@ -81,8 +85,8 @@ public class YandexTest {
 	private static final Map<String, String> browserDrivers = new HashMap<>();
 	// TODO: the propery is not visible.
 	private static final String propertyFilePath = (System
-			.getProperty("property_filepath") != null)
-					? System.getProperty("property_filepath") : "src/test/resources";
+			.getenv("property.filepath") != null) ? System.getenv("property.filepath")
+					: "src/test/resources";
 
 	private static String osName = null;
 
@@ -102,8 +106,8 @@ public class YandexTest {
 		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
 			debug = true;
 		}
-		System.err.println(String.format("%s=%s", "property_filepath",
-				System.getProperty("property_filepath")));
+		System.err.println(String.format("%s=%s", "System.env('property.filepath')",
+				System.getenv("property.filepath")));
 		getOsName();
 		browserDrivers.put("chrome",
 				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
