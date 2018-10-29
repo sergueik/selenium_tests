@@ -54,6 +54,7 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+// NOTE: this test restarts the browser
 public class YandexTest {
 
 	private static WebDriver driver;
@@ -81,8 +82,7 @@ public class YandexTest {
 	// TODO: the propery is not visible.
 	private static final String propertyFilePath = (System
 			.getProperty("property_filepath") != null)
-					? System.getProperty("property_filepath")
-					: /* "src/test/resources" */ "target/classes";
+					? System.getProperty("property_filepath") : "src/test/resources";
 
 	private static String osName = null;
 
@@ -111,9 +111,8 @@ public class YandexTest {
 				osName.equals("windows") ? "geckodriver.exe" : "geckodriver");
 		browserDrivers.put("edge", "MicrosoftWebDriver.exe");
 		HashMap<String, String> propertiesMap = PropertiesParser
-				.getProperties(String.format(/* "%s/target/classes/%s" */
-						"%s/%s/%s"
-						/* "%s/src/test/resources/%s" */ , System.getProperty("user.dir"), propertyFilePath, propertiesFileName));
+				.getProperties(String.format("%s/%s/%s", System.getProperty("user.dir"),
+						propertyFilePath, propertiesFileName));
 		username = propertiesMap.get("username");
 		password = propertiesMap.get("password");
 		loggingSb = new StringBuilder();
@@ -130,7 +129,7 @@ public class YandexTest {
 						: "/usr/bin/firefox");
 		// https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
 		DesiredCapabilities capabilities = DesiredCapabilities.firefox();
-		// use legacy FirefoxDriver
+		// we are using legacy FirefoxDriver
 		// for Firefox v.59 no longer possible ?
 		capabilities.setCapability("marionette", false);
 		driver = new FirefoxDriver(capabilities);
@@ -152,16 +151,7 @@ public class YandexTest {
 		element = driver
 				.findElement(By.xpath("//span[contains(text(), 'Войти')]/.."));
 		highlight(element);
-		element.click(); // does not work with the <span> - works with the <a>
-		// element.sendKeys(Keys.ENTER); // does not work
-		// actions.moveToElement(element).click().build().perform(); // does not
-		// work
-
-		// short explicit wait
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-		}
+		element.click(); // NOTE: does not work with the <span> - works with the <a>
 		wait.until(ExpectedConditions.urlContains(loginURL));
 	}
 
@@ -216,7 +206,7 @@ public class YandexTest {
 		doLogout();
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void useCookieTest() throws Exception {
 		String loginUrl = doLogin();
@@ -229,6 +219,7 @@ public class YandexTest {
 		driver = new FirefoxDriver();
 		// re-initialize wait object
 		wait = new WebDriverWait(driver, flexibleWait);
+		// wait.pollingEvery(Duration.ofMillis(polling));
 		wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
 		System.err.println("Navigating to " + loginUrl);
 		driver.get(loginUrl);
@@ -260,7 +251,7 @@ public class YandexTest {
 	}
 
 	private String doLogin() {
-		// And I enter the username
+		// I enter the username
 		// NOTE: elements with class names ending with "Label" e.g.
 		// "passport-Input-Label"
 		// would not accept input

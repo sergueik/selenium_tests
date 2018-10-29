@@ -84,6 +84,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+// NOTE: this test restarts the browser
 public class GoogleDriveTest {
 
 	private static WebDriver driver;
