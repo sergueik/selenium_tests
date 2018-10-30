@@ -238,6 +238,12 @@ public class BaseTest {
 				 Windows: Internet Explorer, Mozilla Firefox, Google Chrome. Mac:
 				 Safari".
 		*/
+		System.err.println(String.format("%s=%s", "System.env('webdriver.driver')",
+				System.getenv("webdriver.driver")));
+		System.err
+				.println(String.format("%s=%s", "getPropertyEnv('webdriver.driver')",
+						getPropertyEnv("webdriver.driver", "")));
+
 		System.err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
 			System.setProperty("webdriver.chrome.driver",

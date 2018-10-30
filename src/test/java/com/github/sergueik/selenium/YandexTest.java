@@ -83,10 +83,6 @@ public class YandexTest {
 	private static String configurationFileName = "test.configuration";
 	private static String propertiesFileName = "test.properties";
 	private static final Map<String, String> browserDrivers = new HashMap<>();
-	private static final String propertyFilePathXX = (System
-			.getenv("property.filepath") != null) ? System.getenv("property.filepath")
-					: "src/test/resources";
-	// TODO: the property is not visible.
 	private static final String propertyFilePath = getPropertyEnv(
 			"property.filepath", "src/test/resources");
 

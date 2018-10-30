@@ -107,6 +107,9 @@ public class GoogleDriveTest {
 	private static String password = "";
 	private static Formatter formatter;
 	private static StringBuilder loggingSb;
+	private static String propertiesFileName = "test.properties";
+	private static final String propertyFilePath = getPropertyEnv(
+			"property.filepath", "src/test/resources");
 
 	@BeforeClass
 	public static void setUp() {
@@ -117,6 +120,9 @@ public class GoogleDriveTest {
 		loggingSb = new StringBuilder();
 		formatter = new Formatter(loggingSb, Locale.US);
 		driver = new FirefoxDriver();
+		HashMap<String, String> propertiesMap = PropertiesParser
+				.getProperties(String.format("%s/%s/%s", System.getProperty("user.dir"),
+						propertyFilePath, propertiesFileName));
 		wait = new WebDriverWait(driver, flexibleWait);
 		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		wait.pollingEvery(Duration.ofMillis(polling));
@@ -325,6 +331,47 @@ public class GoogleDriveTest {
 			return javascriptExecutor.executeScript(script, arguments);
 		} else {
 			throw new RuntimeException("Script execution failed.");
+		}
+	}
+
+	public static String getPropertyEnv(String name, String defaultValue) {
+		String value = System.getProperty(name);
+		if (value == null) {
+			value = System.getenv(name);
+			if (value == null) {
+				value = defaultValue;
+			}
+		}
+		return value;
+	}
+
+	private static class PropertiesParser {
+		@SuppressWarnings("unchecked")
+		public static HashMap<String, String> getProperties(final String fileName) {
+			Properties p = new Properties();
+			HashMap<String, String> propertiesMap = new HashMap<>();
+			System.err
+					.println(String.format("Reading properties file: '%s'", fileName));
+			try {
+				p.load(new FileInputStream(fileName));
+				Enumeration<String> e = (Enumeration<String>) p.propertyNames();
+				for (; e.hasMoreElements();) {
+					String key = e.nextElement();
+					String val = p.get(key).toString();
+					System.out.println(String.format("Reading: '%s' = '%s'", key, val));
+					propertiesMap.put(key, val);
+				}
+
+			} catch (FileNotFoundException e) {
+				System.err.println(
+						String.format("Properties file was not found: '%s'", fileName));
+				e.printStackTrace();
+			} catch (IOException e) {
+				System.err.println(
+						String.format("Properties file is not readable: '%s'", fileName));
+				e.printStackTrace();
+			}
+			return (propertiesMap);
 		}
 	}
 }
