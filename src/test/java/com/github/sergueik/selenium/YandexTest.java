@@ -47,6 +47,8 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -104,12 +106,13 @@ public class YandexTest {
 		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
 			debug = true;
 		}
+		/*
 		System.err.println(String.format("%s=%s", "System.env('property.filepath')",
 				System.getenv("property.filepath")));
 		System.err
 				.println(String.format("%s=%s", "getPropertyEnv('property.filepath')",
 						getPropertyEnv("property.filepath", "")));
-
+		*/
 		getOsName();
 		browserDrivers.put("chrome",
 				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
@@ -121,6 +124,7 @@ public class YandexTest {
 						propertyFilePath, propertiesFileName));
 		username = propertiesMap.get("username");
 		password = propertiesMap.get("password");
+
 		loggingSb = new StringBuilder();
 		formatter = new Formatter(loggingSb, Locale.US);
 		System.setProperty("webdriver.gecko.driver", osName.equals("windows")
@@ -139,6 +143,17 @@ public class YandexTest {
 		// for Firefox v.59 no longer possible ?
 		capabilities.setCapability("marionette", false);
 		driver = new FirefoxDriver(capabilities);
+		// With Chrome one can also try
+		/*
+		System.setProperty("webdriver.chrome.driver",
+				new File("c:/java/selenium/chromedriver.exe").getAbsolutePath());
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments(String.format(
+				"user-data-dir=%s/AppData/Local/Google/Chrome/User Data/Default",
+				System.getProperty("user.home")));
+		options.addArguments("--start-maximized");
+		WebDriver driver = new ChromeDriver(options);
+		*/
 		wait = new WebDriverWait(driver, flexibleWait);
 		wait.pollingEvery(Duration.ofMillis(polling));
 		// wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
