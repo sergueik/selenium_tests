@@ -18,6 +18,9 @@ The project practices Java with selected Selenium test scenarios using the test 
   * [http://www.seleniumeasy.com/test](http://www.seleniumeasy.com/test)
   * [https://v4-alpha.getbootstrap.com/components/forms/](https://v4-alpha.getbootstrap.com/components/forms/)
 
+
+
+ * [fjasonrobot/FancyWaiting](http://stackoverflow.com/questions/30174546/selenium-filter-with-predicate )
 ### Profiles
 
 Project supports several browsers, possible to select through profile. The detauls browser is `chrome`.

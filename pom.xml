@@ -239,6 +239,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
               <skip>false</skip>
               <systemPropertyVariables>
                 <webdriver.driver>${browser.name}</webdriver.driver>
+                <property.filepath>${property.filepath}</property.filepath>
               </systemPropertyVariables>
             </configuration>
           </execution>
@@ -283,34 +284,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
               </execution>
             </executions>
           </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>${maven-surefire-plugin.version}</version>
-            <configuration>
-              <trimStackTrace>false</trimStackTrace>
-              <encoding>${project.build.sourceEncoding}</encoding>
-              <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
-              <!-- Skip the default running of this plug-in (or everything is run twice...see below) -->
-              <skip>true</skip>
-            </configuration>
-            <executions>
-              <execution>
-                <id>unit-tests</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>test</goal>
-                </goals>
-                <configuration>
-                  <skip>false</skip>
-                  <systemPropertyVariables>
-                    <webdriver.driver>${browser.name}</webdriver.driver>
-                    <property.filepath>$property.filepath}</property.filepath>
-                  </systemPropertyVariables>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
+          <!-- this maven-surefire-plugin does not seem to be used during the test phase, removed -->
         </plugins>
       </build>
       <activation>
