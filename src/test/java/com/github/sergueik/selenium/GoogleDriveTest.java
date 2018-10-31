@@ -175,7 +175,7 @@ public class GoogleDriveTest {
 		}
 	}
 
-	// @Ignore
+	@Ignore
 	@Test
 	public void getCookieTest() throws Exception {
 
@@ -211,7 +211,7 @@ public class GoogleDriveTest {
 		doLogout();
 	}
 
-	// @Ignore
+  // @Ignore
 	@Test
 	public void useCookieTest() throws Exception {
 		doLogin();
@@ -222,10 +222,10 @@ public class GoogleDriveTest {
 		System.err.println("re-open the browser, about to use the session cookies");
 		driver.close();
 		driver = setupDriver();
-		// driver = new FirefoxDriver();
-		// re-initialize wait object
 		wait = new WebDriverWait(driver, flexibleWait);
-		wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
+		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
+		wait.pollingEvery(Duration.ofMillis(polling));
+		// wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
 		System.err.println("Navigating to " + baseURL);
 		driver.get(baseURL);
 		try {
@@ -269,13 +269,9 @@ public class GoogleDriveTest {
 
 	private void doLogout() {
 
-		// Given I am accessing Google Drive
-		// And i sign out
-
-		element = driver
-				.findElement(By.cssSelector("a[aria-label^='Google Account']"
-		/*
-		"a[href^='https://accounts.google.com/SignOutOptions?']"*/));
+		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
+				By.cssSelector("a[aria-label^='Google Account']")));
+		
 		highlight(element);
 		element.click();
 		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -285,10 +281,10 @@ public class GoogleDriveTest {
 	}
 
 	private void doLogin() {
-		// very similar to yandex login
+		// test flow very similar to yandex login
 		// ...
 		// &continue=https://drive.google.com/%23&followup=https://drive.google.com/&ltmpl=drive&emr=1#identifier
-		// Given I access Google Drive
+		// access Google Drive
 		try {
 			element = driver.findElement(By
 					.cssSelector("a[href^='https://accounts.google.com/ServiceLogin?']"));
@@ -319,35 +315,31 @@ public class GoogleDriveTest {
 		} catch (TimeoutException e) {
 			System.err.println("Ignored exception " + e.toString());
 		}
-		// And I enter the username
 
+		// enter the username
 		element = driver.findElement(By.cssSelector("*[type='email']"));
+		// alternarively, select by visible placeholder text
 		element = driver
 				.findElement(By.cssSelector("*[aria-label='Email or phone']"));
-		// aria-label="Email or phone"
 		highlight(element);
 		element.clear();
 
 		element.sendKeys(username);
-		// element = wait.until(
-		// ExpectedConditions.visibilityOfElementLocated(By.linkText("Next")));
 		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
 				By.xpath("//*[@id='identifierNext']/content/span")));
-		//
 		highlight(element);
 		element.click();
-		// And I enter the password
+
+		// enter the password
 		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
 				By.cssSelector("*[aria-label='Enter your password']")));
 		highlight(element);
 		element.clear();
 		element.sendKeys(password);
 
-		// And I sign in
-		// driver.findElement(By.id("signIn")).click();
+		// sign in
 		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
 				By.xpath("//*[@id='passwordNext']/content/span")));
-		//
 		highlight(element);
 		element.click();
 	}
