@@ -261,6 +261,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
         <!-- https://www.mojohaus.org/properties-maven-plugin/usage.html -->
         <property.filepath>target/classes</property.filepath>
         <username>sergueik2016</username>
+        <username>automationnewuser24@gmail.com</username>
         <password>${env.TEST_PASSWORD}</password>
         <!-- when not set will result in the verbatim value 'password' = '${env.TEST_PASSWORD}'-->
       </properties>

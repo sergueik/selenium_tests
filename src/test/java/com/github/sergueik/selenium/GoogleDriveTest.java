@@ -111,6 +111,19 @@ public class GoogleDriveTest {
 	private static final String propertyFilePath = getPropertyEnv(
 			"property.filepath", "src/test/resources");
 
+	private static WebDriver setupDriver() {
+		System.setProperty("webdriver.gecko.driver",
+				new File("c:/java/selenium/geckodriver.exe").getAbsolutePath());
+		System.setProperty("webdriver.firefox.bin",
+				new File("c:/Program Files (x86)/Mozilla Firefox/firefox.exe")
+						.getAbsolutePath());
+
+		DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+		capabilities.setCapability("marionette", false);
+		WebDriver driver = new FirefoxDriver(capabilities);
+		return driver;
+	}
+
 	@BeforeClass
 	public static void setUp() {
 
@@ -119,10 +132,12 @@ public class GoogleDriveTest {
 		}
 		loggingSb = new StringBuilder();
 		formatter = new Formatter(loggingSb, Locale.US);
-		driver = new FirefoxDriver();
+		driver = setupDriver();
 		HashMap<String, String> propertiesMap = PropertiesParser
 				.getProperties(String.format("%s/%s/%s", System.getProperty("user.dir"),
 						propertyFilePath, propertiesFileName));
+		username = propertiesMap.get("username");
+		password = propertiesMap.get("password");
 		wait = new WebDriverWait(driver, flexibleWait);
 		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		wait.pollingEvery(Duration.ofMillis(polling));
@@ -148,8 +163,13 @@ public class GoogleDriveTest {
 			Thread.sleep(afterTest);
 		} catch (InterruptedException e) {
 		}
-		driver.close();
-		driver.quit();
+		try {
+			driver.close();
+			driver.quit();
+		} catch (Exception e) {
+			// ignore
+			// java.net.ProtocolException: unexpected end of stream
+		}
 		if (verificationErrors.length() != 0) {
 			throw new RuntimeException(verificationErrors.toString());
 		}
@@ -201,7 +221,8 @@ public class GoogleDriveTest {
 		wait = null;
 		System.err.println("re-open the browser, about to use the session cookies");
 		driver.close();
-		driver = new FirefoxDriver();
+		driver = setupDriver();
+		// driver = new FirefoxDriver();
 		// re-initialize wait object
 		wait = new WebDriverWait(driver, flexibleWait);
 		wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
@@ -250,8 +271,11 @@ public class GoogleDriveTest {
 
 		// Given I am accessing Google Drive
 		// And i sign out
-		element = driver.findElement(By
-				.cssSelector("a[href^='https://accounts.google.com/SignOutOptions']"));
+
+		element = driver
+				.findElement(By.cssSelector("a[aria-label^='Google Account']"
+		/*
+		"a[href^='https://accounts.google.com/SignOutOptions?']"*/));
 		highlight(element);
 		element.click();
 		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -265,9 +289,14 @@ public class GoogleDriveTest {
 		// ...
 		// &continue=https://drive.google.com/%23&followup=https://drive.google.com/&ltmpl=drive&emr=1#identifier
 		// Given I access Google Drive
-		element = driver.findElement(
-				By.cssSelector("a[href^='https://accounts.google.com/ServiceLogin']"));
+		try {
+			element = driver.findElement(By
+					.cssSelector("a[href^='https://accounts.google.com/ServiceLogin?']"));
+		} catch (Exception e) {
 
+		}
+
+		element = driver.findElement(By.linkText("Go to Google Drive"));
 		highlight(element);
 		element.click();
 
@@ -292,21 +321,35 @@ public class GoogleDriveTest {
 		}
 		// And I enter the username
 
-		element = driver.findElement(By.id("Email"));
+		element = driver.findElement(By.cssSelector("*[type='email']"));
+		element = driver
+				.findElement(By.cssSelector("*[aria-label='Email or phone']"));
+		// aria-label="Email or phone"
 		highlight(element);
 		element.clear();
 
 		element.sendKeys(username);
-		driver.findElement(By.id("next")).click();
+		// element = wait.until(
+		// ExpectedConditions.visibilityOfElementLocated(By.linkText("Next")));
+		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
+				By.xpath("//*[@id='identifierNext']/content/span")));
+		//
+		highlight(element);
+		element.click();
 		// And I enter the password
-		element = wait
-				.until(ExpectedConditions.visibilityOfElementLocated(By.id("Passwd")));
+		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
+				By.cssSelector("*[aria-label='Enter your password']")));
 		highlight(element);
 		element.clear();
 		element.sendKeys(password);
 
 		// And I sign in
-		driver.findElement(By.id("signIn")).click();
+		// driver.findElement(By.id("signIn")).click();
+		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
+				By.xpath("//*[@id='passwordNext']/content/span")));
+		//
+		highlight(element);
+		element.click();
 	}
 
 	private void highlight(WebElement element) {
