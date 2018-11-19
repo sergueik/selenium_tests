@@ -447,7 +447,16 @@ public class BaseTest {
 
 	@AfterClass
 	public void afterClass() {
-		driver.get("about:blank");
+
+		try {
+			driver.get("about:blank");
+		} catch (Exception e) {
+			/*
+			 org.openqa.selenium.NoSuchWindowException:
+			no such window: target window already closed
+			from unknown error: web view not found
+			 */
+		}
 		if (driver != null) {
 			try {
 				driver.close();
