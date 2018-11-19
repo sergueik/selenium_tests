@@ -5,6 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -57,6 +60,28 @@ public class SeleniumEasyTest extends BaseTest {
 					result.getMethod().getMethodName(), verificationErrors.toString()));
 		}
 		driver.get("about:blank");
+	}
+
+	// https://www.seleniumeasy.com/test/table-sort-search-demo.html
+	// http://zvon.org/xxl/XPathTutorial/Output/example15.html
+	@Test(enabled = true)
+	public void followingSiblingCellLocatorTest() {
+		driver.get("https://www.seleniumeasy.com/test/table-sort-search-demo.html");
+		Map<String, String> employeeData = new HashMap<>();
+
+		List<String> names = new ArrayList<>(
+				Arrays.asList(new String[] { "Bradley Greer", "Charde Marshall" }));
+		employeeData.put("Bradley Greer", "Software Engineer");
+		employeeData.put("Charde Marshall", "Regional Director");
+
+		for (String name : names) {
+			String positionSearchXpath = String.format(
+					"//*[@id=\"example\"]/tbody/tr/td[@data-search=\"%s\"]/following-sibling::td[1]",
+					name);
+			WebElement element = driver.findElement(By.xpath(positionSearchXpath));
+			assertThat(element.getText(), is(employeeData.get(name)));
+			System.err.println(String.format("%s: %s", name, element.getText()));
+		}
 	}
 
 	@Test(enabled = true)
@@ -277,7 +302,5 @@ public class SeleniumEasyTest extends BaseTest {
 				.findElement(By.cssSelector("a[data-dismiss='modal']"));
 		assertThat(closeButtonElement, notNullValue());
 		closeButtonElement.click();
-		
 	}
-
 }
