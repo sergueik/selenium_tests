@@ -7,7 +7,9 @@ import static org.hamcrest.CoreMatchers.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -47,10 +49,12 @@ public class SeleniumEasyTest extends BaseTest {
 	public void BeforeMethod(Method method) {
 		super.beforeMethod(method);
 		driver.get(baseURL);
+		/*
 		ExpectedCondition<Boolean> urlChange = driver -> driver.getCurrentUrl()
 				.matches(String.format("^%s.*", baseURL));
 		wait.until(urlChange);
 		System.err.println("BeforeMethod: Current  URL: " + driver.getCurrentUrl());
+		*/
 	}
 
 	@AfterMethod
@@ -77,6 +81,27 @@ public class SeleniumEasyTest extends BaseTest {
 		for (String name : names) {
 			String positionSearchXpath = String.format(
 					"//*[@id=\"example\"]/tbody/tr/td[@data-search=\"%s\"]/following-sibling::td[1]",
+					name);
+			WebElement element = driver.findElement(By.xpath(positionSearchXpath));
+			assertThat(element.getText(), is(employeeData.get(name)));
+			System.err.println(String.format("%s: %s", name, element.getText()));
+		}
+	}
+
+	// https://stackoverflow.com/questions/10247978/xpath-with-multiple-conditions
+	@Test(enabled = true)
+	public void complexConditionCellLocatorTest() {
+		driver.get("https://www.seleniumeasy.com/test/table-sort-search-demo.html");
+		Map<String, String> employeeData = new HashMap<>();
+
+		List<String> names = new ArrayList<>(
+				Arrays.asList(new String[] { "Bradley Greer", "Charde Marshall" }));
+		employeeData.put("Bradley Greer", "Software Engineer");
+		employeeData.put("Charde Marshall", "Regional Director");
+
+		for (String name : names) {
+			String positionSearchXpath = String.format(
+					"//*[@id=\"example\"]/tbody/tr[./td[@data-search=\"%s\"]]/td[2]",
 					name);
 			WebElement element = driver.findElement(By.xpath(positionSearchXpath));
 			assertThat(element.getText(), is(employeeData.get(name)));
