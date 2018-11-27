@@ -550,6 +550,33 @@ public class BaseTest {
 				element, attributeName, attributeValue);
 	}
 
+	protected void fastSetText(String selectorOfElement, String text) {
+		fastSetText(selectorOfElement, text, 0);
+	}
+
+	protected void fastSetText(String selector, String text, long interval) {
+		String script = getScriptContent("setValueWithSelector.js");
+		try {
+			executeScript(script, selector, text);
+		} catch (Exception e) {
+			System.err.println("Ignored: " + e.toString());
+		}
+	}
+
+	protected void fastSetText(WebElement element, String text) {
+		fastSetText(element, text, 0);
+	}
+
+	protected void fastSetText(WebElement element, String text, long interval) {
+		String script = getScriptContent("setValue.js");
+		try {
+			wait.until(ExpectedConditions.visibilityOf(element));
+			executeScript(script, element, text);
+		} catch (Exception e) {
+			System.err.println("Ignored: " + e.toString());
+		}
+	}
+
 	protected void highlightNew(WebElement element, long highlightInterval) {
 		Rectangle elementRect = element.getRect();
 		String highlightScript = getScriptContent("highlight.js");
