@@ -2,16 +2,24 @@ package com.github.sergueik.selenium;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.testng.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.lang.reflect.Method;
 
 import org.junit.rules.Timeout;
 import org.openqa.selenium.By;
+import org.openqa.selenium.InvalidSelectorException;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 // import org.openqa.selenium.support.ui.Duration;
 // NOTE: probably using the wrong class
 import java.time.Duration;
+import java.util.List;
+
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -38,8 +46,8 @@ public class TransaviaTest extends BaseTest {
 		super.beforeMethod(method);
 		// override
 
-		wait = new WebDriverWait(driver, 120);
-		wait.pollingEvery(Duration.ofMillis((long) 1000));
+		wait = new WebDriverWait(driver, 30);
+		wait.pollingEvery(Duration.ofMillis((long) 300));
 		driver.get(baseURL);
 		ExpectedCondition<Boolean> urlChange = driver -> driver.getCurrentUrl()
 				.matches(String.format("^%s.*", baseURL));
@@ -61,7 +69,7 @@ public class TransaviaTest extends BaseTest {
 	// Если я почищю куки и буду заходить на http://transavia.com/ , то мне
 	// предлогает выбрать регион.
 	public void acknowledgeCookieTest() {
-		sleep(12000);
+		sleep(1000);
 		String pageTitle = driver.getTitle();
 		System.err.println("page: " + pageTitle);// Sorry to interrupt.
 		if (pageTitle.matches("Sorry to interrupt.*")) {
@@ -69,17 +77,64 @@ public class TransaviaTest extends BaseTest {
 			WebElement bannerElement = driver
 					.findElement(By.cssSelector("div.info-banner-blocker"));
 			assertThat(bannerElement, notNullValue());
-			highlight(bannerElement);
-			System.err
-					.println("outerHTML: " + bannerElement.getAttribute("outerHTML"));
-			WebElement buttonElement = wait.until(ExpectedConditions
-					.visibilityOf(driver.findElement(By.cssSelector("button.button"))));
-			assertThat(buttonElement, notNullValue());
-			highlight(buttonElement);
-			buttonElement.click();
+			try {
+				System.err
+						.println("outerHTML: " + bannerElement.getAttribute("outerHTML"));
+				highlight(bannerElement);
+			} catch (StaleElementReferenceException e) {
+				/*
+				org.openqa.selenium.StaleElementReferenceException:
+					Element not found in the cache - perhaps the page has changed since it was looked up
+					*/
+				// ignore
+			}
+			bannerElement.click();
+			WebElement parentElement = bannerElement.findElement(By.xpath(".."));
+			System.err.println(
+					"Parent Element: " + parentElement.getAttribute("outerHTML"));
+			List<WebElement> buttons = parentElement
+					.findElements(By.cssSelector("button"));
+			System.err.println(String.format("See %d buttons", buttons.size()));
+			assertThat(buttons.size(), greaterThan(1));
+			final String text = "Accept all cookies";
+			// stream with debugging first,
+			buttons.stream().map(_button -> {
+				System.err
+						.println("Button Element: " + _button.getAttribute("outerHTML"));
+				/*
+				Button Element: 
+					<button onclick="_stCookiePopup.send_popup_accept()" class="button info-banner-button button-call-to-actions info-banner-neg-expandible">Accept all cookies</button>
+				*/
+				return _button;
+			}).filter(_button -> {
+				return (boolean) (_button.getText().indexOf(text) > -1);
+			}).forEach(_button -> {
+				highlight(_button);
+				_button.click();
+			});
+			sleep(300000);
+			if (false) {
+				// not reached
+				try {
+					WebElement buttonElement = wait.until(ExpectedConditions
+							.visibilityOf(parentElement.findElement(By.cssSelector(
+									String.format("//button[contains(text(), '%s')]", text)))));
+					assertThat(buttonElement, notNullValue());
+					flash(buttonElement);
+					buttonElement.click();
+				} catch (InvalidSelectorException e) {
+					// Caused by: org.openqa.selenium.InvalidSelectorException:
+					// InvalidSelectorError: An invalid or illegal selector was specified
+					// The given selector
+					// "//button[contains(text(), 'Accept all cookies')]"
+					// is either invalid or does not result in a WebElement.
 
+					// ignore - left as an exercise for later
+				}
+
+			}
 		} else {
-
+			// there is no banner
 		}
 	}
 }
