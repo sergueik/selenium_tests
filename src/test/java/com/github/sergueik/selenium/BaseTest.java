@@ -59,7 +59,8 @@ import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-// import org.openqa.selenium.support.ui.Duration;
+// https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/support/ui/FluentWait.html#pollingEvery-java.time.Duration-
+// NOTE: needs java.time.Duration not the org.openqa.selenium.support.ui.Duration;
 import java.time.Duration;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -296,7 +297,8 @@ public class BaseTest {
 					/* "start-maximized" , */
 					"--disable-default-app", "disable-infobars", "--no-sandbox ",
 					"--browser.download.folderList=2", "--disable-web-security",
-					"--no-proxy-server",
+					"--disable-translate", "--disable-popup-blocking",
+					"--ignore-certificate-errors", "--no-proxy-server",
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
 					String.format("--browser.download.dir=%s", downloadFilepath)
 					/* "--user-data-dir=/path/to/your/custom/profile"  , */
@@ -516,6 +518,7 @@ public class BaseTest {
 		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		// https://stackoverflow.com/questions/49687699/how-to-remove-deprecation-warning-on-timeout-and-polling-in-selenium-java-client
 		wait.pollingEvery(Duration.ofMillis((int) pollingInterval));
+		
 		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
 
 		try {

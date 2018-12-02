@@ -1,28 +1,21 @@
 package com.github.sergueik.selenium;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.testng.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
+import java.util.List;
 
-import org.junit.rules.Timeout;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
-// import org.openqa.selenium.support.ui.Duration;
-// NOTE: probably using the wrong class
-import java.time.Duration;
-import java.util.List;
-
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
