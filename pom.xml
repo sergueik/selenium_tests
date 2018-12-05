@@ -224,7 +224,10 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
             <suiteXmlFile>src/test/resources/suites/testng.xml</suiteXmlFile>
 	  </suiteXmlFiles>
 	  -->
-          <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+	  <!-- For parallel runs with e.g. Vagrant https://github.com/sergueik/selenium-fluxbox  
+	  <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dparallel=tests -DthreadCount=2 </argLine>
+	  -->
+           <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
           <!-- Skip the default running of this plug-in (or everything is run twice...see below) -->
           <skip>true</skip>
         </configuration>
