@@ -5,9 +5,11 @@ import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.UnreachableBrowserException;
 
 // based: https://github.com/mkolisnyk/V08632/blob/master/src/main/java/com/sample/framework/Driver.java
 // which exercises thread isolation from Packt's Automated UI Testing in Android
@@ -40,8 +42,12 @@ public class DriverWrapper extends RemoteWebDriver {
 		if (browser.trim().equalsIgnoreCase("remote")) {
 			try {
 				driver = new RemoteWebDriver(new URL(hubUrl), capabilities);
-			} catch (MalformedURLException e) {
+			} catch (MalformedURLException | UnreachableBrowserException
+					| NoSuchSessionException e) { // hub down ?
 				System.err.println("Exception: " + e.toString());
+				// org.openqa.selenium.NoSuchSessionException:
+				// Tried to run command without establishing a connection
+				// throw new RuntimeException(e.getCause());
 				throw new RuntimeException(e);
 			}
 			driverThreadMap.put(getThreadName(), driver);
