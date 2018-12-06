@@ -239,12 +239,13 @@ public class BaseTest {
 				 Windows: Internet Explorer, Mozilla Firefox, Google Chrome. Mac:
 				 Safari".
 		*/
+		/*
 		System.err.println(String.format("%s=%s", "System.env('webdriver.driver')",
 				System.getenv("webdriver.driver")));
 		System.err
 				.println(String.format("%s=%s", "getPropertyEnv('webdriver.driver')",
 						getPropertyEnv("webdriver.driver", "")));
-
+		*/
 		System.err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
 			System.setProperty("webdriver.chrome.driver",
@@ -518,7 +519,7 @@ public class BaseTest {
 		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		// https://stackoverflow.com/questions/49687699/how-to-remove-deprecation-warning-on-timeout-and-polling-in-selenium-java-client
 		wait.pollingEvery(Duration.ofMillis((int) pollingInterval));
-		
+
 		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
 
 		try {

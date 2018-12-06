@@ -4,20 +4,31 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidSelectorException;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -32,6 +43,69 @@ public class TransaviaTest extends BaseTest {
 	private static String baseURL = "https://www.transavia.com/en-EU/home/";
 	private static String selector = "form#contact_form > fieldset div.form-group div.input-group textarea.form-control";
 	private static final StringBuffer verificationErrors = new StringBuffer();
+	private final String osName = super.getOSName();
+	private Map<String, String> browserDrivers = new HashMap<>();
+	private Map<String, String> browserDriverSystemProperties = new HashMap<>();
+
+	@BeforeClass
+	@Override
+	public void beforeClass() throws IOException {
+
+		browserDrivers.put("chrome",
+				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
+		browserDrivers.put("firefox",
+				osName.equals("windows") ? "geckodriver.exe" : "geckodriver");
+		browserDrivers.put("edge", "MicrosoftWebDriver.exe");
+		browserDriverSystemProperties.put("chrome", "webdriver.chrome.driver");
+		browserDriverSystemProperties.put("firefox", "webdriver.gecko.driver");
+		browserDriverSystemProperties.put("edge", "webdriver.edge.driver");
+
+		String browser = super.getBrowser();
+
+		boolean remote = true;
+		boolean headless = false;
+		// browser = "firefox";
+		DriverWrapper.setHubUrl("http://127.0.0.1:4444/wd/hub");
+		// run remotely, while the BaseClass runs locally
+		System.err.println("Launching " + browser);
+		System.setProperty(browserDriverSystemProperties.get(browser),
+				Paths.get(System.getProperty("user.home")).resolve("Downloads")
+						.resolve(browserDrivers.get(browser)).toAbsolutePath().toString());
+		if (browser.equals("chrome")) {
+			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+			ChromeOptions chromeOptions = new ChromeOptions();
+			// options for headless
+			if (headless) {
+				for (String optionAgrument : (new String[] { "headless",
+						"window-size=1200x800" })) {
+					chromeOptions.addArguments(optionAgrument);
+				}
+			}
+			capabilities
+					.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
+			DriverWrapper.add(remote ? "remote" : "chrome", capabilities);
+			// new exception from e.g. ChromeDriver 2.44:
+			// session not created: Chrome version must be >= 69.0.3497.0
+		} else if (browser.equals("firefox")) {
+			System
+					.setProperty("webdriver.firefox.bin",
+							osName.equals("windows") ? new File(
+									"c:/Program Files (x86)/Mozilla Firefox/firefox.exe")
+											.getAbsolutePath()
+									: "/usr/bin/firefox");
+			DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+			if (!remote) {
+				capabilities.setCapability("marionette", false);
+				// NOTE: toggling marionette with remote Vagrant hub-proxied browser
+				// leads
+				// to the exception org.openqa.selenium.WebDriverException:
+				// Timed out waiting 45 seconds for Firefox to start.
+			}
+			DriverWrapper.add(remote ? "remote" : "firefox", capabilities);
+		}
+		driver = DriverWrapper.current();
+
+	}
 
 	@SuppressWarnings("deprecation")
 	@BeforeMethod
@@ -62,6 +136,7 @@ public class TransaviaTest extends BaseTest {
 	// Если я почищю куки и буду заходить на http://transavia.com/ , то мне
 	// предлогает выбрать регион.
 	public void acknowledgeCookieTest() {
+		// wait for the server pocessing to take place
 		sleep(1000);
 		String pageTitle = driver.getTitle();
 		System.err.println("page: " + pageTitle);// Sorry to interrupt.
@@ -128,6 +203,20 @@ public class TransaviaTest extends BaseTest {
 			}
 		} else {
 			// there is no banner
+			System.err.println("Appears that there is no banner: current  URL: "
+					+ driver.getCurrentUrl());
+			sleep(1000);
+			TakesScreenshot screenshot = ((TakesScreenshot) driver);
+
+			File screenshotFile = screenshot.getScreenshotAs(OutputType.FILE);
+			// Move image file to new destination
+			try {
+				FileUtils.copyFile(screenshotFile, new File("c:\\temp\\UserID.jpg"));
+				System.err.println("Screen shot saved.");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.err.println("Exception (ignored): " + e.toString());
+			}
 		}
 	}
 }
