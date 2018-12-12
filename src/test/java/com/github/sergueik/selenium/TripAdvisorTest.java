@@ -280,12 +280,18 @@ public class TripAdvisorTest extends BaseTest {
 			// slurp
 		}
 		// compute the colors
-		matcher = Pattern.compile("\\((\\d+),(\\d+),(\\d+)\\)")
+		String matchStringWithBoundaries = "\\(\\b(\\d+)\\b, *\\b(\\d+)\\b, *\\b(\\d+)\\b\\)";
+		String matchString = "\\((\\d+), *(\\d+), *(\\d+)\\)";
+		System.err.println("Compute colors from " + colorAttribute);
+		matcher = Pattern.compile(matchStringWithBoundaries)
 				.matcher(colorAttribute);
 		if (matcher.find()) {
 			int blue = Integer.parseInt(matcher.group(3).toString());
 			System.err.println("Blue: " + blue);
 			assertTrue(blue >= 18);
+		} else {
+			System.err.println(
+					String.format("Matcher %s failed.", matchStringWithBoundaries));
 		}
 		System.err.println("color:" + colorAttribute);
 
