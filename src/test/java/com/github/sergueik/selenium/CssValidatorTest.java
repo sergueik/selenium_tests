@@ -9,24 +9,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.testng.annotations.Test;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
 
 /**
- * Selected test scenarios for Selenium WebDriver
+ * CssSelector Lexer test scenarios for NSelene WebDriver wrapper
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
 public class CssValidatorTest {
 
-	private boolean debug = false;
-	private static final CssValidator cssValidator = new CssValidator();
+	private boolean debug = true;
+	private static final CssValidator cssValidator = CssValidator.getInstance();
 
 	@SuppressWarnings("deprecation")
 	@BeforeClass
@@ -36,74 +30,80 @@ public class CssValidatorTest {
 
 	@Test(enabled = true)
 	public void cssSelectorComprehensiveTokenTest() {
+		// TODO: make cssValidator public method
 		String cssSelectorString = "body > h1[name='hello'] h2:nth-of-type(1)";
-		String tokenTest = cssValidator.getTokenTest();
-		tokenTest = "^([^ ~+>\\[]*(?:\\[[^\\]]+\\])*)(?:\\s*[ ~+>]\\s*([^ ~+>\\[].*))*$";
-		System.err.println(tokenTest);
-		Pattern pattern = Pattern.compile(tokenTest);
+		final String tokenValidator = cssValidator.getTokenValidator();
+		Pattern pattern = Pattern.compile(tokenValidator);
 		Matcher match = pattern.matcher(cssSelectorString);
 
-		boolean found_token = true;
-		boolean found_tail = true;
+		boolean foundToken = true;
+		boolean foundRemainder = true;
 		List<String> tokenBuffer = new ArrayList<>();
 		List<String> tailBuffer = new ArrayList<>();
-		int cnt = 0;
-		while (match.find() && found_token && found_tail && cnt < 100) {
+		int cnt = 0; // paranoid
+		while (match.find() && foundToken && foundRemainder && cnt < 100) {
 
 			if (match.group(1) == null || match.group(1) == "") {
-				found_token = false;
+				foundToken = false;
 			}
 			if (match.group(2) == null || match.group(2) == "") {
-				found_tail = false;
+				foundRemainder = false;
 			}
-			if (found_token) {
+			if (foundToken) {
 				tokenBuffer.add(match.group(1));
-				System.err
-						.println(String.format("Token = \"%s\"", tokenBuffer.get(cnt)));
+				if (debug) {
+					System.err.println(
+							String.format("Extracted token = \"%s\"", tokenBuffer.get(cnt)));
+				}
 			}
-			if (found_tail) {
-				tailBuffer.add(match.group(2));
-				System.err.println("Tail = " + tailBuffer.get(cnt));
-				match = pattern.matcher(match.group(2));
+			if (foundRemainder) {
+				String remainder = match.group(2);
+				tailBuffer.add(remainder);
+				if (debug) {
+					System.err
+							.println(String.format("Remaining of the CssSelector: \"%s\""
+									, remainder /* tailBuffer.get(cnt) */));
+				}
+				match = pattern.matcher(remainder);
 			}
 			cnt++;
 		}
-		for (String cssSelectorTokenString : tokenBuffer) {
-			assertTrue(
-					cssSelectorTokenString.matches(cssValidator.getAttributeTest()));
 
+		final String attributeValidator = cssValidator.getAttributeValidator();
+		for (String cssSelectorTokenString : tokenBuffer) {
+			assertTrue(cssSelectorTokenString.matches(attributeValidator));
 		}
 	}
 
 	@Test(enabled = true)
 	public void cssSelectorTokenTest() {
-		String cssSelector = "a > b > c";
-		assertTrue(cssSelector.matches(cssValidator.getTokenTest()));
+		String cssSelector = "a.class > b#id c:nth-of-type(1)";
+		assertTrue(cssSelector.matches(cssValidator.getTokenValidator()));
 	}
 
-	// fails
+	// NOTE: fails to fail
+	// passes because it is assumed to be one token
 	@Test(enabled = false)
 	public void xPathTokenTest() {
-		// TODO: passes because it is assumed to be one token
 		String xpath = "a/b//c[@class='main']";
-		assertFalse(xpath.matches(cssValidator.getTokenTest()));
+		assertFalse(xpath.matches(cssValidator.getTokenValidator()));
 	}
 
 	@Test(enabled = true)
 	public void cssSelectorAttributeTest() {
 		String cssSelector = "a[name*='home']";
-		assertTrue(cssSelector.matches(cssValidator.getAttributeTest()));
+		assertTrue(cssSelector.matches(cssValidator.getAttributeValidator()));
 	}
 
 	@Test(enabled = true)
 	public void xpathAttributeTest1() {
 		String xpath = "a[@name = 'home']";
-		assertFalse(xpath.matches(cssValidator.getAttributeTest()));
+		assertFalse(xpath.matches(cssValidator.getAttributeValidator()));
 	}
 
 	@Test(enabled = true)
 	public void xpathAttributeTest2() {
 		String xpath = "a[contains(text(), 'home')]";
-		assertFalse(xpath.matches(cssValidator.getAttributeTest()));
+		assertFalse(xpath.matches(cssValidator.getAttributeValidator()));
 	}
 }
