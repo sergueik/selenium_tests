@@ -33,7 +33,7 @@ public class CssValidator {
 	private static final String ELEMENT_AND_CONDITION_FOLLOWED_BY_DOM_NAV_EXTRACTOR = "^" + ELEMENT_AND_CONDITION + "($|(\\s*(" + DOM_NAV_RE + ")\\s*" + "([^" + DOM_NAVS + "].*)$))";
 	// @formatter:on
 
-	private static final String ELEMENT_AND_CONDITION_FOLLOWED_BY_DOM_NAV_EXTRACTOR_FIXED = "^([^ ~+>\\[]*(?:\\[[^\\]]+\\])*)(?:\\s*[ ~+>]\\s*([^ ~+>\\[].*))*$";
+	private static final String ELEMENT_AND_CONDITION_FOLLOWED_BY_DOM_NAV_EXTRACTOR_FIXED = "^([^ ~+>\\[]*(?:\\[[^\\]]+\\])*)($|\\s*[ ~+>]\\s*[^ ~+>\\[].*$)";
 
 	// origin: CssElementAttributeParser.java
 	// The following appears, because of excessive grouping
@@ -109,6 +109,19 @@ public class CssValidator {
 			}
 		}
 		return attributeValidator;
+	}
+
+	private static boolean reportedNavSeparator = false;
+	private final String navSeparator = DOM_NAV_RE;
+
+	public String getNavSeparator() {
+		if (debug) {
+			if (!reportedNavSeparator) {
+				System.err.println("Nav separator: " + navSeparator);
+				reportedNavSeparator = true;
+			}
+		}
+		return "^" + navSeparator;
 	}
 
 }
