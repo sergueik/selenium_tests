@@ -48,208 +48,48 @@ public class ValidatorsTest {
 		cssValidator.setDebug(debug);
 	}
 
-	private boolean xpathComprehensiveTokenTest(String xpathString) {
-
-		final String tokenValidator = xpathValidator.getTokenValidator();
-		Pattern pattern = Pattern.compile(tokenValidator);
-		Matcher match = pattern.matcher(xpathString);
-
-		boolean foundToken = true;
-		boolean foundRemainder = true;
-		boolean found = false;
-		List<String> tokenBuffer = new ArrayList<>();
-		List<String> tailBuffer = new ArrayList<>();
-		int cnt = 0; // paranoid
-		while (match.find() && foundToken && foundRemainder && cnt < 100) {
-
-			if (match.group(1) == null || match.group(1) == "") {
-				foundToken = false;
-			}
-			if (match.group(2) == null || match.group(2) == "") {
-				foundRemainder = false;
-			}
-			if (foundToken) {
-				tokenBuffer.add(match.group(1));
-				if (debug) {
-					System.err.println(
-							String.format("Extracted token: \"%s\"", tokenBuffer.get(cnt)));
-				}
-			}
-			if (foundRemainder) {
-				String remainder = match.group(2);
-				tailBuffer.add(remainder);
-				if (debug) {
-					System.err.println(
-							String.format("Remaining of the xpath: \"%s\"", remainder));
-				}
-				if (remainder.length() == 0) {
-					if (debug) {
-						System.err.println("Reached the end of the xpath string.");
-					}
-					found = true; // reached the end of the cssSelectorString string.
-												// Grammar is matched
-				} else {
-					match = pattern.matcher(remainder);
-				}
-			} else {
-				if (debug) {
-					System.err.println("Remainder of the string fails to match. ");
-				}
-			}
-			cnt++;
-		}
-		// assertTrue(found);
-		// Condition Extractor not implemented in XPathValidator yet
-		return found;
-	}
-
 	@SuppressWarnings("unused")
 	@Test(enabled = true)
-	public void xpathComprehensiveTokenTest2() {
+	public void xpathComprehensiveTokenPositiveTest() {
 		String xpathString = "a[@class='main']/b//c[@class='main']";
-		assertTrue(xpathComprehensiveTokenTest(xpathString));
+		assertTrue(xpathValidator.comprehensiveTokenTest(xpathString));
 	}
 
 	@SuppressWarnings("unused")
 	@Test(enabled = true)
-	public void xpathComprehensiveTokenTest3() {
+	public void xpathComprehensiveTokenNegativeTest() {
 		String cssSelectorString = "body > h1[name='hello'] h2:nth-of-type(1) div";
-		assertFalse(xpathComprehensiveTokenTest(cssSelectorString));
+		assertFalse(xpathValidator.comprehensiveTokenTest(cssSelectorString));
 	}
 
-	@SuppressWarnings("unused")
 	@Test(enabled = true)
-	public void xpathComprehensiveTokenTest1() {
-		// TODO: convert into xpathValidator.ComprehensiveTokenTest public method
+	public void xpathComprehensiveTokenNegativeTextTest() {
+		String textString = "hello world";
+		assertFalse(xpathValidator.comprehensiveTokenTest(textString));
+	}
+
+	@Test(enabled = true)
+	public void cssSelectorComprehensiveTokenPositiveTest() {
+		String cssSelectorString = "body > h1[name='hello'] h2:nth-of-type(1) div";
+		assertFalse(cssValidator.comprehensiveTokenTest(cssSelectorString));
+	}
+
+	@Test(enabled = true)
+	public void cssSelectorComprehensiveTokenNegativeTest() {
 		String xpathString = "a[@class='main']/b//c[@class='main']";
-		if (false) {
-			final String tailMatchString = "(\\s*//?\\s*[^ /\\[].*)$"; // one modifier
-			Pattern tailPattern = Pattern.compile(tailMatchString);
-			Matcher tailMatch = tailPattern.matcher(xpathString);
-			if (tailMatch.find()) {
-				System.err.println("Tail match: " + tailMatch.group(1));
-
-			} else {
-				System.err.println("Tail match failed. ");
-			}
-
-		}
-		final String tokenValidator = xpathValidator.getTokenValidator();
-		Pattern pattern = Pattern.compile(tokenValidator);
-		Matcher match = pattern.matcher(xpathString);
-
-		boolean foundToken = true;
-		boolean foundRemainder = true;
-		boolean found = false;
-		List<String> tokenBuffer = new ArrayList<>();
-		List<String> tailBuffer = new ArrayList<>();
-		int cnt = 0; // paranoid
-		while (match.find() && foundToken && foundRemainder && cnt < 100) {
-
-			if (match.group(1) == null || match.group(1) == "") {
-				foundToken = false;
-			}
-			if (match.group(2) == null || match.group(2) == "") {
-				foundRemainder = false;
-			}
-			if (foundToken) {
-				tokenBuffer.add(match.group(1));
-				if (debug) {
-					System.err.println(
-							String.format("Extracted token: \"%s\"", tokenBuffer.get(cnt)));
-				}
-			}
-			if (foundRemainder) {
-				String remainder = match.group(2);
-				tailBuffer.add(remainder);
-				if (debug) {
-					System.err.println(
-							String.format("Remaining of the xpath: \"%s\"", remainder));
-				}
-				if (remainder.length() == 0) {
-					if (debug) {
-						System.err.println("Reached the end of the xpath string.");
-					}
-					found = true; // reached the end of the cssSelectorString string.
-												// Grammar is matched
-				} else {
-					match = pattern.matcher(remainder);
-				}
-			} else {
-				if (debug) {
-					System.err.println("Remainder of the string fails to match. ");
-				}
-			}
-			cnt++;
-		}
-		assertTrue(found);
-		// Condition Extractor not implemented in XPathValidator yet
+		assertFalse(cssValidator.comprehensiveTokenTest(xpathString));
 	}
 
-	@Test(enabled = true)
-	public void cssSelectorComprehensiveTokenTest1() {
-		// TODO: convert into cssValidator.ComprehensiveToken public method
-		String cssSelectorString = "body > h1[name='hello'] h2:nth-of-type(1) div";
-		final String tokenValidator = cssValidator.getTokenValidator();
-		Pattern pattern = Pattern.compile(tokenValidator);
-		Matcher match = pattern.matcher(cssSelectorString);
-		boolean found = false;
-		boolean foundToken = true;
-		boolean foundRemainder = true;
-		List<String> tokenBuffer = new ArrayList<>();
-		List<String> tailBuffer = new ArrayList<>();
-		int cnt = 0; // paranoid
-		while (match.find() && foundToken && foundRemainder && cnt < 100) {
-
-			if (match.group(1) == null || match.group(1) == "") {
-				foundToken = false;
-			}
-			if (match.group(2) == null /* || match.group(2) == "" */) {
-				foundRemainder = false;
-			}
-
-			if (foundToken) {
-				String token = match.group(1);
-				tokenBuffer.add(token);
-				if (debug) {
-					System.err.println(
-							String.format("Extracted token = \"%s\"", tokenBuffer.get(cnt)));
-				}
-			}
-			// NOTE the difference between cssSelector and xpath tokens: a valid
-			// cssSelectoron can not start with
-			// DOM nav, so we chop it away explcitly from the remainder
-			if (foundRemainder) {
-				String remainderWithNavPrefix = match.group(2);
-				String navSeparator = cssValidator.getNavSeparator();
-				String remainder = remainderWithNavPrefix.replaceAll(navSeparator, "");
-				tailBuffer.add(remainder);
-				if (debug) {
-					System.err
-							.println(String.format("Remaining of the CssSelector: \"%s\"",
-									remainder /* tailBuffer.get(cnt) */));
-				}
-				if (remainder.length() == 0) {
-					if (debug) {
-						System.err.println("Reached the end of the cssSelector string.");
-					}
-					found = true; // reached the end of the cssSelectorString string.
-												// Grammar is matched
-				} else {
-					match = pattern.matcher(remainder);
-				}
-			} else {
-				if (debug) {
-					System.err.println("Remainder of the string fails to match. ");
-				}
-			}
-			cnt++;
-		}
-		// assertTrue(found);
-		final String attributeValidator = cssValidator.getAttributeValidator();
-		for (String cssSelectorTokenString : tokenBuffer) {
-			assertTrue(cssSelectorTokenString.matches(attributeValidator));
-		}
+	// NOTE: will fail to fail unless
+	// one enforces some ad.hoc conditions on cssSelector to be 
+	// distinguishable from the plain English text,
+	// like e.g. enforcing token to always contain common
+	// page tag names "a", "td", "div", "span", "input" etc.
+	// or have a ".className", "#id" or a condition "[attibute = value]" attached.
+	@Test(enabled = false)
+	public void cssSelectorComprehensiveTokenNegativeTextTest() {
+		String textString = "hello world";
+		assertFalse(cssValidator.comprehensiveTokenTest(textString));
 	}
 
 	@Test(enabled = false)

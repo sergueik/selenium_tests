@@ -1,5 +1,12 @@
 package com.github.sergueik.selenium;
 
+import static org.testng.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * CSS Lexer-based validator for NSelene WebDriver wrapper .net project
  * https://www.w3.org/TR/CSS21/grammar.html
@@ -124,4 +131,68 @@ public class CssValidator {
 		return "^" + navSeparator;
 	}
 
+	public boolean comprehensiveTokenTest(String cssSelectorString) {
+		Pattern pattern = Pattern.compile(tokenValidator);
+		Matcher match = pattern.matcher(cssSelectorString);
+		boolean found = false;
+		boolean foundToken = true;
+		boolean foundRemainder = true;
+		List<String> tokenBuffer = new ArrayList<>();
+		List<String> tailBuffer = new ArrayList<>();
+		int tokenCnt = 0;
+		int maxTokenCnt = 100; // paranoid
+		while (match.find() && foundToken && foundRemainder
+				&& tokenCnt < maxTokenCnt) {
+
+			if (match.group(1) == null || match.group(1) == "") {
+				foundToken = false;
+			}
+			if (match.group(2) == null /* || match.group(2) == "" */ ) {
+				foundRemainder = false;
+			}
+
+			if (foundToken) {
+				String token = match.group(1);
+				tokenBuffer.add(token);
+				if (debug) {
+					System.err.println(String.format("Extracted token = \"%s\"",
+							tokenBuffer.get(tokenCnt)));
+				}
+			}
+			// NOTE the difference between cssSelector and XPath tokens: a valid
+			// cssSelectoron can not start with
+			// DOM nav, so we chop it away explicitly from the remainder
+			if (foundRemainder) {
+				String remainderWithNavPrefix = match.group(2);
+				String remainder = remainderWithNavPrefix.replaceAll(navSeparator, "");
+				tailBuffer.add(remainder);
+				if (debug) {
+					System.err.println(
+							String.format("Remaining of the CssSelector: \"%s\"", remainder));
+				}
+				if (remainder.length() == 0) {
+					if (debug) {
+						System.err.println("Reached the end of the cssSelector string.");
+					}
+					found = true; // reached the end of the cssSelectorString string.
+												// Grammar is matched
+				} else {
+					match = pattern.matcher(remainder);
+				}
+			} else {
+				if (debug) {
+					System.err.println("Remainder of the string fails to match. ");
+				}
+			}
+			tokenCnt++;
+		}
+		if (found) {
+			for (String cssSelectorTokenString : tokenBuffer) {
+				if (!cssSelectorTokenString.matches(attributeValidator)) {
+					found = false;
+				}
+			}
+		}
+		return found;
+	}
 }
