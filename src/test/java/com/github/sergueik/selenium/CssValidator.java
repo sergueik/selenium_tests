@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CSS Lexer-based validator for NSelene WebDriver wrapper .net project
+ * CSS Lexer-style validator for NSelene WebDriver wrapper .net project
  * https://www.w3.org/TR/CSS21/grammar.html
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
@@ -79,9 +79,9 @@ public class CssValidator {
 
 	// Shortened grammar expression:
 
-// @formatter:off
-	private static final String CSS_CONDTION_EXTRACTOR_FIXED = "(?i)^(-?[_a-z]+[_a-z0-9-]*|\\*)?(:[a-z][a-z\\-]*[(][^)]+[)]?|(\\[\\s*(-?[_a-z]+[_a-z0-9-]*)\\s*(\\=|\\~=|\\|=|\\^=|\\$=|\\*=)?\\s*([\"'][-_.#a-z0-9:\\/ ]+[\"']|[-_.#a-z0-9:\\/]+)?\\s*\\]))*$";
-// @formatter:on
+//@formatter:off
+	private static final String CSS_CONDTION_EXTRACTOR_FIXED = "(?i)^(-?[_a-z]+[_a-z0-9-]*|\\*)?(#[_a-z0-9-]*)?(\\.[_a-z0-9-]*)?(:[a-z][a-z\\-]*\\([^)]+\\))?(\\[\\s*-?[_a-z]+[_a-z0-9-]*\\s*(\\=|\\~=|\\|=|\\^=|\\$=|\\*=)?\\s*([\"'][-_.#a-z0-9:\\/ ]+[\"']|[-_.#a-z0-9:\\/]+)?\\s*\\])*$";
+//@formatter:on
 
 	@SuppressWarnings("unused")
 	private boolean debug = false;
@@ -164,7 +164,8 @@ public class CssValidator {
 			// DOM nav, so we chop it away explicitly from the remainder
 			if (foundRemainder) {
 				String remainderWithNavPrefix = match.group(2);
-				String remainder = remainderWithNavPrefix.replaceAll(navSeparator, "");
+				String remainder = remainderWithNavPrefix.replaceAll("^" + navSeparator,
+						"");
 				tailBuffer.add(remainder);
 				if (debug) {
 					System.err.println(
@@ -188,6 +189,18 @@ public class CssValidator {
 		}
 		if (found) {
 			for (String cssSelectorTokenString : tokenBuffer) {
+				if (debug) {
+					// NOTE: run assertion without throwing an exception since it could be
+					// reached from the
+					// comprehensive Negative tests
+					try {
+						assertTrue(cssSelectorTokenString.matches(attributeValidator),
+								String.format("the token \"%s\"to be a valid CssSelector token",
+										cssSelectorTokenString));
+					} catch (AssertionError e) {
+
+					}
+				}
 				if (!cssSelectorTokenString.matches(attributeValidator)) {
 					found = false;
 				}

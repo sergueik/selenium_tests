@@ -16,7 +16,8 @@ import org.testng.annotations.Test;
 
 public class ValidatorsTest {
 
-	private boolean debug = false;
+	private boolean debug = Boolean.parseBoolean(System.getenv("DEBUG"));
+	// set to true to enable
 	private static final CssValidator cssValidator = CssValidator.getInstance();
 	private static final XPathValidator xpathValidator = XPathValidator
 			.getInstance();
@@ -28,31 +29,31 @@ public class ValidatorsTest {
 	}
 
 	@Test(dataProvider = "Valid XPaths", enabled = true)
-	public void xpathComprehensiveTokenPositiveTest(String xpath) {
+	public void xpathComprehensivePositiveTest(String xpath) {
 		assertTrue(xpathValidator.comprehensiveTokenTest(xpath),
 				String.format("\"%s\"to be valid XPath", xpath));
 	}
 
 	@Test(dataProvider = "Valid CssSelectors", enabled = true)
-	public void xpathComprehensiveTokenNegativeTest(String cssSelector) {
+	public void xpathComprehensiveNegativeTest(String cssSelector) {
 		assertFalse(xpathValidator.comprehensiveTokenTest(cssSelector),
 				String.format("the CSS selector \"%s\"to be valid XPath (not really)",
 						cssSelector));
 	}
 
 	@Test(dataProvider = "Texts", enabled = true)
-	public void xpathComprehensiveTokenNegativeTextTest(String textString) {
+	public void xpathComprehensiveNegativeTextTest(String textString) {
 		assertFalse(xpathValidator.comprehensiveTokenTest(textString));
 	}
 
 	@Test(dataProvider = "Valid CssSelectors", enabled = true)
-	public void cssSelectorComprehensiveTokenPositiveTest(String cssSelector) {
-		assertFalse(cssValidator.comprehensiveTokenTest(cssSelector),
+	public void cssSelectorComprehensivePositiveTest(String cssSelector) {
+		assertTrue(cssValidator.comprehensiveTokenTest(cssSelector),
 				String.format("\"%s\"to be valid CSS selector", cssSelector));
 	}
 
 	@Test(dataProvider = "Valid XPaths", enabled = true)
-	public void cssSelectorComprehensiveTokenNegativeTest(String xpath) {
+	public void cssSelectorComprehensiveNegativeTest(String xpath) {
 		assertFalse(cssValidator.comprehensiveTokenTest(xpath), String.format(
 				"the XPath \"%s\"to be valid CSS selector (not really)", xpath));
 	}
@@ -98,7 +99,7 @@ public class ValidatorsTest {
 	// Valid cssSelectors data
 	@DataProvider(name = "Valid CssSelectors")
 	public Object[][] Data1() {
-		return new Object[][] { { "a.class > b#id c:nth-of-type(1)" },
+		return new Object[][] { { "a.class > b#id  c:nth-of-type(1)" },
 				{ "div.class ~ input#id" },
 				{ "body > h1[name='hello'] h2:nth-of-type(1) div" }, };
 	}
@@ -108,16 +109,11 @@ public class ValidatorsTest {
 	public Object[][] Data2() {
 		return new Object[][] { { "div:nth-of-type(1)" },
 				{ "input[type='submit']" }, { "div[class*='ng']" },
-				{ "h1[name='hello']" }, { "input[name^='Pass']" }, };
-	}
-
-	// TODO: need to modify Condition extractor to allow simple id and class
-	// TODO: also mis-recognized as a valid XPath
-	@DataProvider(name = "Unrecognized Valid CssSelector Conditions")
-	public Object[][] Data2B() {
-		return new Object[][] { { "input#id" }, { "div.class" },
-				// derivatives
-				{ "input#id[name^='Pass']" }, { "input.class[name^='Pass']" }, };
+				{ "h1[name='hello']" }, { "input[name^='Pass']" }, { "input#id" },
+				{ "div.class" },
+				// combinations
+				{ "div.class:nth-of-type(1)" }, { "input#id[name^='Pass']" },
+				{ "input.class[name^='Pass']" }, };
 	}
 
 	// Valid XPath data
