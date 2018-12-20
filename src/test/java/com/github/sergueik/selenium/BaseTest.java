@@ -773,10 +773,16 @@ public class BaseTest {
 	// https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/interactions/internal/Coordinates.html
 	// https://www.programcreek.com/java-api-examples/index.php?api=org.openqa.selenium.interactions.internal.Coordinates
 	public void scrolltoElement(WebElement element) {
-		Coordinates coordinate = ((Locatable) element).getCoordinates();
-		// coordinate.onScreen()
-		coordinate.onPage();
-		coordinate.inViewPort();
+		Coordinates coordinate;
+		try {
+			coordinate = ((Locatable) element).getCoordinates();
+			// coordinate.onScreen()
+			coordinate.onPage();
+			coordinate.inViewPort();
+		} catch (ClassCastException e) {
+			System.err.println("Exception (ignored)" + e.toString());
+			actions.moveToElement(element).build().perform();
+		}
 	}
 
 	protected String cssSelectorOfElement(WebElement element) {
@@ -863,13 +869,17 @@ public class BaseTest {
 
 		}
 		scrolltoElement(element);
+		highlight(element);
+		sleep(1000);
 		// Click on the anchor element
+
 		element.click();
 		Set<String> newHandles = driver.getWindowHandles();
 
 		newHandles.removeAll(oldHandles);
 		// the remaining item is the new window handle
 		for (String handle : newHandles) {
+			System.err.println("Returning hanlde: " + handle);
 			return handle;
 		}
 		return null;
@@ -918,7 +928,9 @@ public class BaseTest {
 	protected void close(String windowHandle) {
 		switchToWindow(windowHandle).close();
 		handle = null;
-		driver.switchTo().window(parentHandle);
+		if (parentHandle != null) {
+			driver.switchTo().window(parentHandle);
+		}
 	}
 
 	protected WebDriver switchToWindow(String windowHandle) {
