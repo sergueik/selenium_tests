@@ -11,6 +11,7 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -62,7 +63,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void failedMultilineTextSearchTest() {
 		List<WebElement> elements = driver
 				.findElements(By.cssSelector(elementCssSelector));
@@ -79,7 +80,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void failedReciprocalMultilineTextSearchTest() {
 		List<WebElement> elements = driver
 				.findElements(By.cssSelector(elementCssSelector));
@@ -96,7 +97,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void splitPartMultilineTextSearchTest() {
 		List<WebElement> elements = driver
 				.findElements(By.cssSelector(elementCssSelector));
@@ -121,17 +122,11 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 				.findElements(By.cssSelector(elementCssSelector));
 		for (String line : elements.get(0).getText().split("\r?\n")) {
 			try {
-				String result = cssContainingText(line.replaceAll("\r?", ""));
-				System.err.println("Result: " + result);
+				WebElement result = findInnerMostByCssSelectorAndInnerText(null, line.replaceAll("\r?", ""));
+				System.err.println("Result(text): " + result.getText());
 			} catch (NoSuchElementException e) {
 				System.err.println("Exception (ignored): " + e.toString());
 			}
 		}
 	}
-
-	protected String cssContainingText(String elementText) {
-		return (String) executeScript(getScriptContent("cssContainingText.js"), "*",
-				elementText);
-	}
-
 }

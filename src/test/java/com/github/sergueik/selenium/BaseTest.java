@@ -59,6 +59,8 @@ import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebElement;
+
 // https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/support/ui/FluentWait.html#pollingEvery-java.time.Duration-
 // NOTE: needs java.time.Duration not the org.openqa.selenium.support.ui.Duration;
 import java.time.Duration;
@@ -803,6 +805,18 @@ public class BaseTest {
 	protected String xpathOfElement(WebElement element) {
 		return (String) executeScript(getScriptContent("xpathOfElement.js"),
 				new Object[] { element });
+	}
+
+	protected RemoteWebElement findInnerMostByCssSelectorAndInnerText(
+			String elementLocator, String elementText) {
+		return (RemoteWebElement) executeScript(
+				getScriptContent("findInnerMostByCssSelectorAndInnerText.js"),
+				elementLocator, elementText);
+	}
+
+	protected RemoteWebElement findInnerMostByCssSelectorAndInnerText(
+			String elementText) {
+		return findInnerMostByCssSelectorAndInnerText(null, elementText);
 	}
 
 	protected boolean isElementNotVisible(By locator) {

@@ -1,17 +1,19 @@
 /**
  * Find elements by css selector and textual content.
- *
+ * Based on: Protractor clientLibrary API
+ * @param {string} cssSelector The css selector to match. When not provided, set to 'body *'  
  * @param {string} searchText exact text or a serialized RegExp to search for
  *
- * @return last element in the array of matching elements.
+ * @return last element in the array of matching elements (the innermost matching element is taken to the caller).
  */
-var findByCssContainingText = function(сssSelector, searchText) {
+var findInnerMostByCssSelectorAndInnerText = function(сssSelector, searchText) {
   if (сssSelector == null || сssSelector == '' ) {
     _cssSelector = 'body *';
   } else {
 	    _cssSelector = сssSelector;
   }
-  if (debug != null  && debug ) {
+  var _debug = false;
+  if (_debug != null  && _debug ) {
     alert(_cssSelector);
   }
   var elements = document.querySelectorAll(_cssSelector);
@@ -24,11 +26,12 @@ var findByCssContainingText = function(сssSelector, searchText) {
     }
   }
   var result  = matches[matches.length - 1];
-  alert("result: " + result.innerText); 
+  if (_debug != null  && _debug ) {
+    alert("result: " + result.innerText); 
+  }
   return result; 
 };
 
-var using = arguments[0] || document;
-var cssSelector = arguments[1];
-var searchText = arguments[2];
-return findByCssContainingText(cssSelector, searchText);
+var cssSelector = arguments[0];
+var searchText = arguments[1];
+return findInnerMostByCssSelectorAndInnerText(cssSelector, searchText);
