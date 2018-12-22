@@ -645,16 +645,20 @@ public class BaseTest {
 		if (driver instanceof JavascriptExecutor) {
 			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class
 					.cast(driver);
+			/*
+			 * 
+			 // currently unsafe
 			System.err.println(arguments.length + " arguments received.");
 			String argStr = "";
-
+			
 			for (int i = 0; i < arguments.length; i++) {
 				argStr = argStr + " "
 						+ (arguments[i] == null ? "null" : arguments[i].toString());
 			}
-
+			
 			System.err.println("Calling " + script.substring(0, 40)
-					+ "...\nwith arguments: " + argStr);
+					+ "..." + \n" + "with arguments: " + argStr);
+					*/
 			return javascriptExecutor.executeScript(script, arguments);
 		} else {
 			throw new RuntimeException("Script execution failed.");
@@ -834,7 +838,6 @@ public class BaseTest {
 				getScriptContent("findByCssSelectorAndInnerText.js"), elementLocator,
 				elementText, debug);
 	}
-
 
 	protected boolean isElementNotVisible(By locator) {
 		try {

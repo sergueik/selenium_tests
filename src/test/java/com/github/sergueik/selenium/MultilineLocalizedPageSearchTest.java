@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
 // NOTE: chrome.exe cleanup allows leftover browser processes
 public class MultilineLocalizedPageSearchTest extends BaseTest {
 
-	private static final boolean debug = true;
+	private static final boolean debug = false;
 	private static final StringBuffer verificationErrors = new StringBuffer();
 
 	private static String baseURL = "http://www.rfbr.ru/rffi/ru/";
@@ -124,7 +124,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void alternativeMultilineTextSearchTest() {
 		List<WebElement> elements = driver
 				.findElements(By.cssSelector(elementCssSelector));
@@ -134,7 +134,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 						line.replaceAll("\r?", ""));
 				if (result != null) {
 					System.err.println("Result(text): " + result.getText());
-					highlight(result);
+					highlight(result,1000);
 				}
 
 			} catch (NoSuchElementException e) {
@@ -143,7 +143,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void fullMultilineTextSearchTest() {
 		WebElement element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.cssSelector(elementCssSelector))));
@@ -154,7 +154,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 					element.getText().replace("\n", "").replace("\r", ""));
 			if (result != null) {
 				System.err.println("Result(text): " + result.getText());
-				highlight(result);
+				highlight(result,1000);
 			} else {
 				System.err.println("Nothing found.");
 			}
