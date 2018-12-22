@@ -646,7 +646,7 @@ public class BaseTest {
 			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class
 					.cast(driver);
 			/*
-			 * 
+			 *
 			 // currently unsafe
 			System.err.println(arguments.length + " arguments received.");
 			String argStr = "";
@@ -831,7 +831,15 @@ public class BaseTest {
 		return findByCssSelectorAndInnerText(null, elementText, false);
 	}
 
-	// Alternative to XPath strategy "//{0}[contains(text(),'{1}'))"
+	// Alternative to an XPath selector
+	// "//*[contains(text(),'${text_to_find}'))"
+	// or its longer and more fragile alternative:
+	// "//*/text()[contains(normalize-space(translate(string(.), '\t\n\r\u00a0', '    ')), '${text_to_find}')]/parent::*"
+	// uses core DOM API
+	// https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
+	// basically to scan the DOM, unless a nonempty elementLocator is provided
+	// then returns the last element in the array of matching elements -
+	// presumably the innermost matching element
 	protected RemoteWebElement findByCssSelectorAndInnerText(
 			String elementLocator, String elementText, boolean debug) {
 		return (RemoteWebElement) executeScript(
