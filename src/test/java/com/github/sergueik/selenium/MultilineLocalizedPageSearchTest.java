@@ -122,11 +122,38 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 				.findElements(By.cssSelector(elementCssSelector));
 		for (String line : elements.get(0).getText().split("\r?\n")) {
 			try {
-				WebElement result = findInnerMostByCssSelectorAndInnerText(null, line.replaceAll("\r?", ""));
-				System.err.println("Result(text): " + result.getText());
+				WebElement result = super.findByCssSelectorAndInnerText(null,
+						line.replaceAll("\r?", ""));
+				if (result != null) {
+					System.err.println("Result(text): " + result.getText());
+					highlight(result);
+				}
+
 			} catch (NoSuchElementException e) {
 				System.err.println("Exception (ignored): " + e.toString());
 			}
 		}
 	}
+
+	@Test(enabled = true)
+	public void fullMultilineTextSearchTest() {
+		WebElement element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(elementCssSelector))));
+		try {
+			// trim it all - the findByCssSelectorAndInnerText uses textContent, that
+			// is being trimmed
+			WebElement result = super.findByCssSelectorAndInnerText(null,
+					element.getText().replace("\n", "").replace("\r",
+							"") /* TODO: , debug =true */ );
+			if (result != null) {
+				System.err.println("Result(text): " + result.getText());
+				highlight(result);
+			} else {
+				System.err.println("Nothing found.");
+			}
+		} catch (NoSuchElementException e) {
+			System.err.println("Exception (ignored): " + e.toString());
+		}
+	}
+
 }

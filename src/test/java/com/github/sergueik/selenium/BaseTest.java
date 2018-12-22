@@ -807,16 +807,17 @@ public class BaseTest {
 				new Object[] { element });
 	}
 
-	protected RemoteWebElement findInnerMostByCssSelectorAndInnerText(
+	// Alternative to XPath strategy "//{0}[contains(text(),'{1}'))"
+	protected RemoteWebElement findByCssSelectorAndInnerText(
 			String elementLocator, String elementText) {
 		return (RemoteWebElement) executeScript(
-				getScriptContent("findInnerMostByCssSelectorAndInnerText.js"),
+				getScriptContent("findByCssSelectorAndInnerText.js"),
 				elementLocator, elementText);
 	}
 
-	protected RemoteWebElement findInnerMostByCssSelectorAndInnerText(
+	protected RemoteWebElement findByCssSelectorAndInnerText(
 			String elementText) {
-		return findInnerMostByCssSelectorAndInnerText(null, elementText);
+		return findByCssSelectorAndInnerText(null, elementText);
 	}
 
 	protected boolean isElementNotVisible(By locator) {
