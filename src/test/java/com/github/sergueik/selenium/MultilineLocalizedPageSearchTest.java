@@ -9,6 +9,7 @@ import java.util.Set;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.NoSuchWindowException;
+import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebElement;
@@ -29,6 +30,7 @@ import org.testng.annotations.Test;
 // NOTE: chrome.exe cleanup allows leftover browser processes
 public class MultilineLocalizedPageSearchTest extends BaseTest {
 
+	private static final boolean debug = true;
 	private static final StringBuffer verificationErrors = new StringBuffer();
 
 	private static String baseURL = "http://www.rfbr.ru/rffi/ru/";
@@ -60,7 +62,13 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 			System.err.println(
 					"Execption(ignore) when trying to AfterMethod go to blank page: "
 							+ e.toString());
+			/*
+		} catch (UnhandledAlertException e) {
+			// cannot ignore: would lead to dramatic errors
+			 
+			 */
 		}
+
 	}
 
 	@Test(enabled = false)
@@ -116,7 +124,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void alternativeMultilineTextSearchTest() {
 		List<WebElement> elements = driver
 				.findElements(By.cssSelector(elementCssSelector));
@@ -135,7 +143,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void fullMultilineTextSearchTest() {
 		WebElement element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.cssSelector(elementCssSelector))));
@@ -143,8 +151,7 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 			// trim it all - the findByCssSelectorAndInnerText uses textContent, that
 			// is being trimmed
 			WebElement result = super.findByCssSelectorAndInnerText(null,
-					element.getText().replace("\n", "").replace("\r",
-							"") /* TODO: , debug =true */ );
+					element.getText().replace("\n", "").replace("\r", ""));
 			if (result != null) {
 				System.err.println("Result(text): " + result.getText());
 				highlight(result);
@@ -153,6 +160,30 @@ public class MultilineLocalizedPageSearchTest extends BaseTest {
 			}
 		} catch (NoSuchElementException e) {
 			System.err.println("Exception (ignored): " + e.toString());
+		}
+	}
+
+	// only enable when debug - the test will fail with an
+	// org.openqa.selenium.UnhandledAlertException
+	@Test(enabled = debug)
+	public void fullMultilineTextSearchDebugTest() {
+		System.err.println("Waiting 30 sec to allow open Developer console");
+		sleep (30000); // open Developer console
+		WebElement element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(elementCssSelector))));
+		try {
+			WebElement result = super.findByCssSelectorAndInnerText(null,
+					element.getText().replace("\n", "").replace("\r", ""), debug);
+			if (result != null) {
+				System.err.println("Result(text): " + result.getText());
+				highlight(result);
+			} else {
+				System.err.println("Nothing found.");
+			}
+		} catch (NoSuchElementException e) {
+			System.err.println("Exception (ignored): " + e.toString());
+		} catch (UnhandledAlertException e) {
+			// ignore
 		}
 	}
 

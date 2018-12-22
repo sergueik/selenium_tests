@@ -640,10 +640,21 @@ public class BaseTest {
 		}
 	}
 
+	// http://www.javawithus.com/tutorial/using-ellipsis-to-accept-variable-number-of-arguments
 	public Object executeScript(String script, Object... arguments) {
 		if (driver instanceof JavascriptExecutor) {
 			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class
 					.cast(driver);
+			System.err.println(arguments.length + " arguments received.");
+			String argStr = "";
+
+			for (int i = 0; i < arguments.length; i++) {
+				argStr = argStr + " "
+						+ (arguments[i] == null ? "null" : arguments[i].toString());
+			}
+
+			System.err.println("Calling " + script.substring(0, 40)
+					+ "...\nwith arguments: " + argStr);
 			return javascriptExecutor.executeScript(script, arguments);
 		} else {
 			throw new RuntimeException("Script execution failed.");
@@ -807,18 +818,23 @@ public class BaseTest {
 				new Object[] { element });
 	}
 
-	// Alternative to XPath strategy "//{0}[contains(text(),'{1}'))"
 	protected RemoteWebElement findByCssSelectorAndInnerText(
 			String elementLocator, String elementText) {
-		return (RemoteWebElement) executeScript(
-				getScriptContent("findByCssSelectorAndInnerText.js"),
-				elementLocator, elementText);
+		return findByCssSelectorAndInnerText(elementLocator, elementText, false);
 	}
 
-	protected RemoteWebElement findByCssSelectorAndInnerText(
-			String elementText) {
-		return findByCssSelectorAndInnerText(null, elementText);
+	protected RemoteWebElement findByCssSelectorAndInnerText(String elementText) {
+		return findByCssSelectorAndInnerText(null, elementText, false);
 	}
+
+	// Alternative to XPath strategy "//{0}[contains(text(),'{1}'))"
+	protected RemoteWebElement findByCssSelectorAndInnerText(
+			String elementLocator, String elementText, boolean debug) {
+		return (RemoteWebElement) executeScript(
+				getScriptContent("findByCssSelectorAndInnerText.js"), elementLocator,
+				elementText, debug);
+	}
+
 
 	protected boolean isElementNotVisible(By locator) {
 		try {
