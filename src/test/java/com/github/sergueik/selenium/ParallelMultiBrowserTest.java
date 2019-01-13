@@ -1,8 +1,26 @@
 package com.github.sergueik.selenium;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+// import static org.hamcrest.Matchers.matchesRegex;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+// https://matchers.jcabi.com/regex-matchers.html
+// https://stackoverflow.com/questions/8505153/assert-regex-matches-in-junit
+// https://piotrga.wordpress.com/2009/03/27/hamcrest-regex-matcher/
+// http://hamcrest.org/JavaHamcrest/javadoc/2.0.0.0/org/hamcrest/text/MatchesPattern.html
+// https://www.baeldung.com/hamcrest-text-matchers
+
+// https://matchers.jcabi.com/regex-matchers.html
+// import com.jcabi.matchers.RegexMatchers;
+
+import org.hamcrest.MatcherAssert;
+
+import java.util.regex.Pattern;
+import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -50,6 +68,7 @@ public class ParallelMultiBrowserTest {
 	private static final boolean headless = Boolean
 			.parseBoolean(System.getenv("HEADLESS"));
 	public WebDriver driver;
+	private static final String searchString = "Тестовое задание";
 	public WebDriverWait wait;
 	public Actions actions;
 	public Alert alert;
@@ -65,10 +84,20 @@ public class ParallelMultiBrowserTest {
 	@SuppressWarnings("unused")
 	private static long highlightInterval = 100;
 
-	@DataProvider(name = "browser-provider", parallel = true)
-	public Object[][] provide() throws Exception {
-		return new Object[][] { { "firefox", "input[name*='q']" },
-				{ "chrome", "input[name='q']" }, };
+	// NOTE: pass distinct base url and locators to parallel tests for debugging
+	@DataProvider(name = "same-browser-provider", parallel = true)
+	public Object[][] provideSameBrowser() throws Exception {
+		return new Object[][] {
+				{ "firefox", "https://www.google.com/?hl=ru", "input[name*='q']" },
+				{ "firefox", "https://www.google.com/?hl=ko", "input[name='q']" }, };
+	}
+
+	// NOTE: pass distinct base url and locators to parallel tests for debugging
+	@DataProvider(name = "different-browser-provider", parallel = true)
+	public Object[][] provideDiffernetBrowser() throws Exception {
+		return new Object[][] {
+				{ "chrome", "https://www.google.com/?hl=ru", "input[name*='q']" },
+				{ "firefox", "https://www.google.com/?hl=ko", "input[name='q']" }, };
 	}
 
 	private static final Map<String, String> browserDrivers = new HashMap<>();
@@ -86,10 +115,10 @@ public class ParallelMultiBrowserTest {
 		browserDriverSystemProperties.put("firefox", "webdriver.gecko.driver");
 		browserDriverSystemProperties.put("edge", "webdriver.edge.driver");
 	}
-	public String baseURL = "http://google.com";
 
-	@Test(dataProvider = "browser-provider", threadPoolSize = 2)
-	public void googleSearchTest(String browser, String cssSelector) {
+	@Test(enabled = false, dataProvider = "same-browser-provider", threadPoolSize = 2)
+	public void googleBadSearchTest(String browser, String baseURL,
+			String cssSelector) {
 
 		System.err.println("Launching " + browser + (remote ? " remotely" : ""));
 		System.setProperty(browserDriverSystemProperties.get(browser),
@@ -108,8 +137,9 @@ public class ParallelMultiBrowserTest {
 			capabilities
 					.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
 			DriverWrapper.add(remote ? "remote" : "chrome", capabilities);
-			// new exception from e.g. ChromeDriver 2.44:
-			// session not created: Chrome version must be >= 69.0.3497.0
+			// NOTE: new exception when a chromedriver / chrome release mismatch
+			// e.g. from with chromeDriver 2.44, chrome 65
+			// "session not created: chrome version must be >= 69.0.3497.0"
 		} else if (browser.equals("firefox")) {
 			System
 					.setProperty("webdriver.firefox.bin",
@@ -120,41 +150,51 @@ public class ParallelMultiBrowserTest {
 			DesiredCapabilities capabilities = DesiredCapabilities.firefox();
 			if (!remote) {
 				capabilities.setCapability("marionette", false);
-				// NOTE: toggling marionette with remote Vagrant hub-proxied browser
-				// leads
-				// to the exception org.openqa.selenium.WebDriverException:
-				// Timed out waiting 45 seconds for Firefox to start.
+				// NOTE: the Exception org.openqa.selenium.WebDriverException:
+				// "timed out waiting 45 seconds for firefox to start."
+				// is thrown after "marionette" property set to true
+				// and remote browser node and hub run in Vagrant box
 			}
 			DriverWrapper.add(remote ? "remote" : "firefox", capabilities);
 		}
+		DriverWrapper.setDebug(true);
 		driver = DriverWrapper.current();
 		driver.get(baseURL);
 		actions = new Actions(driver);
 
 		driver.manage().timeouts().setScriptTimeout(scriptTimeout,
 				TimeUnit.SECONDS);
-		// Declare a wait time
-		wait = new WebDriverWait(driver, flexibleWait);
-
-		wait.pollingEvery(Duration.ofMillis(pollingInterval));
-		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older have
-		// different signature
-		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
-
+		// helpers
 		screenshot = ((TakesScreenshot) driver);
 		js = ((JavascriptExecutor) driver);
-		// driver.manage().window().maximize();
+
+		// Declare a wait time
+		WebDriverWait wait = new WebDriverWait(driver, flexibleWait);
+
+		wait.pollingEvery(Duration.ofMillis(pollingInterval));
+		// NOTE: selenium driver version-sensitive code
+		// the active version is 3.13.0 compatible
+		// 3.8.0 and older have different signature
+		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
+
+		wait.pollingEvery(Duration.ofMillis(pollingInterval));
 
 		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
-		WebElement element = wait.until(ExpectedConditions.visibilityOf(
-				driver.findElement(/*  By.name("q")*/ By.cssSelector(cssSelector))));
-		System.err.println("Web Element hash code: " + element.hashCode());
-		// TODO: element.setAttribute("value", "Тестовое задание");
-		element.sendKeys("Тестовое задание");
+
+		WebElement element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(cssSelector))));
+		System.err.println("Thread id: " + Thread.currentThread().getId() + "\n"
+				+ "Driver inventory: "
+				+ DriverWrapper.getDriverInventoryDump().toString() + "\n"
+				+ "Driver hash code: " + driver.hashCode() + "\n"
+				+ "WebDriveWait hash code: " + wait.hashCode() + "\n"
+				+ "Web Element hash code: " + element.hashCode());
+		// TODO: element.setAttribute("value", searchString);
+		element.sendKeys(searchString);
 		element = wait.until(
 				// TODO; exercise culture // Поиск в Google | Google Search
-				ExpectedConditions.visibilityOf(driver.findElement(
-						By.xpath(String.format("//input[@value='%s']", "Google Search")))));
+				ExpectedConditions.visibilityOf(driver.findElement(By.xpath(String
+						.format("//input[contains(@value, '%s')]", "Google Search")))));
 		element.click();
 		element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.id("resultStats"))));
@@ -168,11 +208,89 @@ public class ParallelMultiBrowserTest {
 		            .remote("http://selenoid:4444/wd/hub")
 		            .headless(true));
 		    driver.open("http://google.com");
-		    driver.$(By.name("q")).setValue("Тестовое задание");
+		    driver.$(By.name("q")).setValue(searchString);
 		    driver.$(By.xpath("//input[@value='Поиск в Google']")).click();
 		    driver.$(By.id("resultStats")).shouldBe(Condition.visible);
 		    driver.close();
 		*/
+	}
+
+	@Test(dataProvider = "different-browser-provider", threadPoolSize = 2)
+	public void googleAternativeSearchTest(String browser, String baseURL,
+			String cssSelector) {
+
+		System.err.println("Launching " + browser + (remote ? " remotely" : ""));
+		System.setProperty(browserDriverSystemProperties.get(browser),
+				Paths.get(System.getProperty("user.home")).resolve("Downloads")
+						.resolve(browserDrivers.get(browser)).toAbsolutePath().toString());
+		if (browser.equals("chrome")) {
+			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+			ChromeOptions chromeOptions = new ChromeOptions();
+			// options for headless
+			if (headless) {
+				for (String optionAgrument : (new String[] { "headless",
+						"window-size=1200x800" })) {
+					chromeOptions.addArguments(optionAgrument);
+				}
+			}
+			capabilities
+					.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
+			DriverWrapper.add(remote ? "remote" : "chrome", capabilities);
+		} else if (browser.equals("firefox")) {
+			System
+					.setProperty("webdriver.firefox.bin",
+							osName.equals("windows") ? new File(
+									"c:/Program Files (x86)/Mozilla Firefox/firefox.exe")
+											.getAbsolutePath()
+									: "/usr/bin/firefox");
+			DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+			if (!remote) {
+				capabilities.setCapability("marionette", false);
+				// NOTE: the Exception org.openqa.selenium.WebDriverException:
+				// "timed out waiting 45 seconds for firefox to start."
+				// is thrown after "marionette" property set to true
+				// and remote browser node and hub run in Vagrant box
+			}
+			DriverWrapper.add(remote ? "remote" : "firefox", capabilities);
+		}
+		DriverWrapper.setDebug(true);
+		driver = DriverWrapper.current();
+		driver.get(baseURL);
+		actions = new Actions(driver);
+
+		driver.manage().timeouts().setScriptTimeout(scriptTimeout,
+				TimeUnit.SECONDS);
+
+		// helpers
+		screenshot = ((TakesScreenshot) driver);
+		js = ((JavascriptExecutor) driver);
+
+		wait = new WebDriverWait(driver, flexibleWait);
+		wait.pollingEvery(Duration.ofMillis(pollingInterval));
+
+		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
+
+		WebElement element = driver.findElement(By.cssSelector(cssSelector));
+		System.err.println("Thread id: " + Thread.currentThread().getId() + "\n"
+				+ "Driver inventory: "
+				+ DriverWrapper.getDriverInventoryDump().toString() + "\n"
+				+ "Driver hash code: " + driver.hashCode() + "\n"
+				+ "Web Element hash code: " + element.hashCode());
+
+		element.sendKeys(searchString);
+		element = wait.until(
+				// TODO; exercise culture // Поиск в Google | Google Search
+				ExpectedConditions.visibilityOf(driver.findElement(
+						By.xpath(String.format("//input[@name = '%s']", "btnK"))))); // [@type='submit']
+																																					// ?
+		element.click();
+		// try{
+		element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.id("resultStats"))));
+		// }
+		assertThat(element, notNullValue());
+		assertTrue(element.getText().matches("^.*\\b(?:\\d+)\\b.*$"));
+		// assertThat(element.getText(), matchesRegex(Pattern.compile("(?:\\d+)")));
 	}
 
 	@BeforeClass
@@ -186,7 +304,7 @@ public class ParallelMultiBrowserTest {
 	@AfterMethod
 	public void afterMethod() {
 		try {
-			Thread.sleep(120000);
+			Thread.sleep(100);
 		} catch (InterruptedException e1) {
 		}
 		// driver.get("about:blank");

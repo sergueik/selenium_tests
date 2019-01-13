@@ -62,6 +62,21 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <version>${hamcrest-all.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- https://piotrga.wordpress.com/2009/03/27/hamcrest-regex-matcher/ -->
+    <!--
+<dependency>
+  <groupId>org.hamcrest</groupId>
+  <artifactId>hamcrest-library</artifactId>
+      <version>${hamcrest-all.version}</version>
+  <scope>test</scope>
+</dependency>
+<dependency>
+  <groupId>org.hamcrest</groupId>
+  <artifactId>hamcrest-core</artifactId>
+      <version>${hamcrest-all.version}</version>
+  <scope>test</scope>
+</dependency>
+-->
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
@@ -225,10 +240,10 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
             <suiteXmlFile>src/test/resources/suites/testng.xml</suiteXmlFile>
 	  </suiteXmlFiles>
 	  -->
-	  <!-- For parallel runs with e.g. Vagrant https://github.com/sergueik/selenium-fluxbox  
+          <!-- For parallel runs with e.g. Vagrant https://github.com/sergueik/selenium-fluxbox  
 	  <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dparallel=tests -DthreadCount=2 </argLine>
 	  -->
-           <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+          <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
           <!-- Skip the default running of this plug-in (or everything is run twice...see below) -->
           <skip>true</skip>
         </configuration>
@@ -251,8 +266,8 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-	<version>${maven-resources-plugin.version}</version>
-	<artifactId>maven-resources-plugin</artifactId>
+        <version>${maven-resources-plugin.version}</version>
+        <artifactId>maven-resources-plugin</artifactId>
         <configuration>
           <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>

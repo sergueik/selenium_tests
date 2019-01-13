@@ -2,7 +2,10 @@ package com.github.sergueik.selenium;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.NoSuchSessionException;
@@ -22,6 +25,7 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
 public class DriverWrapper extends RemoteWebDriver {
 
 	private static String hubUrl = null;
+	private static Boolean debug = false;
 
 	private DriverWrapper() {
 	}
@@ -34,7 +38,18 @@ public class DriverWrapper extends RemoteWebDriver {
 		DriverWrapper.hubUrl = value;
 	}
 
-	private static ConcurrentHashMap<String, RemoteWebDriver> driverThreadMap = new ConcurrentHashMap<String, RemoteWebDriver>();
+	public static void setDebug(Boolean value) {
+		DriverWrapper.debug = value;
+	}
+
+	private static ConcurrentHashMap<String, RemoteWebDriver> driverInventory = new ConcurrentHashMap<String, RemoteWebDriver>();
+
+	public static List<String> getDriverInventoryDump() {
+		return driverInventory.entrySet().stream()
+				.map(_entry -> String.format("%s => %s %d", _entry.getKey(),
+						_entry.getValue().getClass(), _entry.getValue().hashCode()))
+				.collect(Collectors.toList());
+	}
 
 	@SuppressWarnings("deprecation")
 	public static void add(String browser, Capabilities capabilities) {
@@ -50,7 +65,7 @@ public class DriverWrapper extends RemoteWebDriver {
 				// throw new RuntimeException(e.getCause());
 				throw new RuntimeException(e);
 			}
-			driverThreadMap.put(getThreadName(), driver);
+			driverInventory.put(getThreadName(), driver);
 		} else {
 			if (browser == "firefox") {
 				driver = new FirefoxDriver(capabilities);
@@ -59,12 +74,17 @@ public class DriverWrapper extends RemoteWebDriver {
 			if (browser == "chrome") {
 				driver = new ChromeDriver(capabilities);
 			}
-			driverThreadMap.put(getThreadName(), driver);
+			driverInventory.put(getThreadName(), driver);
 		}
 	}
 
 	public static RemoteWebDriver current() {
-		return driverThreadMap.get(getThreadName());
+		if (debug) {
+			System.err.println("Looking inventory by key: " + getThreadName() + "\n"
+					+ " => " + driverInventory.get(getThreadName()).getClass() + " "
+					+ driverInventory.get(getThreadName()).hashCode());
+		}
+		return driverInventory.get(getThreadName());
 	}
 
 	private static String getThreadName() {
