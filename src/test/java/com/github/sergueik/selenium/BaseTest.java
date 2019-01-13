@@ -242,6 +242,12 @@ public class BaseTest {
 				 Safari".
 		*/
 		/*
+		 DesiredCapabilities caps = DesiredCapabilities.internetExplorer();
+		caps.setCapability(InternetExplorerDriver.INITIAL_BROWSER_URL, "");
+		WebDriver driver = new InternetExplorerDriver(caps);
+		 */
+
+		/*
 		System.err.println(String.format("%s=%s", "System.env('webdriver.driver')",
 				System.getenv("webdriver.driver")));
 		System.err
@@ -834,7 +840,8 @@ public class BaseTest {
 	// Alternative to an XPath selector
 	// "//*[contains(text(),'${text_to_find}'))"
 	// or its longer and more fragile alternative:
-	// "//*/text()[contains(normalize-space(translate(string(.), '\t\n\r\u00a0', '    ')), '${text_to_find}')]/parent::*"
+	// "//*/text()[contains(normalize-space(translate(string(.), '\t\n\r\u00a0', '
+	// ')), '${text_to_find}')]/parent::*"
 	// uses core DOM API
 	// https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
 	// basically to scan the DOM, unless a nonempty elementLocator is provided

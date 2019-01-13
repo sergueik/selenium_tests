@@ -66,8 +66,9 @@ public class ParallelMultiBrowserTest {
 	private static long highlightInterval = 100;
 
 	@DataProvider(name = "browser-provider", parallel = true)
-	public Object[] provide() throws Exception {
-		return new Object[] { "firefox", "chrome" };
+	public Object[][] provide() throws Exception {
+		return new Object[][] { { "firefox", "input[name*='q']" },
+				{ "chrome", "input[name='q']" }, };
 	}
 
 	private static final Map<String, String> browserDrivers = new HashMap<>();
@@ -88,7 +89,7 @@ public class ParallelMultiBrowserTest {
 	public String baseURL = "http://google.com";
 
 	@Test(dataProvider = "browser-provider", threadPoolSize = 2)
-	public void googleSearchTest(String browser) {
+	public void googleSearchTest(String browser, String cssSelector) {
 
 		System.err.println("Launching " + browser + (remote ? " remotely" : ""));
 		System.setProperty(browserDriverSystemProperties.get(browser),
@@ -145,8 +146,9 @@ public class ParallelMultiBrowserTest {
 		// driver.manage().window().maximize();
 
 		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
-		WebElement element = wait.until(
-				ExpectedConditions.visibilityOf(driver.findElement(By.name("q"))));
+		WebElement element = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(/*  By.name("q")*/ By.cssSelector(cssSelector))));
+		System.err.println("Web Element hash code: " + element.hashCode());
 		// TODO: element.setAttribute("value", "Тестовое задание");
 		element.sendKeys("Тестовое задание");
 		element = wait.until(
@@ -183,6 +185,10 @@ public class ParallelMultiBrowserTest {
 
 	@AfterMethod
 	public void afterMethod() {
+		try {
+			Thread.sleep(120000);
+		} catch (InterruptedException e1) {
+		}
 		// driver.get("about:blank");
 		if (driver != null) {
 			try {
