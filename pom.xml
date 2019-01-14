@@ -44,8 +44,14 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
     <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
     <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
     <sikulixapi.version>1.1.0</sikulixapi.version>
+    <simple-ssh.version>1.0.2</simple-ssh.version>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>com.rationaleemotions</groupId>
+      <artifactId>simple-ssh</artifactId>
+      <version>${simple-ssh.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.exparity</groupId>
       <artifactId>hamcrest-date</artifactId>
