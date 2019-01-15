@@ -77,6 +77,16 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.internal.Nullable;
 
+import com.rationaleemotions.ExecutionBuilder;
+import com.rationaleemotions.SshKnowHow;
+import com.rationaleemotions.pojo.EnvVariable;
+import com.rationaleemotions.pojo.ExecResults;
+import com.rationaleemotions.pojo.SSHUser;
+import com.rationaleemotions.pojo.SSHUser.Builder;
+
+import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator;
+import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
+
 import com.github.sergueik.selenium.DriverWrapper;
 
 /**
@@ -701,6 +711,19 @@ public class BaseTest {
 			}
 		}
 		return value;
+	}
+
+	// https://github.com/rationaleemotions/simplessh
+	@SuppressWarnings("unused")
+	public static void killRemoteProcess(String processName) {
+		String command = String.format("killall %s", processName.trim());
+		SSHUser sshUser = new SSHUser.Builder().forUser("service_account")
+				.withSshFolder(new File("/shared/.ssh")).usingPassphrase("secret-word")
+				.usingPrivateKey(new File("/shared/.ssh/id_rsa")).build();
+		SshKnowHow ssh = new ExecutionBuilder().connectTo("myUnixBox")
+				.includeHostKeyChecks(false).usingUserInfo(sshUser).build();
+
+		ExecResults results = ssh.executeCommand(command);
 	}
 
 	// https://www.javaworld.com/article/2071275/core-java/when-runtime-exec---won-t.html?page=2
