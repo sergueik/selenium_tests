@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+
 // https://matchers.jcabi.com/regex-matchers.html
 // https://stackoverflow.com/questions/8505153/assert-regex-matches-in-junit
 // https://piotrga.wordpress.com/2009/03/27/hamcrest-regex-matcher/
@@ -67,13 +68,13 @@ public class ParallelMultiBrowserTest {
 	// .parseBoolean(System.getenv("REMOTE"));
 	private static final boolean headless = Boolean
 			.parseBoolean(System.getenv("HEADLESS"));
-	public WebDriver driver;
+	// public WebDriver driver;
 	private static final String searchString = "Тестовое задание";
-	public WebDriverWait wait;
-	public Actions actions;
-	public Alert alert;
-	public JavascriptExecutor js;
-	public TakesScreenshot screenshot;
+	// public WebDriverWait wait;
+	// public Actions actions;
+	// public Alert alert;
+	// public JavascriptExecutor js;
+	// public TakesScreenshot screenshot;
 	@SuppressWarnings("unused")
 	private static String handle = null;
 
@@ -88,8 +89,8 @@ public class ParallelMultiBrowserTest {
 	@DataProvider(name = "same-browser-provider", parallel = true)
 	public Object[][] provideSameBrowser() throws Exception {
 		return new Object[][] {
-				{ "firefox", "https://www.google.com/?hl=ru", "input[name*='q']" },
-				{ "firefox", "https://www.google.com/?hl=ko", "input[name='q']" }, };
+				{ "chrome", "https://www.google.com/?hl=ru", "input[name*='q']" },
+				{ "chrome", "https://www.google.com/?hl=ko", "input[name='q']" }, };
 	}
 
 	// NOTE: pass distinct base url and locators to parallel tests for debugging
@@ -116,7 +117,7 @@ public class ParallelMultiBrowserTest {
 		browserDriverSystemProperties.put("edge", "webdriver.edge.driver");
 	}
 
-	@Test(enabled = false, dataProvider = "same-browser-provider", threadPoolSize = 2)
+	@Test(enabled = true, dataProvider = "same-browser-provider", threadPoolSize = 2)
 	public void googleBadSearchTest(String browser, String baseURL,
 			String cssSelector) {
 
@@ -158,15 +159,26 @@ public class ParallelMultiBrowserTest {
 			DriverWrapper.add(remote ? "remote" : "firefox", capabilities);
 		}
 		DriverWrapper.setDebug(true);
-		driver = DriverWrapper.current();
+
+		System.err.println("Driver inventory: "
+				+ DriverWrapper.getDriverInventoryDump().toString());
+
+		WebDriver driver = DriverWrapper.current();
 		driver.get(baseURL);
-		actions = new Actions(driver);
+
+		System.err.println("Thread id: " + Thread.currentThread().getId() + "\n"
+				+ "Driver hash code: " + driver.hashCode() + "\n" + "Driver hash code: "
+				+ DriverWrapper.current().hashCode());
+
+		driver.get(baseURL);
+
+		Actions actions = new Actions(driver);
 
 		driver.manage().timeouts().setScriptTimeout(scriptTimeout,
 				TimeUnit.SECONDS);
 		// helpers
-		screenshot = ((TakesScreenshot) driver);
-		js = ((JavascriptExecutor) driver);
+		TakesScreenshot screenshot = ((TakesScreenshot) driver);
+		JavascriptExecutor js = ((JavascriptExecutor) driver);
 
 		// Declare a wait time
 		WebDriverWait wait = new WebDriverWait(driver, flexibleWait);
@@ -184,8 +196,6 @@ public class ParallelMultiBrowserTest {
 		WebElement element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.cssSelector(cssSelector))));
 		System.err.println("Thread id: " + Thread.currentThread().getId() + "\n"
-				+ "Driver inventory: "
-				+ DriverWrapper.getDriverInventoryDump().toString() + "\n"
 				+ "Driver hash code: " + driver.hashCode() + "\n"
 				+ "WebDriveWait hash code: " + wait.hashCode() + "\n"
 				+ "Web Element hash code: " + element.hashCode());
@@ -215,7 +225,7 @@ public class ParallelMultiBrowserTest {
 		*/
 	}
 
-	@Test(dataProvider = "different-browser-provider", threadPoolSize = 2)
+	@Test(enabled = false, dataProvider = "different-browser-provider", threadPoolSize = 2)
 	public void googleAternativeSearchTest(String browser, String baseURL,
 			String cssSelector) {
 
@@ -254,18 +264,23 @@ public class ParallelMultiBrowserTest {
 			DriverWrapper.add(remote ? "remote" : "firefox", capabilities);
 		}
 		DriverWrapper.setDebug(true);
-		driver = DriverWrapper.current();
+		WebDriver driver = DriverWrapper.current();
+		System.err.println("Thread id: " + Thread.currentThread().getId() + "\n"
+				+ "Driver inventory: "
+				+ DriverWrapper.getDriverInventoryDump().toString() + "\n"
+				+ "Driver hash code: " + driver.hashCode());
+
 		driver.get(baseURL);
-		actions = new Actions(driver);
+		Actions actions = new Actions(driver);
 
 		driver.manage().timeouts().setScriptTimeout(scriptTimeout,
 				TimeUnit.SECONDS);
 
 		// helpers
-		screenshot = ((TakesScreenshot) driver);
-		js = ((JavascriptExecutor) driver);
+		TakesScreenshot screenshot = ((TakesScreenshot) driver);
+		JavascriptExecutor js = ((JavascriptExecutor) driver);
 
-		wait = new WebDriverWait(driver, flexibleWait);
+		WebDriverWait wait = new WebDriverWait(driver, flexibleWait);
 		wait.pollingEvery(Duration.ofMillis(pollingInterval));
 
 		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
@@ -308,6 +323,7 @@ public class ParallelMultiBrowserTest {
 		} catch (InterruptedException e1) {
 		}
 		// driver.get("about:blank");
+		/*
 		if (driver != null) {
 			try {
 				driver.close();
@@ -315,6 +331,7 @@ public class ParallelMultiBrowserTest {
 			} catch (Exception e) {
 			}
 		}
+		*/
 	}
 
 	@AfterClass
