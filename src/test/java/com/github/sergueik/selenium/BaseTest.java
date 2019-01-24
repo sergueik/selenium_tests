@@ -713,17 +713,28 @@ public class BaseTest {
 		return value;
 	}
 
-	// https://github.com/rationaleemotions/simplessh
+	// origin: https://github.com/rationaleemotions/simplessh
+	// NOTE: dispatches the actual work to
+	// https://github.com/torquebox/jruby-maven-plugins/blob/master/ruby-tools/src/main/java/de/saumya/mojo/ruby/script/Script.java
+	// that may not be the fastest way of doing it
 	@SuppressWarnings("unused")
 	public static void killRemoteProcess(String processName) {
+		// TODO: actually read the "vagrant.properties" properties file
+		String identityFile = getPropertyEnv("IdentityFile",
+				"C:/Vagrant/.vagrant/machines/default/virtualbox/private_key");
+		String hostName = getPropertyEnv("HostName", "127.0.0.1");
+		String sshFolder = identityFile.replaceAll("/[^/]+$", "");
+		String user = getPropertyEnv("User", "vagrant");
+		int port = Integer.parseInt(getPropertyEnv("Port", "2222"));
 		String command = String.format("killall %s", processName.trim());
-		SSHUser sshUser = new SSHUser.Builder().forUser("service_account")
-				.withSshFolder(new File("/shared/.ssh")).usingPassphrase("secret-word")
-				.usingPrivateKey(new File("/shared/.ssh/id_rsa")).build();
-		SshKnowHow ssh = new ExecutionBuilder().connectTo("myUnixBox")
+		SSHUser sshUser = new SSHUser.Builder().forUser(user)
+				.withSshFolder(new File(sshFolder))
+				.usingPrivateKey(new File(identityFile)).build();
+		SshKnowHow ssh = new ExecutionBuilder().connectTo(hostName).onPort(port)
 				.includeHostKeyChecks(false).usingUserInfo(sshUser).build();
 
-		ExecResults results = ssh.executeCommand(command);
+		ExecResults execResults = ssh.executeCommand(command);
+		System.err.println(execResults.getOutput().toString());
 	}
 
 	// https://www.javaworld.com/article/2071275/core-java/when-runtime-exec---won-t.html?page=2
