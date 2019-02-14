@@ -28,6 +28,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 /**
  * Selected test scenarios for Selenium WebDriver
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
@@ -58,12 +62,9 @@ public class ElementAttributesTest extends BaseTest {
 		driver.get("about:blank");
 	}
 
-	private static final String text = "hireme";
-	private static String xpath = String.format("//*[@id='%s']", text);
+	private static final String id = "hireme";
+	private static String xpath = String.format("//*[@id='%s']", id);
 
-	// NOTE: some selectors intentionally invalid -
-	// none would achieve the goal of locating
-	// "text to find" using XPath with stock Selenium `findElement` method
 	@Test(enabled = true)
 	public void attributesJSONTest() {
 		// Arrange
@@ -77,7 +78,7 @@ public class ElementAttributesTest extends BaseTest {
 		JSONObject jsonObject = null;
 		try {
 			jsonObject = new JSONObject(jsonString);
-			assertThat(jsonObject.getString("id"), equalTo(text));
+			assertThat(jsonObject.getString("id"), equalTo(id));
 		} catch (JSONException e) {
 			System.err.println("Exception (ignored): " + e.getMessage());
 		}
@@ -95,7 +96,26 @@ public class ElementAttributesTest extends BaseTest {
 		Map<String, Object> result = (Map<String, Object>) js.executeScript(script,
 				element, false);
 		// Assert
-		assertThat(result.get("id"), equalTo(text));
+		assertThat(result.get("id"), equalTo(id));
 		System.err.println(String.format("%s finds %s", script, result.get("id")));
+	}
+
+	// https://aboullaite.me/jsoup-html-parser-tutorial-examples/
+	@Test(enabled = true)
+	public void attributesHTMLParseTest() {
+		// Arrange
+		WebElement element = wait
+				.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+		highlight(element);
+		// Act
+		String elementHTML = element.getAttribute("outerHTML");
+		Document jsoupDocument = Jsoup.parse(elementHTML);
+		Element divJsoupElement = jsoupDocument.getElementById(id);
+		// Assert
+		// will fail
+		assertThat(divJsoupElement, notNullValue());
+		assertThat(divJsoupElement.id(), equalTo(id));
+		System.err
+				.println(String.format("Processing %s", xpath, divJsoupElement.text()));
 	}
 }
