@@ -286,6 +286,17 @@ public class BaseTest {
 			chromePrefs.put("plugins.always_open_pdf_externally", "true");
 			chromePrefs.put("download.default_directory", downloadFilepath);
 			chromePrefs.put("enableNetwork", "true");
+
+			boolean disableImageLoading = false;
+			if (disableImageLoading) {
+				// https://stackoverflow.com/questions/18657976/disable-images-in-selenium-google-chromedriver
+				// https://stackoverflow.com/questions/35128850/java-selenium-chrome-driver-disable-image-loading
+				// it appears the flat and structured prefs has same effect:
+				chromePrefs.put("profile.managed_default_content_settings.images", 2);
+				Map<String, Object> images = new HashMap<>();
+				images.put("images", 2);
+				chromePrefs.put("profile.default_content_settings", images);
+			}
 			// https://stackoverflow.com/questions/18106588/how-to-disable-cookies-using-webdriver-for-chrome-and-firefox-java
 			// chromePrefs.put("profile.default_content_settings.cookies", 2);
 			// no cookies are allowed
