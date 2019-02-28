@@ -1,5 +1,7 @@
 package com.github.sergueik.selenium;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -34,12 +36,16 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+import org.testng.internal.Nullable;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
@@ -63,11 +69,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 // NOTE: this test restarts the browser. Therefore not inheriting from the 
 // BaseTest class
-public class YandexTest {
+public class YandexTest extends BaseTest {
 
-	private static WebDriver driver;
-	private static WebDriverWait wait;
-	private static Actions actions;
+	private WebDriver driver;
+	private WebDriverWait wait;
+	private Actions actions;
 	private static Boolean debug = false;
 	private static final long implicitWait = 10;
 	private static final int flexibleWait = 30;
@@ -90,32 +96,10 @@ public class YandexTest {
 	private static final String propertyFilePath = getPropertyEnv(
 			"property.filepath", "src/test/resources");
 
-	private static String osName = null;
-
-	public static String getOsName() {
-		if (osName == null) {
-			osName = System.getProperty("os.name").toLowerCase();
-			if (osName.startsWith("windows")) {
-				osName = "windows";
-			}
-		}
-		return osName;
-	}
-
 	@BeforeClass
-	public static void setUp() {
-
-		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
-			debug = true;
-		}
-		/*
-		System.err.println(String.format("%s=%s", "System.env('property.filepath')",
-				System.getenv("property.filepath")));
-		System.err
-				.println(String.format("%s=%s", "getPropertyEnv('property.filepath')",
-						getPropertyEnv("property.filepath", "")));
-		*/
-		getOsName();
+	@Override
+	public void beforeClass() throws IOException {
+		getOSName();
 		browserDrivers.put("chrome",
 				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
 		browserDrivers.put("firefox",
@@ -145,6 +129,7 @@ public class YandexTest {
 		// for Firefox v.59 no longer possible ?
 		capabilities.setCapability("marionette", false);
 		driver = new FirefoxDriver(capabilities);
+		assertThat(driver, notNullValue());
 		// With Chrome one can also try
 		/*
 		System.setProperty("webdriver.chrome.driver",
@@ -160,11 +145,76 @@ public class YandexTest {
 		wait.pollingEvery(Duration.ofMillis(polling));
 		// wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
 		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
+		assertThat(driver, notNullValue());
+		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
+			debug = true;
+		}
+
+		loggingSb = new StringBuilder();
+		formatter = new Formatter(loggingSb, Locale.US);
+		assertThat(driver, notNullValue());
 		driver.get(baseURL);
 	}
 
-	@Before
+	@BeforeTest
 	public void beforeTest() {
+		getOSName();
+		browserDrivers.put("chrome",
+				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
+		browserDrivers.put("firefox",
+				osName.equals("windows") ? "geckodriver.exe" : "geckodriver");
+		browserDrivers.put("edge", "MicrosoftWebDriver.exe");
+		HashMap<String, String> propertiesMap = PropertiesParser
+				.getProperties(String.format("%s/%s/%s", System.getProperty("user.dir"),
+						propertyFilePath, propertiesFileName));
+		username = propertiesMap.get("username");
+		password = propertiesMap.get("password");
+
+		loggingSb = new StringBuilder();
+		formatter = new Formatter(loggingSb, Locale.US);
+		System.setProperty("webdriver.gecko.driver", osName.equals("windows")
+				? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
+				: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME"))*/
+				Paths.get(System.getProperty("user.home")).resolve("Downloads")
+						.resolve("geckodriver").toAbsolutePath().toString());
+		System.setProperty("webdriver.firefox.bin",
+				osName.equals("windows")
+						? new File("c:/Program Files (x86)/Mozilla Firefox/firefox.exe")
+								.getAbsolutePath()
+						: "/usr/bin/firefox");
+		// https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
+		DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+		// we are using legacy FirefoxDriver
+		// for Firefox v.59 no longer possible ?
+		capabilities.setCapability("marionette", false);
+		driver = new FirefoxDriver(capabilities);
+		assertThat(driver, notNullValue());
+		// With Chrome one can also try
+		/*
+		System.setProperty("webdriver.chrome.driver",
+				new File("c:/java/selenium/chromedriver.exe").getAbsolutePath());
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments(String.format(
+				"user-data-dir=%s/AppData/Local/Google/Chrome/User Data/Default",
+				System.getProperty("user.home")));
+		options.addArguments("--start-maximized");
+		WebDriver driver = new ChromeDriver(options);
+		*/
+		wait = new WebDriverWait(driver, flexibleWait);
+		wait.pollingEvery(Duration.ofMillis(polling));
+		// wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
+		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
+		assertThat(driver, notNullValue());
+		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
+			debug = true;
+		}
+
+		loggingSb = new StringBuilder();
+		formatter = new Formatter(loggingSb, Locale.US);
+		assertThat(driver, notNullValue());
+		driver.get(baseURL);
+		super.driver = driver;
+		assertThat(driver, notNullValue());
 		driver.get(baseURL);
 		WebElement element = driver.findElement(By.cssSelector(
 				"table.layout__table tr.layout__header div.personal div.b-inline"));
@@ -178,18 +228,12 @@ public class YandexTest {
 		wait.until(ExpectedConditions.urlContains(loginURL));
 	}
 
-	@After
+	@AfterTest
 	public void afterTest() {
 	}
 
 	@AfterClass
-	public static void tearDown() {
-		try {
-			Thread.sleep(afterTest);
-		} catch (InterruptedException e) {
-		}
-		driver.close();
-		driver.quit();
+	public static void tearDownAfterClass() {
 		if (verificationErrors.length() != 0) {
 			throw new RuntimeException(verificationErrors.toString());
 		}
@@ -199,7 +243,7 @@ public class YandexTest {
 	public void dummyPassingTest() {
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void getCookieTest() throws Exception {
 
@@ -233,7 +277,7 @@ public class YandexTest {
 		doLogout();
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void useCookieTest() throws Exception {
 		String loginUrl = doLogin();
@@ -265,7 +309,7 @@ public class YandexTest {
 		doLogout();
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void useExpiredCookieLaterTest() {
 		/*
@@ -440,31 +484,6 @@ public class YandexTest {
 		}
 	}
 
-	private void highlight(WebElement element) {
-		highlight(element, highlight);
-	}
-
-	private void highlight(WebElement element, long highlight) {
-		try {
-			wait.until(ExpectedConditions.visibilityOf(element));
-			executeScript("arguments[0].style.border='3px solid yellow'", element);
-			Thread.sleep(highlight);
-			executeScript("arguments[0].style.border=''", element);
-		} catch (InterruptedException e) {
-			// ignore
-		}
-	}
-
-	private Object executeScript(String script, Object... arguments) {
-		if (driver instanceof JavascriptExecutor) {
-			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class
-					.cast(driver);
-			return javascriptExecutor.executeScript(script, arguments);
-		} else {
-			throw new RuntimeException("Script execution failed.");
-		}
-	}
-
 	private static class PropertiesParser {
 		@SuppressWarnings("unchecked")
 		public static HashMap<String, String> getProperties(final String fileName) {
@@ -492,66 +511,6 @@ public class YandexTest {
 				e.printStackTrace();
 			}
 			return (propertiesMap);
-		}
-	}
-
-	// TODO: merge projects
-	// from
-	// https://github.com/sergueik/selenium_tests/tree/master/src/test/java/com/github/sergueik/selenium/TariffTest.java
-	public static class Translit {
-
-		private static final Charset UTF8 = Charset.forName("UTF-8");
-		private static final char[] alphabetCyrillic = { ' ', 'а', 'б', 'в', 'г',
-				'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р',
-				'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю',
-				'я', 'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л',
-				'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ',
-				'Ъ', 'Ы', 'Б', 'Э', 'Ю', 'Я', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-				'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-				'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-				'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-				'Y', 'Z' };
-
-		private static final String[] alphabetTranslit = { " ", "a", "b", "v", "g",
-				"d", "e", "e", "zh", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r",
-				"s", "t", "u", "f", "h", "ts", "ch", "sh", "sch", "", "i", "", "e",
-				"ju", "ja", "A", "B", "V", "G", "D", "E", "E", "Zh", "Z", "I", "Y", "K",
-				"L", "M", "N", "O", "P", "R", "S", "T", "U", "F", "H", "Ts", "Ch", "Sh",
-				"Sch", "", "I", "", "E", "Ju", "Ja", "a", "b", "c", "d", "e", "f", "g",
-				"h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-				"v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-				"J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
-				"X", "Y", "Z" };
-
-		private static String toAscii(final String input) {
-			final CharsetEncoder charsetEncoder = UTF8.newEncoder();
-			final char[] decomposed = Normalizer
-					.normalize(input, Normalizer.Form.NFKD).toCharArray();
-			final StringBuilder sb = new StringBuilder(decomposed.length);
-
-			// NOTE: evaluating the character charcount is unnecessary with Cyrillic
-			for (int i = 0; i < decomposed.length;) {
-				final int codePoint = Character.codePointAt(decomposed, i);
-				final int charCount = Character.charCount(codePoint);
-
-				if (charsetEncoder
-						.canEncode(CharBuffer.wrap(decomposed, i, charCount))) {
-					sb.append(decomposed, i, charCount);
-				}
-
-				i += charCount;
-			}
-
-			StringBuilder builder = new StringBuilder();
-
-			for (int i = 0; i < sb.length(); i++) {
-				for (int x = 0; x < alphabetCyrillic.length; x++)
-					if (sb.charAt(i) == alphabetCyrillic[x]) {
-						builder.append(alphabetTranslit[x]);
-					}
-			}
-			return builder.toString();
-
 		}
 	}
 
