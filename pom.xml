@@ -34,6 +34,7 @@
     <phantomjsdriver.version>1.2.1</phantomjsdriver.version>
     <selenium.version>3.13.0</selenium.version>
     <selenium-firefox-driver.version>3.13.0</selenium-firefox-driver.version>
+    <selenium-ie-driver.version>3.13.0</selenium-ie-driver.version>
     <!-- TODO:
 with 2.53.1
 java.lang.NoClassDefFoundError: org/openqa/selenium/remote/DesiredCapabilities
@@ -136,6 +137,11 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-firefox-driver</artifactId>
       <version>${selenium-firefox-driver.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-ie-driver</artifactId>
+      <version>${selenium-ie-driver.version}</version>
     </dependency>
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>

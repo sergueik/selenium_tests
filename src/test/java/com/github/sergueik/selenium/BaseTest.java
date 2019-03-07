@@ -51,6 +51,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
+//https://www.seleniumeasy.com/selenium-tutorials/how-to-run-webdriver-in-ie-browser
+import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.internal.Coordinates;
 
@@ -133,7 +135,7 @@ public class BaseTest {
 	public String baseURL = "about:blank";
 
 	private List<String> chromeExtensions = new ArrayList<>();
-	private static String osName = getOSName();
+	protected static String osName = getOSName();
 
 	private String extensionDir = String.format(
 			"%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
@@ -321,6 +323,7 @@ public class BaseTest {
 				chromeOptions.setBinary(
 						"c:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 			}
+      // see also: https://developers.google.com/recaptcha/docs/faq
 			for (String optionAgrument : (new String[] {
 					"--user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0",
 					"--allow-running-insecure-content", "--allow-insecure-localhost",
@@ -333,8 +336,9 @@ public class BaseTest {
 					"--ignore-certificate-errors", "--no-proxy-server",
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
 					String.format("--browser.download.dir=%s", downloadFilepath)
-					/* "--user-data-dir=/path/to/your/custom/profile"  , */
-
+					/* "--user-data-dir=/path/to/your/custom/profile",
+             "--profile-directory=name_of_custom_profile_directory",
+          */
 			})) {
 				chromeOptions.addArguments(optionAgrument);
 			}
