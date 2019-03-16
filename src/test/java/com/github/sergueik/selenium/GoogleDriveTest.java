@@ -63,8 +63,9 @@ public class GoogleDriveTest {
 	private static Map<String, String> env = System.getenv();
 	private static String username = "";
 	private static String password = "";
-	private static Formatter formatter;
-	private static StringBuilder loggingSb;
+	private static final StringBuilder loggingSb = new StringBuilder();
+	private static final Formatter formatter = new Formatter(loggingSb,
+			Locale.US);
 	private static String propertiesFileName = "test.properties";
 	private static final String propertyFilePath = getPropertyEnv(
 			"property.filepath", "src/test/resources");
@@ -88,8 +89,6 @@ public class GoogleDriveTest {
 		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
 			debug = true;
 		}
-		loggingSb = new StringBuilder();
-		formatter = new Formatter(loggingSb, Locale.US);
 		driver = setupDriver();
 		HashMap<String, String> propertiesMap = PropertiesParser
 				.getProperties(String.format("%s/%s/%s", System.getProperty("user.dir"),

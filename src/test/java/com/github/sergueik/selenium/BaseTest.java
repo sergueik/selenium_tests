@@ -155,7 +155,7 @@ public class BaseTest {
 		browserDrivers.put("chrome",
 				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
 		browserDrivers.put("firefox",
-				osName.equals("windows") ? "geckodriver.exe" : "geckodriver");
+				osName.equals("windows") ? "geckodriver.exe" : "driver");
 		browserDrivers.put("edge", "MicrosoftWebDriver.exe");
 	}
 
@@ -323,7 +323,7 @@ public class BaseTest {
 				chromeOptions.setBinary(
 						"c:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 			}
-      // see also: https://developers.google.com/recaptcha/docs/faq
+			// see also: https://developers.google.com/recaptcha/docs/faq
 			for (String optionAgrument : (new String[] {
 					"--user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0",
 					"--allow-running-insecure-content", "--allow-insecure-localhost",
@@ -337,8 +337,8 @@ public class BaseTest {
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
 					String.format("--browser.download.dir=%s", downloadFilepath)
 					/* "--user-data-dir=/path/to/your/custom/profile",
-             "--profile-directory=name_of_custom_profile_directory",
-          */
+					   "--profile-directory=name_of_custom_profile_directory",
+					*/
 			})) {
 				chromeOptions.addArguments(optionAgrument);
 			}
@@ -565,6 +565,27 @@ public class BaseTest {
 			executeScript("arguments[0].style.border=''", element);
 		} catch (InterruptedException e) {
 			// System.err.println("Exception (ignored): " + e.toString());
+		}
+	}
+
+	// based on: discussion of using webdriver versus container element in waits
+	// (in Russian)
+	// http://software-testing.ru/forum/index.php?/topic/37820-tcelesoobraznost-webdriverwait/
+	public void waitVisibilityInside(final WebElement container, final By by,
+			final int timeout) {
+		boolean status = false;
+		try {
+			status = (new WebDriverWait(driver, timeout))
+					.until(new ExpectedCondition<Boolean>() {
+						@Override
+						public Boolean apply(WebDriver d) {
+							List<WebElement> t = container.findElements(by);
+							return (t == null || t.size() == 0);
+						}
+					});
+		} catch (Exception e) {
+			System.err.println("Exception: " + e.toString());
+			status = true;
 		}
 	}
 
@@ -1220,8 +1241,8 @@ public class BaseTest {
 				'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
 				'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 				'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-				'Y', 'Z', '<', '>', '"', ':', '(', ')', '=', '-', '.', '0', '1', '2', '3', '4',
-				'5', '6', '7', '8', '9' };
+				'Y', 'Z', '<', '>', '"', ':', '(', ')', '=', '-', '.', '0', '1', '2',
+				'3', '4', '5', '6', '7', '8', '9' };
 
 		private static final String[] alphabetTranslit = { " ", "a", "b", "v", "g",
 				"d", "e", "e", "zh", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r",

@@ -88,8 +88,9 @@ public class YandexTest extends BaseTest {
 	private static Map<String, String> env = System.getenv();
 	private static String username = "";
 	private static String password = "";
-	private static Formatter formatter;
-	private static StringBuilder loggingSb;
+	private static final StringBuilder loggingSb = new StringBuilder();
+	private static final Formatter formatter = new Formatter(loggingSb,
+			Locale.US);
 	private static String configurationFileName = "test.configuration";
 	private static String propertiesFileName = "test.properties";
 	private static final Map<String, String> browserDrivers = new HashMap<>();
@@ -111,8 +112,6 @@ public class YandexTest extends BaseTest {
 		username = propertiesMap.get("username");
 		password = propertiesMap.get("password");
 
-		loggingSb = new StringBuilder();
-		formatter = new Formatter(loggingSb, Locale.US);
 		System.setProperty("webdriver.gecko.driver", osName.equals("windows")
 				? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
 				: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME"))*/
@@ -150,8 +149,6 @@ public class YandexTest extends BaseTest {
 			debug = true;
 		}
 
-		loggingSb = new StringBuilder();
-		formatter = new Formatter(loggingSb, Locale.US);
 		assertThat(driver, notNullValue());
 		driver.get(baseURL);
 	}
@@ -170,8 +167,6 @@ public class YandexTest extends BaseTest {
 		username = propertiesMap.get("username");
 		password = propertiesMap.get("password");
 
-		loggingSb = new StringBuilder();
-		formatter = new Formatter(loggingSb, Locale.US);
 		System.setProperty("webdriver.gecko.driver", osName.equals("windows")
 				? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
 				: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME"))*/
@@ -209,8 +204,6 @@ public class YandexTest extends BaseTest {
 			debug = true;
 		}
 
-		loggingSb = new StringBuilder();
-		formatter = new Formatter(loggingSb, Locale.US);
 		assertThat(driver, notNullValue());
 		driver.get(baseURL);
 		super.driver = driver;
