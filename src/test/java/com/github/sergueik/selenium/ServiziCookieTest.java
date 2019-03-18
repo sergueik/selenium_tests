@@ -361,6 +361,8 @@ public class ServiziCookieTest extends BaseTest {
 
 		}
 		System.err.println(cookiesJSONObject.toString());
+		sleep(1000);
+		doLogout();
 
 	}
 
@@ -546,7 +548,7 @@ public class ServiziCookieTest extends BaseTest {
 		} catch (TimeoutException | UnreachableBrowserException e) {
 			verificationErrors.append(e.toString());
 		}
-		sleep(120000);
+		sleep(1000);
 		doLogout();
 	}
 
@@ -574,8 +576,9 @@ public class ServiziCookieTest extends BaseTest {
 					cookieDataMap.get("value").toString(),
 					cookieDataMap.get("domain").toString(),
 					cookieDataMap.get("path").toString(),
-					(java.util.Date) cookieDataMap.get("expiry")
-					/* TODO: (java.util.Date) cookieDataMap.get("expiry") */, Boolean.parseBoolean(cookieDataMap.get("secure").toString()), Boolean.parseBoolean(cookieDataMap.get("httpOnly").toString()));
+					(java.util.Date) cookieDataMap.get("expiry"),
+					Boolean.parseBoolean(cookieDataMap.get("secure").toString()),
+					Boolean.parseBoolean(cookieDataMap.get("httpOnly").toString()));
 
 			driver.manage().addCookie(cookie);
 		}
@@ -597,7 +600,7 @@ public class ServiziCookieTest extends BaseTest {
 						+ formatter.format("HttpOnly: '%b'\n", cookie.isHttpOnly()));
 			}
 		}
-		sleep(120000);
+		sleep(10000);
 		// TODO: handle refreshes with Caution. As the 'Click Day' time approaches,
 		// reload the page continuously
 		// until the transmission button is active.
@@ -646,12 +649,15 @@ public class ServiziCookieTest extends BaseTest {
 		} catch (TimeoutException | UnreachableBrowserException e) {
 			verificationErrors.append(e.toString());
 		}
-		sleep(120000);
+		sleep(1000);
 		doLogout();
 	}
 
-	private static void doLogout() {
-
+	private void doLogout() {
+		WebElement element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector("#ctl00_lnkLogout"))));
+		highlight(element);
+		element.click();
 	}
 
 	// http://www.sqlitetutorial.net/sqlite-java/create-table/
