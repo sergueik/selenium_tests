@@ -4,7 +4,7 @@
   <groupId>com.mycompany.app</groupId>
   <artifactId>selenium_tests</artifactId>
   <packaging>jar</packaging>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.5-SNAPSHOT</version>
   <name>app</name>
   <url>http://maven.apache.org</url>
   <developers>
@@ -41,6 +41,7 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/DesiredCapabilities
 with 3.13.0
 java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
 -->
+    <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
     <testng.version>6.11</testng.version>
     <guava.version>23.1</guava.version>
     <browser.name>chrome</browser.name>
@@ -177,6 +178,11 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>${json.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>${sqlite-jdbc.version}</version>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
