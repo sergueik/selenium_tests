@@ -6,13 +6,26 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.Normalizer;
 import java.time.Duration;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.junit.After;
@@ -53,7 +67,7 @@ public class GoogleDriveTest {
 	private static Boolean debug = false;
 	private static String selector = null;
 	private static long implicitWait = 10;
-	private static int flexibleWait = 30;
+	private static int flexibleWait = 180;
 	private static long polling = 1000;
 	private static long highlight = 100;
 	private static long afterTest = 1000;
@@ -61,14 +75,34 @@ public class GoogleDriveTest {
 	private static String loginURL = "https://accounts.google.com/";
 	private static final StringBuffer verificationErrors = new StringBuffer();
 	private static Map<String, String> env = System.getenv();
-	private static String username = "";
-	private static String password = "";
+	private static String username = getPropertyEnv("TEST_USER",
+			"automationnewuser24@gmail.com");
+	private static String password = getPropertyEnv("TEST_PASS", "00000000");
 	private static final StringBuilder loggingSb = new StringBuilder();
 	private static final Formatter formatter = new Formatter(loggingSb,
 			Locale.US);
 	private static String propertiesFileName = "test.properties";
+	// TODO: blank value is picked
+	// empty
 	private static final String propertyFilePath = getPropertyEnv(
 			"property.filepath", "src/test/resources");
+
+	private static final boolean createTable = true;
+
+	private static Map<String, Object> cookieDataMap = new HashMap<>();
+
+	private static final String sqlite_database_name = "login_cookies";
+
+	private static Connection conn;
+	private static String sql;
+
+	// NOTE: value data first column
+	private static final String extractQuery = "SELECT cookie, username, cookiename FROM login_cookies where username = ? and cookiename = ? limit 1";
+	private static final String extractQueryTemplate = "SELECT cookie, username, cookiename  FROM login_cookies where username = '%s'and cookiename = '%s' limit 1";
+	private static final String insertQuery = "INSERT INTO login_cookies(username, cookiename, cookie) VALUES(?,?,?)";
+	private static final String defaultKey = "name";
+	List<String> cookieNames = new ArrayList<>(
+			Arrays.asList(new String[] { "NID", "GAPS" }));
 
 	private static WebDriver setupDriver() {
 		System.setProperty("webdriver.gecko.driver",
@@ -90,17 +124,59 @@ public class GoogleDriveTest {
 			debug = true;
 		}
 		driver = setupDriver();
+		System.err.println("Properties file path: " + propertyFilePath);
 		HashMap<String, String> propertiesMap = PropertiesParser
 				.getProperties(String.format("%s/%s/%s", System.getProperty("user.dir"),
 						propertyFilePath, propertiesFileName));
-		username = propertiesMap.get("username");
-		password = propertiesMap.get("password");
+		if (username.isEmpty()) {
+			username = propertiesMap.get("username");
+		}
+		if (password.isEmpty()) {
+			password = propertiesMap.get("password");
+		}
+		System.err.println("Username: " + username);
+		System.err.println("Password: " + password);
 		wait = new WebDriverWait(driver, flexibleWait);
 		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		wait.pollingEvery(Duration.ofMillis(polling));
 		// wait.pollingEvery(polling, TimeUnit.MILLISECONDS);
 		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
 		driver.get(baseURL);
+		try {
+			// origin:
+			// https://www.tutorialspoint.com/sqlite/sqlite_java.htm
+			Class.forName("org.sqlite.JDBC");
+			String dbURL = resolveEnvVars(String.format(
+					"jdbc:sqlite:${USERPROFILE}\\Desktop\\%s.db", sqlite_database_name));
+			// NOTE: SQLite driver on its own will not create folders to construct
+			// path to the file,
+			// default is current project directory
+			// dbURL = "jdbc:sqlite:performance.db";
+			conn = DriverManager.getConnection(dbURL);
+			if (conn != null) {
+				// System.err.println("Connected to the database");
+				DatabaseMetaData databaseMetadata = conn.getMetaData();
+				System.err.println("Driver name: " + databaseMetadata.getDriverName());
+				System.err
+						.println("Driver version: " + databaseMetadata.getDriverVersion());
+				System.err.println(
+						"Product name: " + databaseMetadata.getDatabaseProductName());
+				System.err.println(
+						"Product version: " + databaseMetadata.getDatabaseProductVersion());
+				if (createTable) {
+					createNewTable();
+					// insertData("name", "dummy", "cookie");
+					// conn.close();
+				}
+			}
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Could not initialize: " + e.toString());
+			// System.exit(1); ?
+		} catch (Exception e) {
+
+		} finally {
+		}
 	}
 
 	@Before
@@ -132,7 +208,7 @@ public class GoogleDriveTest {
 		}
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void getCookieTest() throws Exception {
 
@@ -159,16 +235,21 @@ public class GoogleDriveTest {
 				System.err.println(cookieJSONObject.toString());
 			}
 			cookieJSONArray.put(cookieJSONObject);
+
+			System.err.println("Insering: " + cookieJSONObject.toString());
+			insertData(username, cookie.getName(), cookieJSONObject.toString());
+
 		}
 		JSONObject cookiesJSONObject = new JSONObject();
 		cookiesJSONObject.put("cookies", cookieJSONArray);
 		if (debug) {
 			System.err.println(cookiesJSONObject.toString());
 		}
+
 		doLogout();
 	}
 
-  // @Ignore
+	@Ignore
 	@Test
 	public void useCookieTest() throws Exception {
 		doLogin();
@@ -201,6 +282,9 @@ public class GoogleDriveTest {
 								cookie.getPath(), cookie.getExpiry(), cookie.isSecure(),
 								cookie.isHttpOnly())
 						.toString());
+				JSONObject cookieJSONObject = new JSONObject(cookie);
+				System.err.println("Insering: " + cookieJSONObject.toString());
+				insertData(username, cookie.getName(), cookieJSONObject.toString());
 			}
 			try {
 				driver.manage().addCookie(cookie);
@@ -228,7 +312,7 @@ public class GoogleDriveTest {
 
 		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
 				By.cssSelector("a[aria-label^='Google Account']")));
-		
+
 		highlight(element);
 		element.click();
 		element = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -328,9 +412,9 @@ public class GoogleDriveTest {
 
 	public static String getPropertyEnv(String name, String defaultValue) {
 		String value = System.getProperty(name);
-		if (value == null) {
+		if (value == null || value.isEmpty()) {
 			value = System.getenv(name);
-			if (value == null) {
+			if (value == null || value.isEmpty()) {
 				value = defaultValue;
 			}
 		}
@@ -366,4 +450,187 @@ public class GoogleDriveTest {
 			return (propertiesMap);
 		}
 	}
+
+	/// TODO: refactor into a separate class Utils.java
+	// http://www.sqlitetutorial.net/sqlite-java/create-table/
+	public static void createNewTable() {
+		sql = "DROP TABLE IF EXISTS login_cookies";
+		try (java.sql.Statement statement = conn.createStatement()) {
+			statement.execute(sql);
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		sql = "CREATE TABLE IF NOT EXISTS login_cookies (\n"
+				+ "	id integer PRIMARY KEY,\n" + "	username text NOT NULL,\n"
+				+ "	cookiename text NOT NULL,\n" + "	cookie text\n" + ");";
+		try (java.sql.Statement statement = conn.createStatement()) {
+			statement.execute(sql);
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+	}
+
+	// http://www.sqlitetutorial.net/sqlite-java/insert/
+	public static void insertData(String userName, String cookieName,
+			String jsonDataString) {
+		try (PreparedStatement _statement = conn.prepareStatement(insertQuery)) {
+			System.err.println("Prepare statement: " + insertQuery);
+			// NOTE: Values not bound to statement is not thrown as exception
+			_statement.setString(1, userName);
+			_statement.setString(2, cookieName);
+			// TODO: time stamp
+			_statement.setString(3, jsonDataString);
+			_statement.executeUpdate();
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+	}
+
+	public static String extractData(String key) {
+		String value = null;
+		ResultSet result = null;
+		try {
+			System.err.println(
+					String.format("Prepare statement: %s\nwith %s", extractQuery, key));
+			PreparedStatement statement = conn.prepareStatement(extractQuery);
+			statement.setString(1, key);
+			result = statement.executeQuery();
+		} catch (Exception e1) {
+			System.err.println("Exception(ignored): " + e1.toString());
+			// NOTE: there must be NO quotes around ? parameter in where or the
+			// following
+			// java.lang.ArrayIndexOutOfBoundsException:
+			// at org.sqlite.jdbc3.JDBC3PreparedStatement.setString
+			// TODO: pre-validate
+			// see also extractQueryTemplate below
+			try {
+				System.err.println("Format statement query: " + extractQueryTemplate);
+				Statement statement = conn.createStatement();
+				result = statement
+						.executeQuery(String.format(extractQueryTemplate, key));
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+
+		}
+
+		if (result != null) {
+			System.err.println("Got results:");
+			try {
+				while (result.next()) {
+					String cookie = result.getString(1);
+					String username = result.getString(2);
+					String cookiename = result.getString(3);
+					System.err.println("username: " + username);
+					System.err.println("cookie:\n" + cookie);
+					value = cookie;
+				}
+			} catch (SQLException e) {
+				System.err.println("Exception(ignored): " + e.toString());
+			}
+		}
+		return value;
+	}
+
+	public static String extractData(String key1, String key2) {
+		String value = null;
+		ResultSet result = null;
+		try {
+			System.err.println(String.format("Prepare statement: %s\nwith %s,%s",
+					extractQuery, key1, key2));
+			PreparedStatement statement = conn.prepareStatement(extractQuery);
+			statement.setString(1, key1);
+			statement.setString(2, key2);
+			result = statement.executeQuery();
+		} catch (Exception e) {
+			System.err.println("Exception(ignored): " + e.toString());
+			// NOTE: there must be NO quotes around ? parameter in where or the
+			// following
+			// java.lang.ArrayIndexOutOfBoundsException:
+			// at org.sqlite.jdbc3.JDBC3PreparedStatement.setString
+			// TODO: pre-validate
+			// see also extractQueryTemplate below
+			try {
+				System.err.println("Format statement query: " + extractQueryTemplate);
+				Statement statement = conn.createStatement();
+				result = statement
+						.executeQuery(String.format(extractQueryTemplate, key1, key2));
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+
+		}
+
+		if (result != null) {
+			System.err.println("Got results:");
+			try {
+				while (result.next()) {
+					String cookie = result.getString(1);
+					String username = result.getString(2);
+					String cookiename = result.getString(3);
+					System.err.println("username: " + username);
+					System.err.println("cookiename: " + cookiename);
+					System.err.println("cookie:\n" + cookie);
+					value = cookie;
+				}
+			} catch (SQLException e) {
+				System.err.println("Exception(ignored): " + e.toString());
+			}
+		}
+		return value;
+	}
+
+	public String deserializeData(Optional<Map<String, Object>> parameters) {
+		return deserializeData(null, parameters);
+	}
+
+	// Deserialize the hashmap from the JSON
+	// see also
+	// https://stackoverflow.com/questions/3763937/gson-and-deserializing-an-array-of-objects-with-arrays-in-it
+	// https://futurestud.io/tutorials/gson-mapping-of-arrays-and-lists-of-objects
+	public String deserializeData(String payload,
+			Optional<Map<String, Object>> parameters) {
+
+		Map<String, Object> collector = (parameters.isPresent()) ? parameters.get()
+				: new HashMap<>();
+
+		String data = (payload == null) ? "{}" : payload;
+		try {
+			JSONObject elementObj = new JSONObject(data);
+			@SuppressWarnings("unchecked")
+			Iterator<String> propIterator = elementObj.keys();
+			while (propIterator.hasNext()) {
+				String propertyKey = propIterator.next();
+				String propertyVal = elementObj.getString(propertyKey);
+				// logger.info(propertyKey + ": " + propertyVal);
+				if (debug) {
+					System.err
+							.println("Deserialize Data: " + propertyKey + ": " + propertyVal);
+				}
+				collector.put(propertyKey, propertyVal);
+			}
+		} catch (JSONException e) {
+			System.err.println("Exception (ignored): " + e.toString());
+			return null;
+		}
+		return collector.get(defaultKey).toString();
+	}
+
+	public static String resolveEnvVars(String input) {
+		if (null == input) {
+			return null;
+		}
+		Pattern p = Pattern.compile("\\$(?:\\{(?:env:)?(\\w+)\\}|(\\w+))");
+		Matcher m = p.matcher(input);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			String envVarName = null == m.group(1) ? m.group(2) : m.group(1);
+			String envVarValue = System.getenv(envVarName);
+			m.appendReplacement(sb,
+					null == envVarValue ? "" : envVarValue.replace("\\", "\\\\"));
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
 }
