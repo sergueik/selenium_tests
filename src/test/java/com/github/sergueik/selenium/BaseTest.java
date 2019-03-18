@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
 // NOTE:
@@ -244,7 +246,6 @@ public class BaseTest {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@BeforeClass
 	public void beforeClass() throws IOException {
 
@@ -755,7 +756,6 @@ public class BaseTest {
 	// NOTE: dispatches the actual work to
 	// https://github.com/torquebox/jruby-maven-plugins/blob/master/ruby-tools/src/main/java/de/saumya/mojo/ruby/script/Script.java
 	// that may not be the fastest way of doing it
-	@SuppressWarnings("unused")
 	public static void killRemoteProcess(String processName) {
 		// TODO: actually read the "vagrant.properties" properties file
 		String identityFile = getPropertyEnv("IdentityFile",
@@ -1287,4 +1287,22 @@ public class BaseTest {
 
 		}
 	}
+
+	public static String resolveEnvVars(String input) {
+		if (null == input) {
+			return null;
+		}
+		Pattern p = Pattern.compile("\\$(?:\\{(?:env:)?(\\w+)\\}|(\\w+))");
+		Matcher m = p.matcher(input);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			String envVarName = null == m.group(1) ? m.group(2) : m.group(1);
+			String envVarValue = System.getenv(envVarName);
+			m.appendReplacement(sb,
+					null == envVarValue ? "" : envVarValue.replace("\\", "\\\\"));
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
 }
