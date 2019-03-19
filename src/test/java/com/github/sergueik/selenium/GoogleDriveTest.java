@@ -92,6 +92,8 @@ public class GoogleDriveTest {
 	private static Map<String, Object> cookieDataMap = new HashMap<>();
 
 	private static final String sqlite_database_name = "login_cookies";
+	// private static final boolean debug = Boolean
+	// .parseBoolean(System.getenv("DEBUG"));
 
 	private static Connection conn;
 	private static String sql;
@@ -208,7 +210,7 @@ public class GoogleDriveTest {
 		}
 	}
 
-	// @Ignore
+	@Ignore
 	@Test
 	public void getCookieTest() throws Exception {
 
@@ -249,7 +251,7 @@ public class GoogleDriveTest {
 		doLogout();
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void useCookieTest() throws Exception {
 		doLogin();
@@ -270,8 +272,9 @@ public class GoogleDriveTest {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 		}
-		System.err.println("Loading cookies");
+		System.err.println(String.format("Loading %d cookies ", cookies.size()));
 		for (Cookie cookie : cookies) {
+			// no cookie
 			if (debug) {
 				System.err.println(formatter
 						.format(
