@@ -782,9 +782,35 @@ public class BaseTest {
 		if (processName.isEmpty()) {
 			return;
 		}
-		String command = String.format((osName.toLowerCase().startsWith("windows"))
-				? "taskkill.exe /F /IM %s" : "killall %s", processName.trim());
+		// on Windows OS the only way to get the parentprocessid of a processid is
+		// through wmi
+		// https://stackoverflow.com/questions/33911332/powershell-how-to-get-the-parentprocessid-by-the-processid
+		// that implies switch from wrapping System.Diagnostics.Proces to
+		// https://docs.microsoft.com/en-us/windows/desktop/cimwin32prov/win32-process
+		// the latter does not appear to be easily wrappable through jni
+		// NOTE: for chrome-specific quirks for finding related processes see:
+		// https://automated-testing.info/t/selenium-webdriver-ubit-proczessy-chrome-i-chromedriver-pri-ostanovki-abort-dzhoby-na-jenkins-cherez-postbildstep/22341/11
+		/*
 
+		<#
+		$process_id=5308
+
+		(get-cimInstance -class Win32_Process -filter "parentprocessid = $process_id" ).processid
+		4736
+		9496
+		9536
+		9120
+		1996
+		8876
+		10188
+		(get-process -id 4736 ) .processname
+		'chrome'
+		#>
+		 */
+		String command = String.format((osName.toLowerCase().startsWith("windows"))
+				? "taskkill.exe /T /F /IM %s" : "killall %s", processName.trim());
+		// /T Terminates the specified process and any child processes which were
+		// started by it
 		try {
 			Runtime runtime = Runtime.getRuntime();
 			Process process = runtime.exec(command);
