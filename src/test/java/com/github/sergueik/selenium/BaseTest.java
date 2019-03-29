@@ -1331,4 +1331,16 @@ public class BaseTest {
 		return sb.toString();
 	}
 
+	// based on:
+	// https://github.com/Ardesco/Selenium-Maven-Template/blob/master/src/test/java/com/lazerycode/selenium/tests/GoogleExampleIT.java#L13
+	// usage:
+	// wait.until(pageTitleEndsWith("#inbox"));
+	// System.err.println("Page title: " + driver.getTitle());
+	// e.g. Page title: https://mail.google.com/mail/u/0/#inbox
+	private ExpectedCondition<Boolean> pageTitleEndsWith(final String search) {
+		// return java 8 lambda
+		return d -> d.getTitle().toLowerCase()
+				.matches("(?:" + search.toLowerCase() + ")$");
+	}
+
 }
