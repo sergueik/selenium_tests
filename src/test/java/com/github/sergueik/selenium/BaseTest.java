@@ -352,6 +352,7 @@ public class BaseTest {
 				}
 			}
 
+			// http://learn-automation.com/handle-untrusted-certificate-selenium/
 			capabilities
 					.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
 			capabilities.setCapability(
@@ -423,6 +424,7 @@ public class BaseTest {
 					"text/csv,application/x-msexcel,application/excel,application/x-excel,application/vnd.ms-excel,image/png,image/jpeg,text/html,text/plain,application/msword,application/xml");
 			profile.setPreference("browser.helperApps.alwaysAsk.force", false);
 			profile.setPreference("browser.download.manager.alertOnEXEOpen", false);
+			// http://learn-automation.com/handle-untrusted-certificate-selenium/	
 			profile.setAcceptUntrustedCertificates(true);
 			profile.setAssumeUntrustedCertificateIssuer(true);
 
