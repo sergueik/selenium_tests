@@ -638,6 +638,18 @@ public class BaseTest {
 		}
 	}
 
+	//
+	protected WebElement getParentBlockElement(WebElement element) {
+		String highlightScript = getScriptContent("closestParentBlockNode.js");
+		// return (WebElement) executeScript(String.format(
+		// "%s\nreturn parent_block(arguments[0]);", highlightScript), element);
+		return (WebElement) executeScript(highlightScript, element);
+	}
+
+	protected void highlightNew(WebElement element) {
+		highlightNew(element, 100);
+	}
+
 	protected void highlightNew(WebElement element, long highlightInterval) {
 		Rectangle elementRect = element.getRect();
 		String highlightScript = getScriptContent("highlight.js");
@@ -791,10 +803,10 @@ public class BaseTest {
 		// NOTE: for chrome-specific quirks for finding related processes see:
 		// https://automated-testing.info/t/selenium-webdriver-ubit-proczessy-chrome-i-chromedriver-pri-ostanovki-abort-dzhoby-na-jenkins-cherez-postbildstep/22341/11
 		/*
-
+		
 		<#
 		$process_id=5308
-
+		
 		(get-cimInstance -class Win32_Process -filter "parentprocessid = $process_id" ).processid
 		4736
 		9496

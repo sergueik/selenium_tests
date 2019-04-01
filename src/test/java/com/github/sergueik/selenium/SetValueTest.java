@@ -36,20 +36,18 @@ import org.testng.annotations.Test;
 
 public class SetValueTest extends BaseTest {
 
-	private static String baseURL = "http://www.seleniumeasy.com/test";
+	private static String baseURL = "https://www.seleniumeasy.com/test/input-form-demo.html";
 	private static String text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
-	private static String selector = "form#contact_form > fieldset div.form-group div.input-group textarea.form-control";
-
+	private static String selector = "form#contact_form fieldset div.input-group textarea.form-control[name='comment']";
+	private static String parentXpath = "//form[@id = 'contact_form']//div[@class='input-group'][textarea[@name='comment']]";
 	private static final StringBuffer verificationErrors = new StringBuffer();
 
 	@BeforeMethod
 	public void BeforeMethod(Method method) {
 		super.beforeMethod(method);
 		driver.get(baseURL);
-		String url = "https://www.seleniumeasy.com/test/input-form-demo.html";
-		driver.get(url);
 		ExpectedCondition<Boolean> urlChange = driver -> driver.getCurrentUrl()
-				.matches(String.format("^%s.*", url));
+				.matches(String.format("^%s.*", baseURL));
 		wait.until(urlChange);
 		System.err.println("Current  URL: " + driver.getCurrentUrl());
 	}
@@ -74,7 +72,9 @@ public class SetValueTest extends BaseTest {
 		element = driver.findElement(By.cssSelector(selector));
 		assertThat(element.getAttribute("value"), is(value));
 		System.err
-				.println(String.format("Returned: %s", element.getAttribute("value")));
+		.println(String.format("Returned: %s", element.getAttribute("value")));
+		sleep(1000);
+		highlight(element.findElement(By.xpath("../..")), 1000);
 	}
 
 	@Test(enabled = true)
@@ -89,7 +89,18 @@ public class SetValueTest extends BaseTest {
 		element = driver.findElement(By.cssSelector(selector));
 		assertThat(element.getAttribute("value"), is(value));
 		System.err
-				.println(String.format("Returned: %s", element.getAttribute("value")));
+		.println(String.format("Returned: %s", element.getAttribute("value")));
+		sleep(1000);
+		highlight(element.findElement(By.xpath("../..")), 1000);
+		WebElement parentElement = driver.findElement(By.xpath(parentXpath));
+		assertThat(parentElement, notNullValue());
+		System.err.println(String.format("Parent Element: %s",
+				parentElement.getAttribute("outerHTML")));
+		highlight(parentElement, 1000);
+		parentElement = getParentBlockElement(element);
+		assertThat(parentElement, notNullValue());
+		highlight(parentElement, 1000);
+		jqueryHover(selector);
 	}
 
 	@Test(enabled = true)
@@ -104,6 +115,9 @@ public class SetValueTest extends BaseTest {
 		element = driver.findElement(By.cssSelector(selector));
 		assertThat(element.getAttribute("value"), is(value));
 		System.err
-				.println(String.format("Returned: %s", element.getAttribute("value")));
+		.println(String.format("Returned: %s", element.getAttribute("value")));
+		sleep(1000);
+		highlight(element.findElement(By.xpath("..")), 1000);
+		jqueryHover(selector);
 	}
 }
