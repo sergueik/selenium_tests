@@ -279,6 +279,7 @@ public class BaseTest {
 									.resolve("chromedriver").toAbsolutePath().toString());
 
 			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+			// https://peter.sh/experiments/chromium-command-line-switches/
 			ChromeOptions chromeOptions = new ChromeOptions();
 
 			Map<String, Object> chromePrefs = new HashMap<>();
@@ -336,6 +337,7 @@ public class BaseTest {
 					"--disable-translate", "--disable-popup-blocking",
 					"--ignore-certificate-errors", "--no-proxy-server",
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
+					// "--start-fullscreen",
 					String.format("--browser.download.dir=%s", downloadFilepath)
 					/* "--user-data-dir=/path/to/your/custom/profile",
 					   "--profile-directory=name_of_custom_profile_directory",
@@ -424,7 +426,7 @@ public class BaseTest {
 					"text/csv,application/x-msexcel,application/excel,application/x-excel,application/vnd.ms-excel,image/png,image/jpeg,text/html,text/plain,application/msword,application/xml");
 			profile.setPreference("browser.helperApps.alwaysAsk.force", false);
 			profile.setPreference("browser.download.manager.alertOnEXEOpen", false);
-			// http://learn-automation.com/handle-untrusted-certificate-selenium/	
+			// http://learn-automation.com/handle-untrusted-certificate-selenium/
 			profile.setAcceptUntrustedCertificates(true);
 			profile.setAssumeUntrustedCertificateIssuer(true);
 
@@ -923,6 +925,10 @@ public class BaseTest {
 	protected String cssSelectorOfElement(WebElement element) {
 		return (String) executeScript(getScriptContent("cssSelectorOfElement.js"),
 				element);
+	}
+
+	protected boolean detectFullScreen() {
+		return (boolean) executeScript(getScriptContent("detectFullScreen.js"));
 	}
 
 	protected String styleOfElement(WebElement element, Object... arguments) {

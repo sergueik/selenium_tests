@@ -40,8 +40,10 @@ public class SetValueTest extends BaseTest {
 	private static String text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
 	private static String selector = "form#contact_form fieldset div.input-group textarea.form-control[name='comment']";
 	// shorten it own
+	// added a semantic for attribute check in css selector
+	// http://software-testing.ru/forum/index.php?/topic/37918-komanda-wait-for-element-present-selenium-ide-nuzhno-li-ukazyvat-vremia-v-pol/
 	static {
-		selector = "form#contact_form textarea[name='comment']";
+		selector = "form#contact_form:not([style*='display: none;']) textarea[name='comment']";
 	}
 	private static String parentXpath = "//form[@id = 'contact_form']//div[@class='input-group'][textarea[@name='comment']]";
 	private static final StringBuffer verificationErrors = new StringBuffer();
@@ -49,6 +51,8 @@ public class SetValueTest extends BaseTest {
 	@BeforeMethod
 	public void BeforeMethod(Method method) {
 		super.beforeMethod(method);
+
+		System.err.println("full screen:" + super.detectFullScreen());
 		driver.get(baseURL);
 		ExpectedCondition<Boolean> urlChange = driver -> driver.getCurrentUrl()
 				.matches(String.format("^%s.*", baseURL));
