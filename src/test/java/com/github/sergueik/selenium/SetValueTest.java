@@ -41,6 +41,7 @@ public class SetValueTest extends BaseTest {
 	private static String selector = "form#contact_form fieldset div.input-group textarea.form-control[name='comment']";
 	// shorten it own
 	// added a semantic for attribute check in css selector
+	// e.g. https://jsfiddle.net/cferdinandi/qgpxvhhb/5/
 	// http://software-testing.ru/forum/index.php?/topic/37918-komanda-wait-for-element-present-selenium-ide-nuzhno-li-ukazyvat-vremia-v-pol/
 	static {
 		selector = "form#contact_form:not([style*='display: none;']) textarea[name='comment']";
