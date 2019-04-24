@@ -360,6 +360,20 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
         <browser.name>firefox</browser.name>
       </properties>
     </profile>
+    <profile>
+      <!-- https://stackoverflow.com/questions/166895/different-dependencies-for-different-build-profiles -->
+      <id>yandex</id>
+      <properties>
+        <browser.name>yandex</browser.name>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.opera</groupId>
+          <artifactId>operadriver</artifactId>
+          <version>0.7.3</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
   <repositories>
     <repository>
