@@ -60,12 +60,15 @@ public class YandexBrowserTest {
 		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
 			debug = true;
 		}
+		// download operadriver from
 		// https://github.com/operasoftware/operachromiumdriver/releases
 		System.setProperty("webdriver.opera.driver",
 				Paths.get(System.getProperty("user.home")).resolve("Downloads")
 						.resolve("operadriver.exe").toAbsolutePath().toString());
-		// use offline installer
-		// https://www.filehorse.com/download-yandex-browser/
+		// use offline installer yandex.exe for Windows
+		// e.g. from https://www.filehorse.com/download-yandex-browser/
+		// and yandex-browser package for major Linux distributions
+		// from https://www.linuxbabe.com/browser/yandex-browser-debian-ubuntu-fedora-opensuse-arch
 
 		OperaOptions options = new OperaOptions();
 		options.setBinary(Paths.get(System.getProperty("user.home"))
@@ -76,7 +79,7 @@ public class YandexBrowserTest {
 		wait = new WebDriverWait(driver, flexibleWait);
 		wait.pollingEvery(Duration.ofMillis(polling));
 		driver.manage().timeouts().implicitlyWait(implicitWait, TimeUnit.SECONDS);
-	}
+x			}
 
 	@Before
 	public void beforeTest() {
