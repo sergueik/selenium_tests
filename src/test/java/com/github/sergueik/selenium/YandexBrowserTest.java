@@ -53,21 +53,23 @@ public class YandexBrowserTest /* extends BaseTest */ {
 
 	private static WebDriver driver;
 	// small size
-	private static final int width = 1024;
-	private static final int height = 768;
+	private static final int normalWidth = 1024;
+	private static final int normalHeight = 768;
 	// Yandex browser shows no page footer with small screen sizes
-	// private static final int width = 768;
-	// private static final int height = 640;
+	private static final int smallWidth = 768;
+	private static final int smallHeight = 640;
 	// scrolling does not help
-	private static final Dimension browserWindowDimention = new Dimension(width,
-			height);
+	private static final Dimension normalBrowserDimension = new Dimension(
+			normalWidth, normalHeight);
+	private static final Dimension smallBrowserDimension = new Dimension(
+			smallWidth, smallHeight);
 	private static WebDriverWait wait;
 	private static Actions actions;
 	private static WebElement element = null;
 	private static Boolean debug = false;
 	private static String selector = null;
 	private static long implicitWait = 10;
-	private static int flexibleWait = 180;
+	private static int flexibleWait = 10;
 	private static long polling = 1000;
 	private static long highlight = 100;
 	private static long afterTest = 1000;
@@ -146,10 +148,13 @@ public class YandexBrowserTest /* extends BaseTest */ {
 	private static final String cssSelector2 = "#mount > main > footer a > img.footer__icon[alt='Help']";
 
 	@Test
-	public void trickyFooterTest() {
-		driver.manage().window().setSize(browserWindowDimention);
+	public void pageFooterTrickyTest() {
+		driver.manage().window().setSize(normalBrowserDimension);
 
 		System.err.println("Driver: " + driver.getClass());
+		if (debug) {
+			// System.err.println("Page source: " + driver.getPageSource());
+		}
 		try {
 			element = driver.findElement(By.cssSelector(cssSelector1));
 		} catch (Exception e) {
@@ -157,7 +162,6 @@ public class YandexBrowserTest /* extends BaseTest */ {
 
 		}
 		element = driver.findElement(By.cssSelector(cssSelector2));
-		// src="//avatars.mds.yandex.net/";
 		// Act
 		assertThat(element, notNullValue());
 		assertThat(element.getAttribute("src"),
@@ -169,6 +173,62 @@ public class YandexBrowserTest /* extends BaseTest */ {
 		element.click();
 		wait.until(ExpectedConditions.urlContains(helpURL));
 		assertTrue(driver.getCurrentUrl().matches(helpURL));
+	}
+
+	@Test
+	public void pageFooterWCAGTest2() {
+		// Arrange
+		driver.manage().window().setSize(normalBrowserDimension);
+		try {
+			// Act
+			element = driver.findElement(By.cssSelector(cssSelector2));
+			assertThat(element, notNullValue());
+			assertThat(element.getAttribute("src"),
+					containsString("https://avatars.mds.yandex.net/"));
+			if (debug) {
+				System.err
+						.println("Element found: " + element.getAttribute("outerHTML"));
+			}
+			// Assert
+			assertThat(element.isDisplayed(), is(true));
+			System.err.println("Browser dimension: "
+					+ driver.manage().window().getSize() + "\n" + "Element is: "
+					+ (element.isDisplayed() ? " visible" : "invisible"));
+		} catch (Exception e) {
+			System.err.println("Exception (ignored): " + e.getMessage());
+
+		}
+	}
+
+	@Test
+	public void pageFooterWCAGTest1() {
+		// Arrange
+		driver.manage().window().setSize(smallBrowserDimension);
+
+		if (debug) {
+			// System.err.println("Page source: " + driver.getPageSource());
+		}
+		try {
+			// Act
+			element = driver.findElement(By.cssSelector(cssSelector1));
+			element = driver.findElement(By.cssSelector(cssSelector2));
+			// Act
+			assertThat(element, notNullValue());
+			assertThat(element.getAttribute("src"),
+					containsString("https://avatars.mds.yandex.net/"));
+			// Assert
+			assertThat(element.isDisplayed(), is(false));
+			if (debug) {
+				System.err
+						.println("Element found: " + element.getAttribute("outerHTML"));
+			}
+			System.err.println("Browser dimension: "
+					+ driver.manage().window().getSize() + "\n" + "Element is: "
+					+ (element.isDisplayed() ? " visible" : "invisible"));
+		} catch (Exception e) {
+			System.err.println("Exception (ignored): " + e.getMessage());
+
+		}
 	}
 
 	public void scrollIntoView(WebElement element) {
