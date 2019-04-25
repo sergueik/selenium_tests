@@ -22,9 +22,12 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.opera.OperaOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -52,13 +55,28 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 public class YandexBrowserTest /* extends BaseTest */ {
 
 	private static WebDriver driver;
-	// small size
+	private static final boolean useOperaDriver = false;
+
+	// use offline installer yandex.exe for Windows
+	// e.g. from https://www.filehorse.com/download-yandex-browser/
+	// and yandex-browser package for major Linux distributions
+	// from
+	// https://www.linuxbabe.com/browser/yandex-browser-debian-ubuntu-fedora-opensuse-arch
+	private static final String binaryPath = Paths
+			.get(System.getProperty("user.home"))
+			.resolve("AppData\\Local\\Yandex\\YandexBrowser\\Application")
+			.resolve("browser.exe").toAbsolutePath().toString();
+
+	// Yandex browser shows no page footer when screen sizes is small
+	// page scrolling does not help
+
+	// normal size
 	private static final int normalWidth = 1024;
 	private static final int normalHeight = 768;
-	// Yandex browser shows no page footer with small screen sizes
+
+	// small size
 	private static final int smallWidth = 768;
 	private static final int smallHeight = 640;
-	// scrolling does not help
 	private static final Dimension normalBrowserDimension = new Dimension(
 			normalWidth, normalHeight);
 	private static final Dimension smallBrowserDimension = new Dimension(
@@ -86,24 +104,37 @@ public class YandexBrowserTest /* extends BaseTest */ {
 		if (env.containsKey("DEBUG") && env.get("DEBUG").equals("true")) {
 			debug = true;
 		}
-		// download operadriver from
-		// https://github.com/operasoftware/operachromiumdriver/releases
-		System.setProperty("webdriver.opera.driver",
-				Paths.get(System.getProperty("user.home")).resolve("Downloads")
-						.resolve("operadriver.exe").toAbsolutePath().toString());
-		// use offline installer yandex.exe for Windows
-		// e.g. from https://www.filehorse.com/download-yandex-browser/
-		// and yandex-browser package for major Linux distributions
-		// from
-		// https://www.linuxbabe.com/browser/yandex-browser-debian-ubuntu-fedora-opensuse-arch
+		// Yandex broswer supports both chrome and operadriver (?
+		if (useOperaDriver) {
+			// one can download operadriver from
+			// https://github.com/operasoftware/operachromiumdriver/releases
+			System.setProperty("webdriver.opera.driver",
+					Paths.get(System.getProperty("user.home")).resolve("Downloads")
+							.resolve("operadriver.exe").toAbsolutePath().toString());
+		} else {
+			System.setProperty("webdriver.chrome.driver",
+					Paths.get(System.getProperty("user.home")).resolve("Downloads")
+							.resolve("chromedriver.exe").toAbsolutePath().toString());
+		}
 
-		OperaOptions options = new OperaOptions();
-		options.setBinary(Paths.get(System.getProperty("user.home"))
-				.resolve("AppData\\Local\\Yandex\\YandexBrowser\\Application")
-				.resolve("browser.exe").toAbsolutePath().toString());
-		// org.openqa.selenium.WebDriverException: unknown error: no Opera binary at
-		// C:\Users\Serguei\AppData\Local\Yandex\YandexBrowser\Application\browser.exe
-		driver = new OperaDriver(options);
+		if (useOperaDriver) {
+			OperaOptions options = new OperaOptions();
+			options.setBinary(binaryPath);
+			// org.openqa.selenium.WebDriverException: unknown error: no Opera binary
+			// at
+			// C:\Users\Serguei\AppData\Local\Yandex\YandexBrowser\Application\browser.exe
+
+			driver = new OperaDriver(options);
+		} else {
+			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+			// https://peter.sh/experiments/chromium-command-line-switches/
+			ChromeOptions chromeOptions = new ChromeOptions();
+			chromeOptions.setBinary(binaryPath);
+			capabilities.setCapability(
+					org.openqa.selenium.chrome.ChromeOptions.CAPABILITY, chromeOptions);
+
+			driver = new ChromeDriver(capabilities);
+		}
 		actions = new Actions(driver);
 		wait = new WebDriverWait(driver, flexibleWait);
 		wait.pollingEvery(Duration.ofMillis(polling));
@@ -179,25 +210,19 @@ public class YandexBrowserTest /* extends BaseTest */ {
 	public void pageFooterWCAGTest2() {
 		// Arrange
 		driver.manage().window().setSize(normalBrowserDimension);
-		try {
-			// Act
-			element = driver.findElement(By.cssSelector(cssSelector2));
-			assertThat(element, notNullValue());
-			assertThat(element.getAttribute("src"),
-					containsString("https://avatars.mds.yandex.net/"));
-			if (debug) {
-				System.err
-						.println("Element found: " + element.getAttribute("outerHTML"));
-			}
-			// Assert
-			assertThat(element.isDisplayed(), is(true));
-			System.err.println("Browser dimension: "
-					+ driver.manage().window().getSize() + "\n" + "Element is: "
-					+ (element.isDisplayed() ? " visible" : "invisible"));
-		} catch (Exception e) {
-			System.err.println("Exception (ignored): " + e.getMessage());
-
+		// Act
+		element = driver.findElement(By.cssSelector(cssSelector2));
+		assertThat(element, notNullValue());
+		assertThat(element.getAttribute("src"),
+				containsString("https://avatars.mds.yandex.net/"));
+		if (debug) {
+			System.err.println("Element found: " + element.getAttribute("outerHTML"));
 		}
+		// Assert
+		assertThat(element.isDisplayed(), is(true));
+		System.err.println("Browser dimension: "
+				+ driver.manage().window().getSize() + "\n" + "Element is: "
+				+ (element.isDisplayed() ? " visible" : "invisible"));
 	}
 
 	@Test
@@ -208,27 +233,21 @@ public class YandexBrowserTest /* extends BaseTest */ {
 		if (debug) {
 			// System.err.println("Page source: " + driver.getPageSource());
 		}
-		try {
-			// Act
-			element = driver.findElement(By.cssSelector(cssSelector1));
-			element = driver.findElement(By.cssSelector(cssSelector2));
-			// Act
-			assertThat(element, notNullValue());
-			assertThat(element.getAttribute("src"),
-					containsString("https://avatars.mds.yandex.net/"));
-			// Assert
-			assertThat(element.isDisplayed(), is(false));
-			if (debug) {
-				System.err
-						.println("Element found: " + element.getAttribute("outerHTML"));
-			}
-			System.err.println("Browser dimension: "
-					+ driver.manage().window().getSize() + "\n" + "Element is: "
-					+ (element.isDisplayed() ? " visible" : "invisible"));
-		} catch (Exception e) {
-			System.err.println("Exception (ignored): " + e.getMessage());
-
+		// Act
+		element = driver.findElement(By.cssSelector(cssSelector1));
+		element = driver.findElement(By.cssSelector(cssSelector2));
+		// Act
+		assertThat(element, notNullValue());
+		assertThat(element.getAttribute("src"),
+				containsString("https://avatars.mds.yandex.net/"));
+		// Assert
+		assertThat(element.isDisplayed(), is(false));
+		if (debug) {
+			System.err.println("Element found: " + element.getAttribute("outerHTML"));
 		}
+		System.err.println("Browser dimension: "
+				+ driver.manage().window().getSize() + "\n" + "Element is: "
+				+ (element.isDisplayed() ? " visible" : "invisible"));
 	}
 
 	public void scrollIntoView(WebElement element) {
@@ -263,6 +282,7 @@ public class YandexBrowserTest /* extends BaseTest */ {
 		} catch (Exception e) {
 			// temporarily catch all exceptions.
 			System.err.println("Exception: " + e.toString());
+
 		}
 
 	}
