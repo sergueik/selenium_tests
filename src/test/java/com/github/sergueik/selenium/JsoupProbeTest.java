@@ -77,6 +77,7 @@ public class JsoupProbeTest extends BaseTest {
 
 	private static final Logger log = LogManager.getLogger(JsoupProbeTest.class);
 	private String filePath = "links.htm";
+	private final static boolean peekTargetParent = false;
 	// private String selector = "#acListWrap > div:nth-child(3) > div >
 	// div.productListingMiddle > div.lower.tabsection";
 	private String selector = "#acListWrap div.productListing h2.listSubtitle > a[href*='/item/'][title='Click to View']";
@@ -84,17 +85,17 @@ public class JsoupProbeTest extends BaseTest {
 	private static final LinkedHashMap<String, String> attrMap = new LinkedHashMap<>();
 	private static Document jsoupDocument;
 	private static List<WebElement> elements;
-	private static final List<String> attrKeys1 = Arrays.asList(
-			new String[] { "id", "class", "class", "class", "class", "title" });
-
-	// TODO: switch to jsoupDocument.getElementsByAttributeValueContaining(key,
 	// match)
-	private final List<String> attrKeys = Arrays.asList(
-			new String[] { "class", "class", "id", "class", "class", "title" });
-	private final List<String> attrValues = Arrays.asList(new String[] {
+	private final List<String> attrKeys = Arrays.asList(new String[] { "class",
+			"class", "id", "class", "class", "class", "title" });
+	private final List<String> attrValuesExact = Arrays.asList(new String[] {
 			"et_pb_module et_pb_text et_pb_text_0 et_pb_bg_layout_light  et_pb_text_align_left",
 			"et_pb_text_inner", "acListWrap", "auctionList", "productListing",
 			"listSubtitle", "Click to View" });
+
+	private final List<String> attrValuesPartial = Arrays
+			.asList(new String[] { "et_pb_text", "et_pb_text_inner", "acListWrap",
+					"auctionList", "productListing", "listSubtitle", "Click to View" });
 
 	private static Document parentDocument;
 	private static Elements jsoupElements;
@@ -133,15 +134,13 @@ public class JsoupProbeTest extends BaseTest {
 		attributeName = "class";
 		attributeValue = "productListing";
 
-		Elements divjsoupElements = jsoupDocument
-				.getElementsByAttributeValue(attributeName, attributeValue);
-		// Assert
-		// will fail
-		assertThat(divjsoupElements, notNullValue());
-		assertThat(divjsoupElements.iterator().hasNext(), is(true));
-		assertThat(divjsoupElements.eachText().size(), greaterThan(1));
+		jsoupElements = jsoupDocument.getElementsByAttributeValue(attributeName,
+				attributeValue);
+		assertThat(jsoupElements, notNullValue());
+		assertThat(jsoupElements.iterator().hasNext(), is(true));
+		assertThat(jsoupElements.eachText().size(), greaterThan(1));
 		System.err.println(String.format("Processing attribute(\"%s\") = \"%s\" %s",
-				attributeName, attributeValue, divjsoupElements.first().text()));
+				attributeName, attributeValue, jsoupElements.first().text()));
 	}
 
 	@Test(enabled = false)
@@ -151,11 +150,9 @@ public class JsoupProbeTest extends BaseTest {
 		parentDocument = jsoupDocument;
 		int cnt = 0;
 		for (int pos = 0; pos != attrKeys.size(); pos++) {
-			System.err.println(
-					"Processing " + attrKeys.get(pos) + ", " + attrValues.get(pos));
 			attributeName = attrKeys.get(pos);
-			attributeValue = attrValues.get(pos);
-			// TODO: attribute("id") = "acListWrap" found in too many child nodes
+			attributeValue = attrValuesExact.get(pos);
+			System.err.println("Processing " + attributeName + ", " + attributeValue);
 			if (cnt > -1) {
 				System.err.println(
 						"Scanning " + parentDocument.childNodes().size() + " child nodes");
@@ -204,97 +201,105 @@ public class JsoupProbeTest extends BaseTest {
 		jsoupDocument = Jsoup.parse(pageSource);
 
 		parentDocument = jsoupDocument;
+		Document nextParentDocument = null;
 		boolean rootDocument = true;
 		for (int pos = 0; pos != attrKeys.size(); pos++) {
 			attributeName = attrKeys.get(pos);
-			attributeValue = attrValues.get(pos);
+			attributeValue = attrValuesExact.get(pos);
 			System.err.println("Processing " + attributeName + ", " + attributeValue);
+			nextParentDocument = parentDocument;
 			do {
 				System.err.println(
 						"Scanning " + parentDocument.childNodes().size() + " child nodes");
-				parentDocument = getNextNode(parentDocument, attributeName,
+				nextParentDocument = getNextNode(parentDocument, attributeName,
 						attributeValue, !rootDocument);
-				if (parentDocument != null) {
-					System.err.println("Remained: " + parentDocument.childNodes().size()
-							+ " child nodes");
+				if (nextParentDocument != null) {
+					System.err.println("Remained: "
+							+ nextParentDocument.childNodes().size() + " child nodes");
 				}
-				if (parentDocument == null
-						|| (parentDocument.childNodes().size() == 1)) {
+				if (nextParentDocument == null
+						|| (nextParentDocument.childNodes().size() == 1)) {
 					break;
 				}
-			} while (parentDocument.childNodes().size() >= 1);
+			} while (nextParentDocument.childNodes().size() >= 1);
 			rootDocument = false;
-			jsoupElements = parentDocument.getElementsByAttributeValue(attributeName,
-					attributeValue);
+			try {
 
+				jsoupElements = nextParentDocument
+						.getElementsByAttributeValue(attributeName, attributeValue);
+			} catch (NullPointerException e) {
+				System.err
+						.println(String.format("Failed to handle %s=\"%s\", using parent",
+								attributeName, attributeValue));
+				jsoupElements = parentDocument
+						.getElementsByAttributeValue(attributeName, attributeValue);
+			}
 			assertThat(jsoupElements, notNullValue());
 			assertThat(jsoupElements.iterator().hasNext(), is(true));
 			assertThat(jsoupElements.eachText().size(), greaterThan(0));
 
 			String innerHTML = jsoupElements.first().outerHtml();
-			System.err
-					.println(String.format("Processing attribute(\"%s\") = \"%s\" %s...",
-							attributeName, attributeValue, innerHTML.substring(0, 160)));
-			// NOTE: not the ownerDocument - is is the wrong thing
-			// parentDocument = jsoupElements.first().ownerDocument();
+			System.err.println(String.format("For %s = \"%s\" found %s...",
+					attributeName, attributeValue, innerHTML.substring(0, 160)));
+			// NOTE: the ownerDocument - is the wrong thing
 			parentDocument = Jsoup.parse(innerHTML);
 
 		}
 	}
 
-	// LinkedHashMap does not work: as keys (DOM node attribute names) must be
-	// unique
-	@Test(enabled = false)
-	public void testBrokenLinkedHashMapUsage() {
+	@Test(enabled = true, expectedExceptions = AssertionError.class)
+	public void testDeepFun2PageSource() {
 		jsoupDocument = Jsoup.parse(pageSource);
 
-		attrMap.clear();
-		attrMap.put("id", "acListWrap");
-		attrMap.put("class", "productListing");
-		attrMap.put("class", "listSubtitle");
-		attrMap.put("title", "Click to View");
+		parentDocument = jsoupDocument;
+		Document nextParentDocument = null;
+		boolean rootDocument = true;
+		for (int pos = 0; pos != attrKeys.size(); pos++) {
+			attributeName = attrKeys.get(pos);
+			attributeValue = attrValuesPartial.get(pos);
+			System.err.println("Processing " + attributeName + ", " + attributeValue);
+			nextParentDocument = parentDocument;
+			do {
+				System.err.println(
+						"Scanning " + parentDocument.childNodes().size() + " child nodes");
+				nextParentDocument = getNextNode(parentDocument, attributeName,
+						attributeValue, !rootDocument, true);
+				if (nextParentDocument != null) {
+					System.err.println("Remained: "
+							+ nextParentDocument.childNodes().size() + " child nodes");
+				}
+				if (nextParentDocument == null
+						|| (nextParentDocument.childNodes().size() == 1)) {
+					break;
+				}
+			} while (nextParentDocument.childNodes().size() >= 1);
+			rootDocument = false;
+			try {
 
-		final List<String> attrKeys = new ArrayList<>();
-		for (Entry<String, String> o : attrMap.entrySet()) {
-			attrKeys.add(o.getKey());
-		}
-		System.err.println(attrKeys.toString());
-	}
+				jsoupElements = nextParentDocument
+						.getElementsByAttributeValueContaining(attributeName,
+								attributeValue);
+			} catch (NullPointerException e) {
+				System.err
+						.println(String.format("Failed to handle %s=\"%s\", using parent",
+								attributeName, attributeValue));
+				jsoupElements = parentDocument.getElementsByAttributeValueContaining(
+						attributeName, attributeValue);
+			}
+			assertThat("there should be result", jsoupElements, notNullValue());
+			assertThat(
+					String.format(
+							"there should be a collection of elements found by %s=\"%s\"",
+							attributeName, attributeValue),
+					jsoupElements.iterator().hasNext(), is(true));
+			assertThat(jsoupElements.eachText().size(), greaterThan(0));
 
-	// List of HashMap need to be refactored - does not work because of
-	// initialization/synchronization problems
-	@Test(enabled = false)
-	public void testBrokenListMapUsage() {
-		jsoupDocument = Jsoup.parse(pageSource);
+			String innerHTML = jsoupElements.first().outerHtml();
+			System.err.println(String.format("For %s = \"%s\" found %s...",
+					attributeName, attributeValue, innerHTML.substring(0, 160)));
+			// NOTE: the ownerDocument - is the wrong thing
+			parentDocument = Jsoup.parse(innerHTML);
 
-		final List<Map<String, String>> attrMap = new ArrayList<>();
-		Map<String, String> attrStep = new HashMap<>();
-		attrStep.put("id", "acListWrap");
-		attrMap.add(attrStep);
-		attrStep.remove("id");
-
-		attrStep.put("class", "productListing");
-		attrMap.add(attrStep);
-		attrStep.remove("class");
-		attrStep.put("class", "listSubtitle");
-		attrMap.add(attrStep);
-		attrStep.remove("class");
-		attrStep.put("title", "Click to View");
-		attrMap.add(attrStep);
-		attrStep.remove("title");
-		// makes attrMap full of empty entries
-		System.err.println("Processing " + attrMap.toString());
-
-		Iterator<Map<String, String>> attrMapIterator = attrMap.iterator();
-		while (attrMapIterator.hasNext()) {
-			attrStep = attrMapIterator.next();
-			System.err.println("Processing " + attrStep.toString());
-			/*
-			Set<String> attributeKeys = attrStep.keySet();
-			assertThat(attributeKeys.size(), greaterThan(0));
-			String attributeName = attributeKeys.toArray()[0].toString();
-			String attributeValue = attrStep.get(attributeName);
-			*/
 		}
 	}
 
@@ -314,6 +319,13 @@ public class JsoupProbeTest extends BaseTest {
 
 	private Document getNextNode(Document parentDocument, String attributeName,
 			String attributeNameValue, boolean useOwnerDocument) {
+		return getNextNode(parentDocument, attributeName, attributeNameValue,
+				useOwnerDocument, false);
+	}
+
+	private Document getNextNode(Document parentDocument, String attributeName,
+			String attributeNameValue, boolean useOwnerDocument,
+			boolean useContaining) {
 		Document nodeDodument = null;
 		for (Node childNode : parentDocument.childNodes()) {
 			String childHTML = childNode.outerHtml();
@@ -329,13 +341,19 @@ public class JsoupProbeTest extends BaseTest {
 				childHTMLDisplay = childHTMLDisplay.substring(0, 120) + "...";
 			}
 
-			jsoupElements = childDocument.getElementsByAttributeValue(attributeName,
-					attributeValue);
+			jsoupElements = useContaining
+					? childDocument.getElementsByAttributeValueContaining(attributeName,
+							attributeValue)
+					: childDocument.getElementsByAttributeValue(attributeName,
+							attributeValue);
+
 			if (jsoupElements != null && jsoupElements.size() > 0) {
-				Node parentNode = jsoupElements.get(0).parentNode();
-				if (parentNode != null) {
-					System.err.println("Parent node of the target: " + attributeName
-							+ " = " + attributeValue + " \n" + parentNode.outerHtml());
+				if (peekTargetParent) {
+					Node parentNode = jsoupElements.get(0).parentNode();
+					if (parentNode != null) {
+						System.err.println("Parent node of the target: " + attributeName
+								+ " = " + attributeValue + " \n" + parentNode.outerHtml());
+					}
 				}
 				System.err.println("Found " + attributeName + "=" + attributeValue
 						+ " in child: " + childHTMLDisplay);
