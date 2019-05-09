@@ -23,6 +23,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
@@ -31,24 +32,22 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
-//import org.openqa.selenium.opera.OperaDriver;
-//import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.annotations.BeforeMethod;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+
+import static org.junit.Assert.assertTrue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,7 +63,7 @@ import java.util.regex.Pattern;
 
 /**
 * Sample test scenario for web page scraping via joup based on chained  fast track node attribute scan
-* that is a lot less code than chained browse of immediate (grand-) children 
+* that is a lot less code than chained browse of immediate (grand-) children
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 
@@ -77,9 +76,8 @@ public class JsoupProbeTest extends BaseTest {
 
 	private static final Logger log = LogManager.getLogger(JsoupProbeTest.class);
 	private String filePath = "links.htm";
+	// origin:http://www.louisianaoutdoorproperties.com
 	private final static boolean peekTargetParent = false;
-	// private String selector = "#acListWrap > div:nth-child(3) > div >
-	// div.productListingMiddle > div.lower.tabsection";
 	private String selector = "#acListWrap div.productListing h2.listSubtitle > a[href*='/item/'][title='Click to View']";
 	private String pageSource = null;
 	private static final LinkedHashMap<String, String> attrMap = new LinkedHashMap<>();
@@ -247,7 +245,37 @@ public class JsoupProbeTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = true, expectedExceptions = AssertionError.class)
+	/*
+	 This can be used with Perl
+	#!/usr/bin/perl
+	
+	use warnings;
+	use strict;
+	
+	use Getopt::Long;
+	use Data::Dumper qw(Dumper);
+	use HTML::TagParser;
+	
+	use vars qw($DEBUG);
+	
+	$element =
+	( HTML::TagParser->new('links.htm')->getElementsByAttribute( 'id', 'acListWrap' ) )[0]->subTree();
+	
+	sub getData($$$) {
+	  my ( $e, $n, $v ) = @_;
+	  my @e = $e->getElementsByAttribute( $n, $v );
+	  my @d =
+	    map { my $t = $_->innerText; $t =~ s|\s+| |g; $t } @e;
+	  \@d;
+	}
+	
+	print Dumper 	\{
+		'price' => getData( $element, 'class', 'acListPrice' ),
+		'title' => getData( $element, 'class', 'listSubtitle' ),
+		'description'=> getData( $element, 'class', 'lower tabsection' ),
+	};	
+	 */
+	@Test(enabled = false, expectedExceptions = AssertionError.class)
 	public void testDeepFun2PageSource() {
 		jsoupDocument = Jsoup.parse(pageSource);
 
