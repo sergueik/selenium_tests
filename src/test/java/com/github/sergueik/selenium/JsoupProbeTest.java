@@ -380,7 +380,7 @@ public class JsoupProbeTest extends BaseTest {
 					Node parentNode = jsoupElements.get(0).parentNode();
 					if (parentNode != null) {
 						System.err.println("Parent node of the target: " + attributeName
-								+ " = " + attributeValue + " \n" + parentNode.outerHtml());
+								+ " = " + attributeValue + " \n" + parentNode.html(null));
 					}
 				}
 				System.err.println("Found " + attributeName + "=" + attributeValue
