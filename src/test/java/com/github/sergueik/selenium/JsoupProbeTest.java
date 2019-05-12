@@ -72,6 +72,7 @@ import java.util.regex.Pattern;
 // see also:
 // https://www.baeldung.com/java-with-jsoup
 // https://www.programcreek.com/java-api-examples/?class=org.jsoup.nodes.Document&method=getElementsByAttributeValue
+// https://jsoup.org/cookbook/extracting-data/selector-syntax
 public class JsoupProbeTest extends BaseTest {
 
 	private static final Logger log = LogManager.getLogger(JsoupProbeTest.class);
@@ -156,7 +157,7 @@ public class JsoupProbeTest extends BaseTest {
 						"Scanning " + parentDocument.childNodes().size() + " child nodes");
 				for (Node childNode : parentDocument.childNodes()) {
 					String childHTML = childNode.outerHtml();
-					String childHTMLDisplay = undoOuterHtmlDecor(childHTML);
+					String childHTMLDisplay = undoOuterHtmlDecor(childNode.html(null));
 					// NOTE: unsafe
 					if (cnt > 0) {
 						childDocument = childNode.ownerDocument();
