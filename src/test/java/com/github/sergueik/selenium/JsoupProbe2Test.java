@@ -11,31 +11,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.github.sergueik.selenium.YamlHelper;
+import com.github.sergueik.selenium.Configuration;
+import org.yaml.snakeyaml.constructor.ConstructorException;
+
 /**
-* Sample test scenario for web page scraping via joup based on chained node attribute scan
-* that is more precise than browsing of immediate (grand-) children
+* Sample test scenario for web page scraping with Jsoup and HTML::TagParser using on recordset of  node attribute scan
+* which is more precise than browsing of immediate (grand-) children
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 
-// Based on
-//
-// see also:
+// See also:
 // https://www.baeldung.com/java-with-jsoup
 // https://www.programcreek.com/java-api-examples/?class=org.jsoup.nodes.Document&method=getElementsByAttributeValue
 // https://jsoup.org/cookbook/extracting-data/selector-syntax
+// test with firefox profile
 // TODO: stop the chrome browser hanging in waiting for use.typekit.net
-///
 public class JsoupProbe2Test extends BaseTest {
 
 	private static boolean debug = false;
@@ -84,11 +93,29 @@ public class JsoupProbe2Test extends BaseTest {
 
 	private static String attributeName;
 	private static String attributeValue;
+	private static String yamlFile = null;
+	private static String internalConfiguration = String.format(
+			"%s/src/test/resources/%s", System.getProperty("user.dir"),
+			"locatorChains.yaml");
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
 		super.beforeClass();
 		assertThat(driver, notNullValue());
+		try {
+			Configuration data = YamlHelper.loadConfiguration(internalConfiguration);
+		} catch (ConstructorException e) {
+			System.err
+					.println("Exception (ignored) " + e.toString().substring(0, 100));
+			// Unable to find property 'description' on class:
+			// com.github.sergueik.selenium.Configuration
+		}
+		// don't now keys
+		Map<String, Map<String, List<String>>> data = YamlHelper
+				.loadData(internalConfiguration);
+		data.keySet().stream().limit(10).forEach(System.err::println);
+		data.keySet().stream().limit(10).map(e->data.get(e).get("names")).forEach(System.err::println);
+		data.keySet().stream().limit(10).map(e->data.get(e).get("values")).forEach(System.err::println);
 	}
 
 	@BeforeMethod

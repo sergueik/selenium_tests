@@ -41,6 +41,7 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/DesiredCapabilities
 with 3.13.0
 java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
 -->
+    <snakeyaml.version>1.24</snakeyaml.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
     <testng.version>6.11</testng.version>
     <guava.version>23.1</guava.version>
@@ -178,6 +179,11 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>${json.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>${snakeyaml.version}</version>
     </dependency>
     <dependency>
       <groupId>org.xerial</groupId>

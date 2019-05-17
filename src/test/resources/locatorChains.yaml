@@ -10,9 +10,6 @@ description:
     - 'region-content'
     - ' group-info field-group-fieldset form-wrapper'
     - 'field-body'
-		    # $_->{land_area} should be set to 1.0
-				# div.region-content fieldset.group-property-land div.field-acres-total.inline
-		    # $_->{price} should be set to $190,000 (but as a number, take out the '$' and ',' characters)
 price:
   names:
     - 'class'
