@@ -9,11 +9,25 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,10 +43,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.github.sergueik.selenium.YamlHelper;
-import com.github.sergueik.selenium.Configuration;
-import org.yaml.snakeyaml.constructor.ConstructorException;
-
 /**
 * Sample test scenario for web page scraping with Jsoup and HTML::TagParser using on recordset of  node attribute scan
 * which is more precise than browsing of immediate (grand-) children
@@ -47,9 +57,13 @@ import org.yaml.snakeyaml.constructor.ConstructorException;
 // TODO: stop the chrome browser hanging in waiting for use.typekit.net
 public class JsoupProbe2Test extends BaseTest {
 
+	private static DumperOptions options = new DumperOptions();
+	private static Yaml yaml = null;
+
 	private static boolean debug = false;
 	private static final Logger log = LogManager.getLogger(JsoupProbe2Test.class);
-	private String filePath = "list2.html";
+	private String htmlFilePath = "list2.html";
+
 	// origin:
 	// https://newenglandfarmlandfinder.org/property/1-acre-sale-several-greenhouses-residence-oneco-ct
 	// for visual inspection
@@ -97,36 +111,86 @@ public class JsoupProbe2Test extends BaseTest {
 	private static String internalConfiguration = String.format(
 			"%s/src/test/resources/%s", System.getProperty("user.dir"),
 			"locatorChains.yaml");
+	private static String writeFile = String.format("%s/src/test/resources/%s",
+			System.getProperty("user.dir"), "generated.yaml");
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
 		super.beforeClass();
 		assertThat(driver, notNullValue());
-		try {
-			Configuration data = YamlHelper.loadConfiguration(internalConfiguration);
-		} catch (ConstructorException e) {
-			System.err
-					.println("Exception (ignored) " + e.toString().substring(0, 100));
-			// Unable to find property 'description' on class:
-			// com.github.sergueik.selenium.Configuration
-		}
-		// don't now keys
-		Map<String, Map<String, List<String>>> data = YamlHelper
-				.loadData(internalConfiguration);
+		// don't know keys
+		Map<String, Map<String, List<String>>> data = loadData(
+				internalConfiguration);
+
 		data.keySet().stream().limit(10).forEach(System.err::println);
-		data.keySet().stream().limit(10).map(e->data.get(e).get("names")).forEach(System.err::println);
-		data.keySet().stream().limit(10).map(e->data.get(e).get("values")).forEach(System.err::println);
+		data.keySet().stream().limit(10).map(e -> data.get(e).get("names"))
+				.forEach(System.err::println);
+		data.keySet().stream().limit(10).map(e -> data.get(e).get("values"))
+				.forEach(System.err::println);
+		dumpData(data, writeFile);
+		/*
+		try {
+			Writer out = new OutputStreamWriter(new FileOutputStream(writeFile),
+					"UTF8");
+			System.err.println("Dumping the config to: " + writeFile);
+		
+			yaml.dump(data, out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		*/
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void dumpData(Map<String, Map<String, List<String>>> data,
+			String fileName) {
+		if (yaml == null) {
+			options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+			yaml = new Yaml(options);
+		}
+		try {
+			Writer out = new OutputStreamWriter(new FileOutputStream(fileName),
+					"UTF8");
+			System.err.println("Dumping the config to: " + fileName);
+
+			yaml.dump(data, out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Map<String, Map<String, List<String>>> loadData(
+			String fileName) {
+		if (yaml == null) {
+			options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+			yaml = new Yaml(options);
+		}
+
+		Map<String, Map<String, List<String>>> data = new HashMap<>();
+		try (InputStream in = Files.newInputStream(Paths.get(fileName))) {
+			// NOTE: unchecked conversion
+			// required: Map<String,Map<String,List<String>>>
+			// found: capture#1 of ? extends java.util.Map
+			data = yaml.loadAs(in, data.getClass());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return data;
 	}
 
 	@BeforeMethod
 	public void loadPage() {
-		pageSource = getScriptContent(filePath);
+		pageSource = getScriptContent(htmlFilePath);
 	}
 
 	@Test(enabled = true)
 	public void testVisual() {
-		driver.navigate().to(getPageContent(filePath));
-		pageSource = driver.getPageSource();
+		driver.navigate().to(getPageContent(htmlFilePath));
+		// pageSource = driver.getPageSource();
 		elements = driver.findElements(By.cssSelector(selector));
 		assertThat(elements, notNullValue());
 		assertThat(elements.size(), greaterThan(0));
