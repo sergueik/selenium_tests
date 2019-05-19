@@ -143,13 +143,17 @@ public class BaseTest {
 			"%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
 			getPropertyEnv("USERPROFILE", "C:\\Users\\Serguei"));
 
-	private static final String browser = getPropertyEnv("webdriver.driver",
+	private static String browser = getPropertyEnv("webdriver.driver",
 			"chrome"); // use -P profile to override
 	private static final boolean headless = Boolean
 			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
 
 	public static String getBrowser() {
 		return browser;
+	}
+
+	public static void setBrowser(String browser) {
+		BaseTest.browser = browser;
 	}
 
 	private static final Map<String, String> browserDrivers = new HashMap<>();
@@ -1363,4 +1367,7 @@ public class BaseTest {
 				.matches("(?:" + search.toLowerCase() + ")$");
 	}
 
+	// see also:
+	// https://github.com/Nordstrom/Selenium-Foundation/blob/master/src/main/java/com/nordstrom/automation/selenium/support/SearchContextWait.java
+	// for extending the FluentWait allowing caller specified SearchContext
 }

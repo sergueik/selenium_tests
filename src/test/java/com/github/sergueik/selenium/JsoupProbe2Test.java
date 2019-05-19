@@ -72,7 +72,6 @@ public class JsoupProbe2Test extends BaseTest {
 	// verified
 	private String selector = "div.region-content fieldset.group-property-tenure div.field-sale-price";
 	private String pageSource = null;
-	private static Document jsoupDocument;
 	private static List<WebElement> elements;
 	private final Map<String, Map<String, List<String>>> locatorChains = new HashMap<>();
 	// TODO: (de)serialize through YAML
@@ -102,6 +101,7 @@ public class JsoupProbe2Test extends BaseTest {
 					" group-property-tenure field-group-fieldset form-wrapper",
 					"field-sale-price" });
 
+	private static Document jsoupDocument;
 	private static Document parentDocument;
 	private static Elements jsoupElements;
 
@@ -110,12 +110,13 @@ public class JsoupProbe2Test extends BaseTest {
 	private static String yamlFile = null;
 	private static String internalConfiguration = String.format(
 			"%s/src/test/resources/%s", System.getProperty("user.dir"),
-			"locatorChains.yaml");
+			"existing.yaml");
 	private static String writeFile = String.format("%s/src/test/resources/%s",
 			System.getProperty("user.dir"), "generated.yaml");
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
+		super.setBrowser("firefox");
 		super.beforeClass();
 		assertThat(driver, notNullValue());
 		// don't know keys
@@ -147,19 +148,18 @@ public class JsoupProbe2Test extends BaseTest {
 			String fileName) {
 		if (yaml == null) {
 			options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+			options.setExplicitStart(true);
 			yaml = new Yaml(options);
 		}
 		try {
 			Writer out = new OutputStreamWriter(new FileOutputStream(fileName),
 					"UTF8");
 			System.err.println("Dumping the config to: " + fileName);
-
 			yaml.dump(data, out);
 			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -167,6 +167,7 @@ public class JsoupProbe2Test extends BaseTest {
 			String fileName) {
 		if (yaml == null) {
 			options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+			options.setExplicitStart(true);
 			yaml = new Yaml(options);
 		}
 
@@ -274,8 +275,9 @@ public class JsoupProbe2Test extends BaseTest {
 			}
 		}
 	}
+	// This can be used with Perl
+
 	/*
-	 This can be used with Perl
 	
 		#!/usr/bin/perl
 	
