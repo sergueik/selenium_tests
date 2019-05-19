@@ -306,40 +306,43 @@ public class JsoupProbe2Test extends BaseTest {
 		    \@d;
 		}
 		my $filename = 'list2.html';
-		
-		my $locatorChains = {
-		    'info' => {
-		        'names'  => [ 'class', 'class', 'class' ],
-		        'values' => [
-		            'region-content', ' group-info field-group-fieldset form-wrapper',
-		            'field-body'
-		        ]
-		    },
-		    'land_area' => {
-		        'names'  => [ 'class', 'class', 'class' ],
-		        'values' => [
-		            'region-content',
-		            ' group-property-land field-group-fieldset form-wrapper',
-		            'field-acres-total inline'
-		        ]
-		    },
-		
-		    'price' => {
-		        'names'  => [ 'class', 'class', 'class' ],
-		        'values' => [
-		            'region-content',
-		            ' group-property-tenure field-group-fieldset form-wrapper',
-		            'field-sale-price'
-		        ]
-		    }
-		};
+    << EOF
+---
+description:
+  names:
+    - 'class'
+    - 'class'
+    - 'class'
+  values:
+    - 'region-content'
+    - ' group-info field-group-fieldset form-wrapper'
+    - 'field-body'
+price:
+  names:
+    - 'class'
+    - 'class'
+    - 'class'
+  values:
+    - 'region-content'
+    - ' group-property-tenure field-group-fieldset form-wrapper'
+    - 'field-sale-price'
+land_area:
+  names:
+    - 'class'
+    - 'class'
+    - 'class'
+  values:
+    - 'region-content'
+    - ' group-property-land field-group-fieldset form-wrapper'
+    - 'field-acres-total inline'
+EOF
 		my $results = {};
-		
-		foreach my $entry ( keys %$locatorChains ) {
+		my $config = LoadFile('existing.yaml');
+		foreach my $entry ( keys %$config ) {
 		    $results->{$entry} = undef;
 		    my $element = HTML::TagParser->new($filename);
-		    my $names   = $locatorChains->{$entry}->{'names'};
-		    my $values  = $locatorChains->{$entry}->{'values'};
+		    my $names   = $config->{$entry}->{'names'};
+		    my $values  = $config->{$entry}->{'values'};
 		    if ($DEBUG) {
 		        print Dumper($names);
 		        print Dumper($values);
@@ -359,6 +362,11 @@ public class JsoupProbe2Test extends BaseTest {
 		}
 		
 		print Dumper \$results;
-		
+		$VAR1 = \{
+            'land_area' => '1.0',
+            'price' => '$190,000',
+            'description' => 'Small fields...'
+          };
+
 	 */
 }
