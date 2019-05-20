@@ -53,8 +53,11 @@ import org.testng.annotations.Test;
 // https://www.baeldung.com/java-with-jsoup
 // https://www.programcreek.com/java-api-examples/?class=org.jsoup.nodes.Document&method=getElementsByAttributeValue
 // https://jsoup.org/cookbook/extracting-data/selector-syntax
-// test with firefox profile
-// TODO: stop the chrome browser hanging in waiting for use.typekit.net
+// https://github.com/kawanet/HTML-TagParser
+// https://github.com/GeReV/NSoup
+// https://www.nuget.org/packages/NSoup/
+// https://github.com/matarillo/dcsoup
+// https://github.com/zzzprojects/html-agility-pack
 public class JsoupProbe2Test extends BaseTest {
 
 	private static DumperOptions options = new DumperOptions();
@@ -117,6 +120,7 @@ public class JsoupProbe2Test extends BaseTest {
 	@BeforeClass
 	public void beforeClass() throws IOException {
 		super.setBrowser("firefox");
+		// TODO: stop the chrome browser hanging in waiting for use.typekit.net
 		super.beforeClass();
 		assertThat(driver, notNullValue());
 		// don't know keys
@@ -306,36 +310,36 @@ public class JsoupProbe2Test extends BaseTest {
 		    \@d;
 		}
 		my $filename = 'list2.html';
-    << EOF
----
-description:
-  names:
-    - 'class'
-    - 'class'
-    - 'class'
-  values:
-    - 'region-content'
-    - ' group-info field-group-fieldset form-wrapper'
-    - 'field-body'
-price:
-  names:
-    - 'class'
-    - 'class'
-    - 'class'
-  values:
-    - 'region-content'
-    - ' group-property-tenure field-group-fieldset form-wrapper'
-    - 'field-sale-price'
-land_area:
-  names:
-    - 'class'
-    - 'class'
-    - 'class'
-  values:
-    - 'region-content'
-    - ' group-property-land field-group-fieldset form-wrapper'
-    - 'field-acres-total inline'
-EOF
+	  << EOF
+	---
+	description:
+	names:
+	  - 'class'
+	  - 'class'
+	  - 'class'
+	values:
+	  - 'region-content'
+	  - ' group-info field-group-fieldset form-wrapper'
+	  - 'field-body'
+	price:
+	names:
+	  - 'class'
+	  - 'class'
+	  - 'class'
+	values:
+	  - 'region-content'
+	  - ' group-property-tenure field-group-fieldset form-wrapper'
+	  - 'field-sale-price'
+	land_area:
+	names:
+	  - 'class'
+	  - 'class'
+	  - 'class'
+	values:
+	  - 'region-content'
+	  - ' group-property-land field-group-fieldset form-wrapper'
+	  - 'field-acres-total inline'
+	EOF
 		my $results = {};
 		my $config = LoadFile('existing.yaml');
 		foreach my $entry ( keys %$config ) {
@@ -363,10 +367,10 @@ EOF
 		
 		print Dumper \$results;
 		$VAR1 = \{
-            'land_area' => '1.0',
-            'price' => '$190,000',
-            'description' => 'Small fields...'
-          };
-
+	          'land_area' => '1.0',
+	          'price' => '$190,000',
+	          'description' => 'Small fields...'
+	        };
+	
 	 */
 }
