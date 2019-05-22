@@ -143,8 +143,11 @@ public class BaseTest {
 			"%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
 			getPropertyEnv("USERPROFILE", "C:\\Users\\Serguei"));
 
-	private static String browser = getPropertyEnv("webdriver.driver",
-			"chrome"); // use -P profile to override
+	private static String browser = getPropertyEnv("webdriver.driver", "chrome"); // use
+																																								// -P
+																																								// profile
+																																								// to
+																																								// override
 	private static final boolean headless = Boolean
 			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
 
@@ -1370,4 +1373,60 @@ public class BaseTest {
 	// see also:
 	// https://github.com/Nordstrom/Selenium-Foundation/blob/master/src/main/java/com/nordstrom/automation/selenium/support/SearchContextWait.java
 	// for extending the FluentWait allowing caller specified SearchContext
+
+	// based on: https://github.com/yashaka/NSelene
+	// see also:
+	// http://software-testing.ru/forum/index.php?/topic/37987-kak-proverit-pravilnost-generiruemogo-stra/
+	// says wotks with Angular protractor pure
+	protected void writeDocument(String pageName) {
+		openAboutBlankPage();
+		String pageBody = getScriptContent(pageName);
+		executeScript("document.write(arguments[0]);", pageBody); // TODO: special
+		if (debug) {
+			System.err.println("Wrote document: " + pageBody);
+		}
+	}
+
+	// TODO:
+	protected void openEmptyPlaceholderPage() {
+		writeDocument("empty.html");
+	}
+
+	// TODO:
+	protected void openAboutBlankPage() {
+		driver.navigate().to("about:blank");
+	}
+
+	private static String prepareBodyHTML(String pageBody) {
+		// convert body quotes and chomp the line endings
+		return pageBody.replaceAll("\"", "\\\"").replaceAll("\r?\n", " ");
+	}
+
+	public void bodyInnerHTML(String pageName) {
+		// TODO: cache
+		openEmptyPlaceholderPage();
+		String pageBody = getScriptContent(pageName);
+		if (debug) {
+			System.err
+					.println("Writing into body element: " + prepareBodyHTML(pageBody));
+		}
+		executeScript(
+				"document.getElementsByTagName('body')[0].innerHTML = arguments[0];",
+				prepareBodyHTML(pageBody));
+
+	}
+
+	public void bodyInnerHTMLTimedOut(String pageName, int timeout) {
+		// TODO: cache
+		openEmptyPlaceholderPage();
+		String pageBody = getScriptContent(pageName);
+		if (debug) {
+			System.err.println("Writing into body element: "
+					+ prepareBodyHTML(pageBody) + " with a timeout " + timeout);
+		}
+		executeScript(
+				"setTimeout(function(){ document.getElementsByTagName('body')[0].innerHTML = arguments[0];  }, arguments[1]);",
+				prepareBodyHTML(pageBody), timeout);
+	}
+
 }
