@@ -84,7 +84,8 @@ public class JsoupProbeTest extends BaseTest {
 	private static final LinkedHashMap<String, String> attrMap = new LinkedHashMap<>();
 	private static Document jsoupDocument;
 	private static List<WebElement> elements;
-	// match)
+	private List<String> jsoupSelectors = Arrays.asList(
+			new String[] { "#acListWrap .productListing", ".productListing" });
 	private final List<String> attrKeys = Arrays.asList(new String[] { "class",
 			"class", "id", "class", "class", "class", "title" });
 	private final List<String> attrValuesExact = Arrays.asList(new String[] {
@@ -126,13 +127,27 @@ public class JsoupProbeTest extends BaseTest {
 	}
 
 	// temporarily disable to reduce logging
+	@Test(enabled = true)
+	public void testJsoupSelect() {
+		jsoupDocument = Jsoup.parse(pageSource);
+		for (String jsoupSelector : jsoupSelectors) {
+			jsoupElements = jsoupDocument.select(jsoupSelector);
+			assertThat(jsoupElements, notNullValue());
+			assertThat(jsoupElements.iterator().hasNext(), is(true));
+			assertThat(jsoupElements.eachText().size(), greaterThan(1));
+			System.err.println(String.format("Processing jsoup selector \"%s\" %s",
+					jsoupSelector, jsoupElements.first().text()));
+		}
+	}
+
+	// temporarily disable to reduce logging
 	@Test(enabled = false)
 	public void testOneCallPageSource() {
 		jsoupDocument = Jsoup.parse(pageSource);
 
 		attributeName = "class";
 		attributeValue = "productListing";
-
+		jsoupDocument.select(".productListing");
 		jsoupElements = jsoupDocument.getElementsByAttributeValue(attributeName,
 				attributeValue);
 		assertThat(jsoupElements, notNullValue());
@@ -195,7 +210,7 @@ public class JsoupProbeTest extends BaseTest {
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void testDeepFunPageSource() {
 		jsoupDocument = Jsoup.parse(pageSource);
 

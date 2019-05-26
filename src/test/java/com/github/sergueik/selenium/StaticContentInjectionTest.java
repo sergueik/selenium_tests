@@ -47,7 +47,7 @@ public class StaticContentInjectionTest extends BaseTest {
 	@BeforeClass
 	public void beforeClass() throws IOException {
 		super.beforeClass();
-		assertThat(driver, notNuDllValue());
+		assertThat(driver, notNullValue());
 	}
 
 	@BeforeMethod
@@ -59,28 +59,28 @@ public class StaticContentInjectionTest extends BaseTest {
 	@Test(enabled = true)
 	public void testOpenEmptyPlaceholderPage() {
 		openEmptyPlaceholderPage();
-		sleep(1000);
+		sleep(100);
 	}
 
 	// NOTE: somewhat unstable
 	@Test(enabled = true)
 	public void testWriteDocument() {
 		writeDocument("extjs_ex.htm");
-		sleep(1000);
+		sleep(100);
 	}
 
 	// NOTE: big payloads are deadly e.g. list2.html
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void testBodyInnerHTML() {
 		bodyInnerHTML("text_resource.htm");
-		sleep(1000);
+		sleep(100);
 	}
 
 	// NOTE: unstable - disabled
 	@Test(enabled = false)
 	public void testBodyInnerHTMLTimedOut() {
 		bodyInnerHTMLTimedOut("extjs_ex.htm", 5);
-		sleep(1000);
+		sleep(100);
 	}
 
 }
