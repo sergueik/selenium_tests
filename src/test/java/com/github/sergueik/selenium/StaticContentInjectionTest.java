@@ -46,6 +46,7 @@ public class StaticContentInjectionTest extends BaseTest {
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
+		super.setBrowser("chrome"); // firefox is lagging
 		super.beforeClass();
 		assertThat(driver, notNullValue());
 	}
@@ -70,7 +71,7 @@ public class StaticContentInjectionTest extends BaseTest {
 	}
 
 	// NOTE: big payloads are deadly e.g. list2.html
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void testBodyInnerHTML() {
 		bodyInnerHTML("text_resource.htm");
 		sleep(100);
