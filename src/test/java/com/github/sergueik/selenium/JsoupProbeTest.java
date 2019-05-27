@@ -47,7 +47,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
