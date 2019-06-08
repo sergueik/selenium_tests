@@ -1,34 +1,20 @@
 package com.github.sergueik.selenium;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomNode;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -45,12 +31,12 @@ import org.testng.annotations.Test;
 
 /**
 * Sample test scenario for web page scraping with HTMLUnit
-// http://htmlunit.sourceforge.net/
+based on  https://github.com/ksahin/introWebScraping
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 
 // See also:
-// https://github.com/ksahin/introWebScraping
+// http://htmlunit.sourceforge.net/
 
 public class HtmlUnitTest extends BaseTest {
 
@@ -58,23 +44,40 @@ public class HtmlUnitTest extends BaseTest {
 
 	private static WebClient client = new WebClient();
 	private static final Logger log = LogManager.getLogger(HtmlUnitTest.class);
-	private static final String rowSelector = "//li[@class='result-row']";
 	private static String baseUrl;
 	private static final String searchQuery = "laptop";
 	private static HtmlPage page;
 	private static String pageXML;
+
 	private static String itemName;
 	private static String itemUrl;
 	private static String itemPrice;
 
-	private final String infoXpath = ".//p[@class='result-info']/a";
-	private final String priceXpath = ".//a/span[@class='result-price']";
+	private static final String rowXpath = "//li[@class='result-row']";
+	private static final String infoXpath = ".//p[@class='result-info']/a";
+	private static final String priceXpath = ".//a/span[@class='result-price']";
 
-	private String pageSource = null;
-	private static List<HtmlElement> htmlItems;
-	private static HtmlElement htmlItem;
+	private static final String rowSelector = "li.result-row";
+	private static final String infoSelector = "p.result-info > a";
+	private static final String priceSelector = "a > span.result-price";
+
+	// retrievable thru Selenium
 	private static List<WebElement> elements;
 	private WebElement element;
+	private String pageSource = null;
+
+	// retrievable thru HTMLUnit XML methods
+	private static List<HtmlElement> rowsHtmlElementList;
+	private static HtmlElement rowHtmlElement;
+	private static HtmlElement priceHtmlElement;
+	private static HtmlAnchor infoHtmlAnchor;
+
+	// retrievable thru HTMLUnit CSS Selector methods
+	private static DomNodeList<DomNode> rowsDomNodeList;
+	private static Iterator<DomNode> rowsDomNodeIterator;
+	private static DomNode rowDomNode;
+	private static DomNode infoDomNode;
+	private static DomNode priceDomNode;
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -97,6 +100,11 @@ public class HtmlUnitTest extends BaseTest {
 		}
 
 		try {
+			// NOTE: INFO: I/O exception (java.net.SocketException) caught when
+			// processing request to
+			// {s}->https://miami.craigslist.org:443: Connection reset
+			// org.apache.http.impl.execchain.RetryExec execute
+			// INFO: Retrying request to {s}->https://miami.craigslist.org:443
 			page = client.getPage(baseUrl);
 			pageXML = page.asXml();
 		} catch (FailingHttpStatusCodeException | IOException e) {
@@ -108,10 +116,10 @@ public class HtmlUnitTest extends BaseTest {
 		// HTMLUnit does not support loading page source ?
 		pageSource = driver.getPageSource();
 	}
-	
+
 	@Test(enabled = true)
 	public void testVisual() {
-		elements = driver.findElements(By.xpath(rowSelector));
+		elements = driver.findElements(By.xpath(rowXpath));
 		assertThat(elements, notNullValue());
 		assertThat(elements.size(), greaterThan(0));
 		element = elements.get(0).findElement(By.xpath(infoXpath));
@@ -119,35 +127,60 @@ public class HtmlUnitTest extends BaseTest {
 		highlight(element);
 		itemName = element.getText();
 		System.err
-				.println(String.format("Locating with Selenium: \"%s\"", rowSelector));
+				.println(String.format("Locating with Selenium: \"%s\"", rowXpath));
 		System.err.println("Data: " + itemName);
 	}
 
 	@Test(enabled = true)
 	public void testSilent() {
-		htmlItems = page.getByXPath(rowSelector);
+		rowsHtmlElementList = page.getByXPath(rowXpath);
 		// implicit cast taking place of List<Object> to List<HtmlElement>
-		assertThat(htmlItems, notNullValue());
-		assertThat(htmlItems.size(), greaterThan(0));
-		htmlItems.stream().forEach(element -> {
-			HtmlAnchor itemAnchor = ((HtmlAnchor) element.getFirstByXPath(infoXpath));
-			assertThat(itemAnchor, notNullValue());
-		}
-		);
-		htmlItem = htmlItems.get(0);
-		HtmlAnchor itemAnchor = ((HtmlAnchor) htmlItem.getFirstByXPath(infoXpath));
+		assertThat(rowsHtmlElementList, notNullValue());
+		assertThat(rowsHtmlElementList.size(), greaterThan(0));
+		rowsHtmlElementList.stream()
+				.forEach(element -> assertThat(element.getFirstByXPath(infoXpath),
+						notNullValue()));
+		rowHtmlElement = rowsHtmlElementList.get(0);
+		infoHtmlAnchor = (HtmlAnchor) rowHtmlElement.getFirstByXPath(infoXpath);
+		priceHtmlElement = rowHtmlElement.getFirstByXPath(priceXpath);
 
-		HtmlElement spanPrice = ((HtmlElement) htmlItem
-				.getFirstByXPath(priceXpath));
-
-		itemName = itemAnchor.asText();
-		itemUrl = itemAnchor.getHrefAttribute();
+		itemName = infoHtmlAnchor.asText();
+		itemUrl = infoHtmlAnchor.getHrefAttribute();
 
 		// It is possible that an item doesn't have any price
-		itemPrice = spanPrice == null ? "0.0" : spanPrice.asText();
+		itemPrice = priceHtmlElement == null ? "0.0" : priceHtmlElement.asText();
 		System.err.println(String.format("Name: %s\nPrice: %s\nUrl : %s", itemName,
 				itemPrice, itemUrl));
 
+	}
+
+	@Test(enabled = true)
+	public void testSilentWithSelector() {
+
+		rowsDomNodeList = page.querySelectorAll(rowSelector);
+
+		assertThat(rowsDomNodeList, notNullValue());
+		assertThat(rowsDomNodeList.size(), greaterThan(0));
+
+		rowsDomNodeIterator = rowsDomNodeList.iterator();
+		assertTrue(rowsDomNodeIterator.hasNext());
+
+		while (rowsDomNodeIterator.hasNext()) {
+			rowDomNode = rowsDomNodeIterator.next();
+			infoDomNode = rowDomNode.querySelector(infoSelector);
+			assertThat(infoDomNode, notNullValue());
+			itemName = infoDomNode.asText();
+		}
+		rowDomNode = rowsDomNodeList.get(0);
+		infoDomNode = rowDomNode.querySelector(infoSelector);
+		itemName = infoDomNode.asText();
+		org.w3c.dom.NamedNodeMap infoNodeAttributes = infoDomNode.getAttributes();
+		itemUrl = infoNodeAttributes.getNamedItem("href").getNodeValue();
+		priceDomNode = rowDomNode.querySelector(priceSelector);
+		// It is possible that an item doesn't have any price
+		itemPrice = priceDomNode == null ? "0.0" : priceDomNode.asText();
+		System.err.println(String.format("Name: %s\nPrice: %s\nUrl : %s", itemName,
+				itemPrice, itemUrl));
 	}
 
 }
