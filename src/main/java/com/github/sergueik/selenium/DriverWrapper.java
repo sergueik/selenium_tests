@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.NoSuchSessionException;
+import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 //https://www.seleniumeasy.com/selenium-tutorials/how-to-run-webdriver-in-ie-browser
@@ -74,7 +75,14 @@ public class DriverWrapper extends RemoteWebDriver {
 			}
 
 			if (browser == "chrome") {
-				driver = new ChromeDriver(capabilities);
+				try {
+					driver = new ChromeDriver(capabilities);
+				} catch (SessionNotCreatedException e) {
+					// session not created: This version of ChromeDriver only supports
+					// Chrome version 74
+					// Note: chromedriver.exe continues to run
+					throw new RuntimeException(e.toString());
+				}
 			}
 			driverInventory.put(getThreadName(), driver);
 		}

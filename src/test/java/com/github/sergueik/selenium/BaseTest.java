@@ -253,6 +253,7 @@ public class BaseTest {
 		}
 	}
 
+	// For IE Internet zones see https://github.com/allquixotic/iepmm (NOTE: cryptic)
 	@BeforeClass
 	public void beforeClass() throws IOException {
 
@@ -487,6 +488,7 @@ public class BaseTest {
 		// wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
 
 		screenshot = ((TakesScreenshot) driver);
+
 		js = ((JavascriptExecutor) driver);
 		// driver.manage().window().maximize();
 
@@ -554,7 +556,6 @@ public class BaseTest {
 
 	public void highlight(WebElement element, long highlightInterval) {
 		highlight(element, highlightInterval, "solid yellow");
-
 	}
 
 	public void highlight(WebElement element, long highlightInterval,
