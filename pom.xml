@@ -31,7 +31,7 @@
     <!-- 
 [ERROR]  package com.fasterxml.jackson.databind does not exist
 -->
-    <jackson-databind.version>2.9.6</jackson-databind.version>
+    <jackson-databind.version>2.9.9</jackson-databind.version>
     <jsoup.version>1.11.3</jsoup.version>
     <junit.version>4.12</junit.version>
     <log4j.version>2.5</log4j.version>
