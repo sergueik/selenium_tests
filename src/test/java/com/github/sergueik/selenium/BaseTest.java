@@ -97,6 +97,7 @@ import com.github.sergueik.selenium.DriverWrapper;
 
 /**
  * Selected test scenarios for Selenium WebDriver
+ * 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
@@ -143,11 +144,8 @@ public class BaseTest {
 			"%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
 			getPropertyEnv("USERPROFILE", "C:\\Users\\Serguei"));
 
-	private static String browser = getPropertyEnv("webdriver.driver", "chrome"); // use
-																																								// -P
-																																								// profile
-																																								// to
-																																								// override
+	private static String browser = getPropertyEnv("webdriver.driver", "chrome");
+	// use -P profile to override
 	private static final boolean headless = Boolean
 			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
 
@@ -253,30 +251,31 @@ public class BaseTest {
 		}
 	}
 
-	// For IE Internet zones see https://github.com/allquixotic/iepmm (NOTE: cryptic)
+	// For IE Internet zones see https://github.com/allquixotic/iepmm (NOTE:
+	// cryptic)
 	@BeforeClass
 	public void beforeClass() throws IOException {
 
-		/*	 TODO: TripadvisorTest: observed user agent problem with firefox - mobile version of
-				 page is rendered, and the toast message displayed with the warning:
-				 "We noticed that you're using an unsupported browser. The TripAdvisor
-		     website may not display properly.We support the following browsers:
-				 Windows: Internet Explorer, Mozilla Firefox, Google Chrome. Mac:
-				 Safari".
-		*/
 		/*
-		 DesiredCapabilities caps = DesiredCapabilities.internetExplorer();
-		caps.setCapability(InternetExplorerDriver.INITIAL_BROWSER_URL, "");
-		WebDriver driver = new InternetExplorerDriver(caps);
+		 * TODO: TripadvisorTest: observed user agent problem with firefox - mobile
+		 * version of page is rendered, and the toast message displayed with the
+		 * warning: "We noticed that you're using an unsupported browser. The
+		 * TripAdvisor website may not display properly.We support the following
+		 * browsers: Windows: Internet Explorer, Mozilla Firefox, Google Chrome. Mac:
+		 * Safari".
+		 */
+		/*
+		 * DesiredCapabilities caps = DesiredCapabilities.internetExplorer();
+		 * caps.setCapability(InternetExplorerDriver.INITIAL_BROWSER_URL, ""); WebDriver
+		 * driver = new InternetExplorerDriver(caps);
 		 */
 
 		/*
-		System.err.println(String.format("%s=%s", "System.env('webdriver.driver')",
-				System.getenv("webdriver.driver")));
-		System.err
-				.println(String.format("%s=%s", "getPropertyEnv('webdriver.driver')",
-						getPropertyEnv("webdriver.driver", "")));
-		*/
+		 * System.err.println(String.format("%s=%s", "System.env('webdriver.driver')",
+		 * System.getenv("webdriver.driver"))); System.err
+		 * .println(String.format("%s=%s", "getPropertyEnv('webdriver.driver')",
+		 * getPropertyEnv("webdriver.driver", "")));
+		 */
 		System.err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
 			System.setProperty("webdriver.chrome.driver",
@@ -316,22 +315,24 @@ public class BaseTest {
 			// no cookies are allowed
 
 			chromeOptions.setExperimentalOption("prefs", chromePrefs);
-			// TODO: jni
-			if (System.getProperty("os.arch").contains("64")) {
-				String[] paths = new String[] {
-						"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-						"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" };
-				// check file existence
-				for (String path : paths) {
-					File exe = new File(path);
-					System.err.println("Inspecting browser path: " + path);
-					if (exe.exists()) {
-						chromeOptions.setBinary(path);
+			if (osName.equals("windows")) {
+				// TODO: jni
+				if (System.getProperty("os.arch").contains("64")) {
+					String[] paths = new String[] {
+							"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+							"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" };
+					// check file existence
+					for (String path : paths) {
+						File exe = new File(path);
+						System.err.println("Inspecting browser path: " + path);
+						if (exe.exists()) {
+							chromeOptions.setBinary(path);
+						}
 					}
+				} else {
+					chromeOptions.setBinary(
+							"c:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 				}
-			} else {
-				chromeOptions.setBinary(
-						"c:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 			}
 			// see also: https://developers.google.com/recaptcha/docs/faq
 			for (String optionAgrument : (new String[] {
@@ -347,9 +348,10 @@ public class BaseTest {
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
 					// "--start-fullscreen",
 					String.format("--browser.download.dir=%s", downloadFilepath)
-					/* "--user-data-dir=/path/to/your/custom/profile",
-					   "--profile-directory=name_of_custom_profile_directory",
-					*/
+					/*
+					 * "--user-data-dir=/path/to/your/custom/profile",
+					 * "--profile-directory=name_of_custom_profile_directory",
+					 */
 			})) {
 				chromeOptions.addArguments(optionAgrument);
 			}
@@ -375,10 +377,10 @@ public class BaseTest {
 			logPrefs.enable(LogType.BROWSER, Level.INFO);
 			logPrefs.enable(LogType.DRIVER, Level.INFO);
 			/*
-				logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
-				logPrefs.enable(LogType.BROWSER, Level.ALL);
-				logPrefs.enable(LogType.DRIVER, Level.ALL);
-			*/
+			 * logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+			 * logPrefs.enable(LogType.BROWSER, Level.ALL); logPrefs.enable(LogType.DRIVER,
+			 * Level.ALL);
+			 */
 			capabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
 
 			loadChromeExtensionsBase64Encoded(chromeOptions);
@@ -386,9 +388,9 @@ public class BaseTest {
 			// https://github.com/pulkitsinghal/selenium/blob/master/java/client/src/org/openqa/selenium/chrome/ChromeOptions.java
 			// For use with RemoteWebDriver
 			/*
-			RemoteWebDriver driver = new RemoteWebDriver(
-			   new URL("http://localhost:4444/wd/hub"), capabilities);
-			*/
+			 * RemoteWebDriver driver = new RemoteWebDriver( new
+			 * URL("http://localhost:4444/wd/hub"), capabilities);
+			 */
 
 			DriverWrapper.add("chrome", capabilities);
 			driver = DriverWrapper.current();
@@ -400,7 +402,7 @@ public class BaseTest {
 			// 3.5.3 and later
 			System.setProperty("webdriver.gecko.driver", osName.equals("windows")
 					? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
-					: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME"))*/
+					: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME")) */
 					Paths.get(System.getProperty("user.home")).resolve("Downloads")
 							.resolve("geckodriver").toAbsolutePath().toString());
 			System
@@ -461,9 +463,9 @@ public class BaseTest {
 			profile.setPreference("dom.webnotifications.enabled", false);
 			// optional
 			/*
-			 profile.setPreference("general.useragent.override",
-				"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0");
-			*/
+			 * profile.setPreference("general.useragent.override",
+			 * "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0");
+			 */
 			// System.err.println(System.getProperty("user.dir"));
 			capabilities.setCapability(FirefoxDriver.PROFILE, profile);
 			try {
@@ -504,9 +506,8 @@ public class BaseTest {
 			driver.get("about:blank");
 		} catch (Exception e) {
 			/*
-			 org.openqa.selenium.NoSuchWindowException:
-			no such window: target window already closed
-			from unknown error: web view not found
+			 * org.openqa.selenium.NoSuchWindowException: no such window: target window
+			 * already closed from unknown error: web view not found
 			 */
 		}
 		if (driver != null) {
@@ -515,11 +516,10 @@ public class BaseTest {
 				driver.quit();
 			} catch (Exception e) {
 				/*
-				 * 		org.apache.commons.exec.ExecuteException: The stop timeout of 2000 ms was exceeded (Exit value: -559038737)
-				...
-				at org.openqa.selenium.os.OsProcess.destroy(OsProcess.java:135)
-				at org.openqa.selenium.os.CommandLine.destroy(CommandLine.java:153)
-				...
+				 * org.apache.commons.exec.ExecuteException: The stop timeout of 2000 ms was
+				 * exceeded (Exit value: -559038737) ... at
+				 * org.openqa.selenium.os.OsProcess.destroy(OsProcess.java:135) at
+				 * org.openqa.selenium.os.CommandLine.destroy(CommandLine.java:153) ...
 				 */
 			}
 		}
@@ -726,18 +726,15 @@ public class BaseTest {
 					.cast(driver);
 			/*
 			 *
-			 // currently unsafe
-			System.err.println(arguments.length + " arguments received.");
-			String argStr = "";
-			
-			for (int i = 0; i < arguments.length; i++) {
-				argStr = argStr + " "
-						+ (arguments[i] == null ? "null" : arguments[i].toString());
-			}
-			
-			System.err.println("Calling " + script.substring(0, 40)
-					+ "..." + \n" + "with arguments: " + argStr);
-					*/
+			 * // currently unsafe System.err.println(arguments.length +
+			 * " arguments received."); String argStr = "";
+			 * 
+			 * for (int i = 0; i < arguments.length; i++) { argStr = argStr + " " +
+			 * (arguments[i] == null ? "null" : arguments[i].toString()); }
+			 * 
+			 * System.err.println("Calling " + script.substring(0, 40) + "..." + \n" + "with
+			 * arguments: " + argStr);
+			 */
 			return javascriptExecutor.executeScript(script, arguments);
 		} else {
 			throw new RuntimeException("Script execution failed.");
@@ -815,21 +812,12 @@ public class BaseTest {
 		// NOTE: for chrome-specific quirks for finding related processes see:
 		// https://automated-testing.info/t/selenium-webdriver-ubit-proczessy-chrome-i-chromedriver-pri-ostanovki-abort-dzhoby-na-jenkins-cherez-postbildstep/22341/11
 		/*
-		
-		<#
-		$process_id=5308
-		
-		(get-cimInstance -class Win32_Process -filter "parentprocessid = $process_id" ).processid
-		4736
-		9496
-		9536
-		9120
-		1996
-		8876
-		10188
-		(get-process -id 4736 ) .processname
-		'chrome'
-		#>
+		 * 
+		 * <# $process_id=5308
+		 * 
+		 * (get-cimInstance -class Win32_Process -filter "parentprocessid = $process_id"
+		 * ).processid 4736 9496 9536 9120 1996 8876 10188 (get-process -id 4736 )
+		 * .processname 'chrome' #>
 		 */
 		String command = String.format((osName.toLowerCase().startsWith("windows"))
 				? "taskkill.exe /T /F /IM %s" : "killall %s", processName.trim());
@@ -1119,7 +1107,8 @@ public class BaseTest {
 		return driver.switchTo().window(parentHandle);
 	}
 
-	protected String xPathToCSS(String xpath /*, @Nullable WebElement element*/) {
+	protected String xPathToCSS(
+			String xpath /* , @Nullable WebElement element */) {
 		String result = null;
 		try {
 			result = (String) executeScript(getScriptContent("cssify.js"),
@@ -1251,7 +1240,7 @@ public class BaseTest {
 			System.err.println("Testing local file: " + uri.toString());
 			return uri.toString();
 		} catch (URISyntaxException e) { // NOTE: multi-catch statement is not
-																			// supported in -source 1.6
+			// supported in -source 1.6
 			throw new RuntimeException(e);
 		}
 	}

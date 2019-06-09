@@ -30,15 +30,23 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-// NOTE: the package name structure under '~/.m2/repository/com/fasterxml/jackson'
-// does not quite follow jar naming
-// and appears to require being fully re-downloaded explicitly
+// NOTE: jars laid under '~/.m2/repository/com/fasterxml/jackson'
+// do not quite follow maven package naming conventions
+// one is required to fully re-downloaded explicitly
 // via mvn dependency:purge-local-repository
-
+// This will first resolve the entire dependency tree, then
+// delete the contents from the local repository, and then
+// re-resolve the dependencies from the remote repository
+// and is *very* time-consuming
 // more info:
 // http://tutorials.jenkov.com/java-json/jackson-installation.html#jackson-maven-dependencies
+// https://stackoverflow.com/questions/50236951/the-import-com-fasterxml-jackson-databind-objectmapper-cannot-be-resolved/50237405
 
-// import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+// import com.fasterxml.jackson.core.JsonGenerationException;
+// import com.fasterxml.jackson.map.JsonMappingException;
 
 import java.math.BigDecimal;
 
@@ -55,7 +63,7 @@ public class HtmlUnitTest extends BaseTest {
 
 	private static boolean debug = false;
 
-	// private static ObjectMapper mapper = new ObjectMapper();
+	private static ObjectMapper mapper = new ObjectMapper();
 	private static WebClient client = new WebClient();
 	private static final Logger log = LogManager.getLogger(HtmlUnitTest.class);
 	private static String baseUrl;
@@ -96,7 +104,7 @@ public class HtmlUnitTest extends BaseTest {
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
-		super.setBrowser("firefox");
+		super.setBrowser("chrome");
 		// TODO: stop the chrome browser hanging in waiting for use.typekit.net
 		super.beforeClass();
 		assertThat(driver, notNullValue());
@@ -202,6 +210,25 @@ public class HtmlUnitTest extends BaseTest {
 		itemPrice = priceDomNode == null ? "0.0" : priceDomNode.asText();
 		System.err.println(String.format("Name: %s\nPrice: %s\nUrl : %s", itemName,
 				itemPrice, itemUrl));
+		Item item = new Item();
+
+		item.setTitle(itemName);
+		item.setUrl(baseURL + itemUrl);
+		item.setPrice(new BigDecimal(itemPrice.replace("$", "")));
+		String jsonString = null;
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			// one is required to reload project in eclipse to fix intellisense
+			// getting
+			// The method writeValueAsString(Object) from the type ObjectMapper refers
+			// to the missing type JsonProcessingException
+			jsonString = mapper.writeValueAsString(item);
+		} catch (JsonProcessingException e) {
+
+		}
+
+		System.err.println(jsonString);
+
 	}
 
 	public static class Item {
