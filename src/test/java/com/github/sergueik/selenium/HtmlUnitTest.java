@@ -17,6 +17,7 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import org.apache.logging.log4j.LogManager;
@@ -29,24 +30,34 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+// NOTE: the package name inside does not follow jar naming 
+// and appears to require beig downloaded explicitly
+// more info:
+// http://tutorials.jenkov.com/java-json/jackson-installation.html#jackson-maven-dependencies
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.math.BigDecimal;
+
 /**
 * Sample test scenario for web page scraping with HTMLUnit
-based on  https://github.com/ksahin/introWebScraping
+based on https://github.com/ksahin/introWebScraping
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 
 // See also:
-// http://htmlunit.sourceforge.net/
+// http://htmlunit.sourceforge.net/gettingStarted.html
 
 public class HtmlUnitTest extends BaseTest {
 
 	private static boolean debug = false;
 
+	private static ObjectMapper mapper = new ObjectMapper();
 	private static WebClient client = new WebClient();
 	private static final Logger log = LogManager.getLogger(HtmlUnitTest.class);
 	private static String baseUrl;
 	private static final String searchQuery = "laptop";
 	private static HtmlPage page;
+	private static HtmlInput inputSearch;
 	private static String pageXML;
 
 	private static String itemName;
@@ -106,11 +117,15 @@ public class HtmlUnitTest extends BaseTest {
 			// org.apache.http.impl.execchain.RetryExec execute
 			// INFO: Retrying request to {s}->https://miami.craigslist.org:443
 			page = client.getPage(baseUrl);
+
+			inputSearch = (HtmlInput) (page.getElementsById("query").get(0));
 			pageXML = page.asXml();
 		} catch (FailingHttpStatusCodeException | IOException e) {
 			e.printStackTrace();
 		}
 		assertThat(page, notNullValue());
+		// confirm the page contains the search input
+		assertThat(inputSearch, notNullValue());
 		assertThat(pageXML, notNullValue());
 		driver.navigate().to(baseUrl);
 		// HTMLUnit does not support loading page source ?
@@ -183,4 +198,33 @@ public class HtmlUnitTest extends BaseTest {
 				itemPrice, itemUrl));
 	}
 
+	public static class Item {
+		private String title;
+		private BigDecimal price;
+		private String url;
+
+		public String getTitle() {
+			return title;
+		}
+
+		public void setTitle(String title) {
+			this.title = title;
+		}
+
+		public BigDecimal getPrice() {
+			return price;
+		}
+
+		public void setPrice(BigDecimal price) {
+			this.price = price;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+	}
 }
