@@ -30,11 +30,15 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-// NOTE: the package name inside does not follow jar naming 
-// and appears to require beig downloaded explicitly
+// NOTE: the package name structure under '~/.m2/repository/com/fasterxml/jackson'
+// does not quite follow jar naming
+// and appears to require being fully re-downloaded explicitly
+// via mvn dependency:purge-local-repository
+
 // more info:
 // http://tutorials.jenkov.com/java-json/jackson-installation.html#jackson-maven-dependencies
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+// import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 
@@ -51,7 +55,7 @@ public class HtmlUnitTest extends BaseTest {
 
 	private static boolean debug = false;
 
-	private static ObjectMapper mapper = new ObjectMapper();
+	// private static ObjectMapper mapper = new ObjectMapper();
 	private static WebClient client = new WebClient();
 	private static final Logger log = LogManager.getLogger(HtmlUnitTest.class);
 	private static String baseUrl;
@@ -92,7 +96,7 @@ public class HtmlUnitTest extends BaseTest {
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
-		super.setBrowser("chrome");
+		super.setBrowser("firefox");
 		// TODO: stop the chrome browser hanging in waiting for use.typekit.net
 		super.beforeClass();
 		assertThat(driver, notNullValue());
@@ -117,7 +121,9 @@ public class HtmlUnitTest extends BaseTest {
 			// org.apache.http.impl.execchain.RetryExec execute
 			// INFO: Retrying request to {s}->https://miami.craigslist.org:443
 			page = client.getPage(baseUrl);
-
+			// NOTE: require a recent version of htmlunit
+			// with 2.25 com.gargoylesoftware.htmlunit.html.HtmlPage did not have
+			// getElementsById
 			inputSearch = (HtmlInput) (page.getElementsById("query").get(0));
 			pageXML = page.asXml();
 		} catch (FailingHttpStatusCodeException | IOException e) {
