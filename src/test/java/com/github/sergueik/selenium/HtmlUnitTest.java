@@ -45,10 +45,18 @@ import org.testng.annotations.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-// import com.fasterxml.jackson.core.JsonGenerationException;
-// import com.fasterxml.jackson.map.JsonMappingException;
+// https://stackoverflow.com/questions/3763937/gson-and-deserializing-an-array-of-objects-with-arrays-in-it
+// https://futurestud.io/tutorials/gson-mapping-of-arrays-and-lists-of-objects
 
-import java.math.BigDecimal;
+import java.lang.reflect.Type;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 /**
 * Sample test scenario for web page scraping with HTMLUnit
@@ -63,10 +71,20 @@ public class HtmlUnitTest extends BaseTest {
 
 	private static boolean debug = false;
 
+	// Gson gson = new Gson();
+	Gson gson = new GsonBuilder()
+			.registerTypeAdapter(ObjectItem.class, new ObjectItemSerializer())
+			.create();
+
+	private static JsonObject result = new JsonObject();
 	private static ObjectMapper mapper = new ObjectMapper();
+	private static final boolean prettify = true;
+	private static ObjectItem objItem;
+	private static String jsonString = null;
+
 	private static WebClient client = new WebClient();
 	private static final Logger log = LogManager.getLogger(HtmlUnitTest.class);
-	private static String baseUrl;
+	private static String baseUrl; // inherited parent value: "about:blank"
 	private static final String searchQuery = "laptop";
 	private static HtmlPage page;
 	private static HtmlInput inputSearch;
@@ -210,54 +228,26 @@ public class HtmlUnitTest extends BaseTest {
 		itemPrice = priceDomNode == null ? "0.0" : priceDomNode.asText();
 		System.err.println(String.format("Name: %s\nPrice: %s\nUrl : %s", itemName,
 				itemPrice, itemUrl));
-		Item item = new Item();
+		jsonString = null;
+		objItem = new ObjectItem();
+		objItem.setTitle(itemName);
+		// TODO: check against overriding with th superclass value of baseURL
+		objItem.setUrl(itemUrl);
+		objItem.setPrice(Float.parseFloat(itemPrice.replace("$", "")));
 
-		item.setTitle(itemName);
-		item.setUrl(baseURL + itemUrl);
-		item.setPrice(new BigDecimal(itemPrice.replace("$", "")));
-		String jsonString = null;
-		ObjectMapper mapper = new ObjectMapper();
 		try {
 			// one is required to reload project in eclipse to fix intellisense
 			// getting
 			// The method writeValueAsString(Object) from the type ObjectMapper refers
 			// to the missing type JsonProcessingException
-			jsonString = mapper.writeValueAsString(item);
+			jsonString = prettify
+					? mapper.writerWithDefaultPrettyPrinter().writeValueAsString(objItem)
+					: mapper.writeValueAsString(objItem);
 		} catch (JsonProcessingException e) {
 
 		}
 
 		System.err.println(jsonString);
-
-	}
-
-	public static class Item {
-		private String title;
-		private BigDecimal price;
-		private String url;
-
-		public String getTitle() {
-			return title;
-		}
-
-		public void setTitle(String title) {
-			this.title = title;
-		}
-
-		public BigDecimal getPrice() {
-			return price;
-		}
-
-		public void setPrice(BigDecimal price) {
-			this.price = price;
-		}
-
-		public String getUrl() {
-			return url;
-		}
-
-		public void setUrl(String url) {
-			this.url = url;
-		}
+		System.err.println("Saving Item Object: " + gson.toJson(objItem));
 	}
 }
