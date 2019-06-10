@@ -66,15 +66,19 @@ based on https://github.com/ksahin/introWebScraping
 
 // See also:
 // http://htmlunit.sourceforge.net/gettingStarted.html
-
+// https://ksah.in/scraping-e-commerce-product-data/
+// https://ksah.in/how-to-log-in-to-almost-any-websites/
 public class HtmlUnitTest extends BaseTest {
 
 	private static boolean debug = false;
 
-	// Gson gson = new Gson();
-	Gson gson = new GsonBuilder()
-			.registerTypeAdapter(ObjectItem.class, new ObjectItemSerializer())
-			.create();
+	private final static boolean directConvertrsion = true;
+	// plain 1/1 conversion
+	// https://futurestud.io/tutorials/gson-getting-started-with-java-json-serialization-deserializationhttps://futurestud.io/tutorials/gson-getting-started-with-java-json-serialization-deserializationhttps://futurestud.io/tutorials/gson-getting-started-with-java-json-serialization-deserialization
+	Gson gson = directConvertrsion ? new Gson()
+			: new GsonBuilder()
+					.registerTypeAdapter(ObjectItem.class, new ObjectItemSerializer())
+					.create();
 
 	private static JsonObject result = new JsonObject();
 	private static ObjectMapper mapper = new ObjectMapper();
