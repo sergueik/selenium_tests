@@ -91,8 +91,8 @@ public class HtmlUnitTest extends BaseTest {
 	private static JsonObject result = new JsonObject();
 	private static ObjectMapper mapper = new ObjectMapper();
 
-	private static ObjectMapper mapper2 = new ObjectMapper(
-			new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+	private static final com.fasterxml.jackson.dataformat.yaml.YAMLFactory yamlFactory = new com.fasterxml.jackson.dataformat.yaml.YAMLFactory();
+	private static ObjectMapper mapper2 = new ObjectMapper(yamlFactory);
 
 	private static final boolean prettify = true;
 	private static ObjectItem objItem;
@@ -260,19 +260,16 @@ public class HtmlUnitTest extends BaseTest {
 			jsonString = prettify
 					? mapper.writerWithDefaultPrettyPrinter().writeValueAsString(objItem)
 					: mapper.writeValueAsString(objItem);
-			// See also plain https://www.baeldung.com/java-snake-yaml
-			// https://dzone.com/articles/read-yaml-in-java-with-jackson
-			System.err.println("YAML serialization with jackson:" + "\n=======\n");
-			// looks like an error in Jackson: the next output is JSON not YAML
+			// See also plain snakeyaml covered in
+			// https://www.baeldung.com/java-snake-yaml
+			// https://stackoverflow.com/questions/27734153/use-jackson-to-write-yaml
+			System.err.println("YAML serialization with Jackson: ");
 			try {
-				SequenceWriter sw = mapper.writerWithDefaultPrettyPrinter()
-						.writeValues(System.err);
-				sw.write(objItem);
+				yamlFactory.createGenerator(System.err).writeObject(objItem);
+				System.err.println("\n\n\n");
 			} catch (IOException e) {
+				// NOTE: also "No ObjectCodec defined for the generator"
 			}
-			System.err.println("\n=======\n");
-			// User user = mapper.readValue(new File("item.yaml"), objItem.class);
-			// System.out.println(ReflectionToStringBuilder.toString(objItem,ToStringStyle.MULTI_LINE_STYLE));
 		} catch (JsonProcessingException e) {
 
 		}
