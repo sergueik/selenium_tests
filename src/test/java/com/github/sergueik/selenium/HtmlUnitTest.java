@@ -43,10 +43,18 @@ import org.testng.annotations.Test;
 // https://stackoverflow.com/questions/50236951/the-import-com-fasterxml-jackson-databind-objectmapper-cannot-be-resolved/50237405
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 // https://stackoverflow.com/questions/3763937/gson-and-deserializing-an-array-of-objects-with-arrays-in-it
 // https://futurestud.io/tutorials/gson-mapping-of-arrays-and-lists-of-objects
+
+// for YAML alone
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.lang.reflect.Type;
 
@@ -82,9 +90,14 @@ public class HtmlUnitTest extends BaseTest {
 
 	private static JsonObject result = new JsonObject();
 	private static ObjectMapper mapper = new ObjectMapper();
+
+	private static ObjectMapper mapper2 = new ObjectMapper(
+			new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
+
 	private static final boolean prettify = true;
 	private static ObjectItem objItem;
 	private static String jsonString = null;
+	private static String yamlString = null;
 
 	private static WebClient client = new WebClient();
 	private static final Logger log = LogManager.getLogger(HtmlUnitTest.class);
@@ -247,6 +260,19 @@ public class HtmlUnitTest extends BaseTest {
 			jsonString = prettify
 					? mapper.writerWithDefaultPrettyPrinter().writeValueAsString(objItem)
 					: mapper.writeValueAsString(objItem);
+			// See also plain https://www.baeldung.com/java-snake-yaml
+			// https://dzone.com/articles/read-yaml-in-java-with-jackson
+			System.err.println("YAML serialization with jackson:" + "\n=======\n");
+			// looks like an error in Jackson: the next output is JSON not YAML
+			try {
+				SequenceWriter sw = mapper.writerWithDefaultPrettyPrinter()
+						.writeValues(System.err);
+				sw.write(objItem);
+			} catch (IOException e) {
+			}
+			System.err.println("\n=======\n");
+			// User user = mapper.readValue(new File("item.yaml"), objItem.class);
+			// System.out.println(ReflectionToStringBuilder.toString(objItem,ToStringStyle.MULTI_LINE_STYLE));
 		} catch (JsonProcessingException e) {
 
 		}
