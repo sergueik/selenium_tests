@@ -52,6 +52,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 // for YAML alone
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -91,8 +92,13 @@ public class HtmlUnitTest extends BaseTest {
 	private static JsonObject result = new JsonObject();
 	private static ObjectMapper mapper = new ObjectMapper();
 
-	private static final com.fasterxml.jackson.dataformat.yaml.YAMLFactory yamlFactory = new com.fasterxml.jackson.dataformat.yaml.YAMLFactory();
-	private static ObjectMapper mapper2 = new ObjectMapper(yamlFactory);
+	private static final YAMLFactory yamlFactory = new YAMLFactory();
+	static {
+		yamlFactory.configure(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID, false)
+				.configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true)
+				.configure(YAMLGenerator.Feature.ALWAYS_QUOTE_NUMBERS_AS_STRINGS, true);
+	}
+	private static ObjectMapper mapper2Yaml = new ObjectMapper(yamlFactory);
 
 	private static final boolean prettify = true;
 	private static ObjectItem objItem;
@@ -101,7 +107,8 @@ public class HtmlUnitTest extends BaseTest {
 
 	private static WebClient client = new WebClient();
 	private static final Logger log = LogManager.getLogger(HtmlUnitTest.class);
-	private static String baseUrl; // inherited parent value: "about:blank"
+	// TODO: drop inherited parent value: "about:blank"
+	private static String baseUrl;
 	private static final String searchQuery = "laptop";
 	private static HtmlPage page;
 	private static HtmlInput inputSearch;
@@ -260,21 +267,26 @@ public class HtmlUnitTest extends BaseTest {
 			jsonString = prettify
 					? mapper.writerWithDefaultPrettyPrinter().writeValueAsString(objItem)
 					: mapper.writeValueAsString(objItem);
-			// See also plain snakeyaml covered in
-			// https://www.baeldung.com/java-snake-yaml
-			// https://stackoverflow.com/questions/27734153/use-jackson-to-write-yaml
-			System.err.println("YAML serialization with Jackson: ");
-			try {
-				yamlFactory.createGenerator(System.err).writeObject(objItem);
-				System.err.println("\n\n\n");
-			} catch (IOException e) {
-				// NOTE: also "No ObjectCodec defined for the generator"
-			}
 		} catch (JsonProcessingException e) {
 
 		}
+		System.err.println(
+				String.format("JSON serialization with Jackson: \n%s\n", jsonString));
+		// See also plain snakeyaml covered in
+		// https://www.baeldung.com/java-snake-yaml
+		// https://stackoverflow.com/questions/27734153/use-jackson-to-write-yaml
+		// https://www.programcreek.com/java-api-examples/?api=com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 
-		System.err.println(jsonString);
-		System.err.println("Saving Item Object: " + gson.toJson(objItem));
+		try {
+			yamlString = mapper2Yaml.writeValueAsString(objItem);
+		} catch (JsonProcessingException e) {
+			// same exeption class is thrown during YAML serialization
+			yamlString = null;
+		}
+		System.err.println(
+				String.format("YAML serialization with Jackson: \n%s\n", yamlString));
+
+		System.err
+				.println("JSON serialization with gson:\n" + gson.toJson(objItem));
 	}
 }
