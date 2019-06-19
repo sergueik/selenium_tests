@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+
 import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
@@ -21,11 +22,14 @@ import org.apache.logging.log4j.Logger;
 
 import org.testng.annotations.Test;
 
-import com.fasterxml.jackson.databind.SequenceWriter;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+
+// for converting into json
+import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -33,11 +37,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 /**
 * Sample test scenario for YAML file loading intended to use outside
 * based on https://dzone.com/articles/read-yaml-in-java-with-jackson
-* target\lib
-* jackson-annotations-2.9.9.jar
-* jackson-core-2.9.9.jar
-* jackson-databind-2.9.9.jar
-* jackson-dataformat-yaml-2.9.9.jar
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 public class JacksonDummyHtmlUnitTest {
@@ -51,18 +50,37 @@ public class JacksonDummyHtmlUnitTest {
 				.configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true)
 				.configure(YAMLGenerator.Feature.ALWAYS_QUOTE_NUMBERS_AS_STRINGS, true);
 	}
-	private static ObjectMapper objectMapper = new ObjectMapper(yamlFactory);
+	private static ObjectMapper inputObjectMapper = new ObjectMapper(yamlFactory);
+	private static ObjectMapper ouputObjectMapper = new ObjectMapper();
+	// fallback to JSON
 
 	private static String yamlString = null;
+	private static String jsonString = null;
 
 	private static final Logger log = LogManager
 			.getLogger(JacksonDummyHtmlUnitTest.class);
 
 	@Test(enabled = true)
-	public void testSilentWithSelector() {
+	public void testYAMLtoJSON() {
+		try {
+			User user = inputObjectMapper
+					.readValue(new File(String.join(System.getProperty("file.separator"),
+							Arrays.asList(System.getProperty("user.dir"), "src", "test",
+									"resources", dataFileName))),
+							User.class);
+			jsonString = ouputObjectMapper.writeValueAsString(user);
+		} catch (/* IOException e|| JsonParseException e || JsonMappingException e */ Exception e) {
+
+		}
+		System.err.println(
+				String.format("JSON serialization with Jackson: \n%s\n", jsonString));
+	}
+
+	@Test(enabled = true)
+	public void testLoadYAML() {
 
 		try {
-			User user = objectMapper
+			User user = inputObjectMapper
 					.readValue(new File(String.join(System.getProperty("file.separator"),
 							Arrays.asList(System.getProperty("user.dir"), "src", "test",
 									"resources", dataFileName))),
