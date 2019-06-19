@@ -1,5 +1,16 @@
 ---
 name: Test User
+# NOTE: the 'anchors' feature which core YAML doc https://learnxinyminutes.com/docs/yaml/ says YAML has
+# the '&' sign denoting anchor and '*' for the reference to the anchor
+# which allow capable YAML parser reuse file fragments and fields
+# see also: https://stackoverflow.com/questions/46641224/what-is-and-in-yaml-mean
+# see example in https://github.com/andrewwardrobe/serverspec-extra-types/blob/master/.gitlab-ci.yml
+# appear to break snakeyaml and (hence) jackson
+# uncommenting the below would raise exception:
+# com.fasterxml.jackson.dataformat.yaml.snakeyaml.error.MarkedYAMLException:
+# parsing a block mapping
+# expected <block end>, but found ':'
+# : << *person
 age: 30
 address:
   line1: My Address Line 1
@@ -9,3 +20,9 @@ address:
 roles:
   - User
   - Editor
+
+# NOTE: strongly typed deserialization (one yaml for one object) has the side effect of raising exception
+# com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException:
+# Unrecognized field "person" (class com.github.sergueik.selenium.JacksonDummyHtmlUnitTest$User)
+# person: &person
+#  name: 'John Doe'
