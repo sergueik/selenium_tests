@@ -1,8 +1,6 @@
 ---
-# NOTE: need to deserialize into a 
 person: &person
-# TODO: describe property e.g. 'family name' ?
-  'familyname': 'John Doe'
+  familyname: 'John Doe'
   age: 30
   address:
     line1: My Address Line 1
@@ -11,9 +9,13 @@ person: &person
     zip: 20000
 user:
   name: Test User
-  # found undefined alias person - the anchor must be defined before reference can be used
-  # https://learnxinyminutes.com/docs/yaml/
-  <<: *person
+  familyname: 'John Doe'
+  age: 30
+  address:
+    line1: My Address Line 1
+    line2: ~
+    city: Washington D.C.
+    zip: 20000
   roles:
     - User
     - Editor
