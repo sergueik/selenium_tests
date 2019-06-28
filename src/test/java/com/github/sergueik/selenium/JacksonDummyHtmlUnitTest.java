@@ -69,9 +69,10 @@ public class JacksonDummyHtmlUnitTest {
 
 	// would fail with composite
 	@SuppressWarnings("unchecked")
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void testLoadAnchorReferencedYAMLWithJackson() {
 
+		final String testName = "testLoadAnchorReferencedYAMLWithJackson";
 		String fileName = buildPathtoResourceFile("anchor_reference.yaml");
 		InputStream in;
 		try {
@@ -80,24 +81,21 @@ public class JacksonDummyHtmlUnitTest {
 			data = (Map<String, Object>) inputObjectMapper.readValue(
 					new File(fileName), new TypeReference<Map<String, Object>>() {
 					});
-			System.err.println(
-					"testLoadGenericYAMLWithJackson:\n" + ReflectionToStringBuilder
-							.toString(data, ToStringStyle.MULTI_LINE_STYLE));
+			System.err.println(testName + ":\n" + ReflectionToStringBuilder
+					.toString(data, ToStringStyle.MULTI_LINE_STYLE));
 			Map<String, Object> userData = (Map<String, Object>) data.get("user");
-			System.err.println("testLoadGenericYAMLWithJackson: userData keys\n"
+			System.err.println(testName + ": userData keys\n"
 					+ Arrays.asList(userData.keySet().toArray()));
 			// testLoadGenericYAMLWithJackson: userData keys [name, <<, roles]
 			ArrayList<String> roles = (ArrayList<String>) userData.get("roles");
-			System.err.println(
-					"testLoadGenericYAMLWithJackson: roles:\n" + Arrays.asList(roles));
-			System.err.println("testLoadGenericYAMLWithJackson: name:\n"
-					+ (String) userData.get("name"));
-			System.err.println(
-					"testLoadGenericYAMLWithJackson: age:\n" + (int) userData.get("age"));
+			System.err.println(testName + ": roles:\n" + Arrays.asList(roles));
+			System.err
+					.println(testName + ": name:\n" + (String) userData.get("name"));
+			System.err.println(testName + ": age:\n" + (int) userData.get("age"));
 			Map<String, Object> address = (Map<String, Object>) userData
 					.get("address");
-			System.err.println("testLoadGenericYAMLWithJackson: address city:\n"
-					+ (String) address.get("city"));
+			System.err.println(
+					testName + ": address city:\n" + (String) address.get("city"));
 			User user = new User((String) userData.get("name"),
 					(String) userData.get("familyname"), (int) userData.get("age"),
 					(Map<String, Object>) userData.get("address"),
@@ -186,7 +184,7 @@ public class JacksonDummyHtmlUnitTest {
 		}
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void testLoadYAML() {
 
 		try {
