@@ -26,7 +26,14 @@
     <htmlunit.version>2.33</htmlunit.version>
     <java.version>1.8</java.version>
     <json.version>20080701</json.version>
-    <jackson.version>2.9.9</jackson.version>
+    <jackson.version>[2.9.9,)</jackson.version>
+  <!-- this will allow maven download snapshot versions like 2.10.0-SNAPSHOT 
+  from ossrh e.g.:
+  https://oss.sonatype.org/content/repositories/snapshots/
+om/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotatio
+s-2.10.0-20190601.024115-4.pom
+  -->
+    <!-- NOTE: [ERROR] 'dependencies.dependency.version' must not contain any of these characters \/:"<>|?* -->
     <jsoup.version>1.11.3</jsoup.version>
     <junit.version>4.12</junit.version>
     <log4j.version>2.5</log4j.version>
