@@ -6,8 +6,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -19,17 +22,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 import org.yaml.snakeyaml.Yaml;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+// import avax.xml.parsers.SAXParserFactory;
+
 import com.google.gson.Gson;
 
 /**
@@ -187,6 +202,83 @@ public class JacksonDummyHtmlUnitTest {
 			}
 			System.err.println("Serialize as JSON:" + new Gson().toJson(members));
 		} catch (IOException e) {
+		}
+	}
+
+	// based on:
+	// https://stackoverflow.com/questions/5936003/write-html-file-using-java
+	// https://docs.oracle.com/javase/7/docs/api/javax/xml/parsers/SAXParserFactory.html
+	// https://mvnrepository.com/artifact/xerces/xerces/2.4.0
+	@Test(enabled = true)
+	public void testRenderYAMLtoHTMLReport() {
+		String fileName = buildPathtoResourceFile("group.yaml");
+		InputStream in;
+
+		String encoding = "UTF-8";
+		try {
+			FileOutputStream fos = new FileOutputStream("report.html");
+			OutputStreamWriter writer = new OutputStreamWriter(fos, encoding);
+			StreamResult streamResult = new StreamResult(writer);
+
+			SAXTransformerFactory saxFactory = (SAXTransformerFactory) TransformerFactory
+					.newInstance();
+			TransformerHandler transformerHandler = saxFactory
+					.newTransformerHandler();
+			transformerHandler.setResult(streamResult);
+
+			Transformer transformer = transformerHandler.getTransformer();
+			transformer.setOutputProperty(OutputKeys.METHOD, "html");
+			transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+			writer.write("<!DOCTYPE html>\n");
+			writer.flush();
+			transformerHandler.startDocument();
+			transformerHandler.startElement("", "", "html", new AttributesImpl());
+			transformerHandler.startElement("", "", "head", new AttributesImpl());
+			transformerHandler.startElement("", "", "title", new AttributesImpl());
+			transformerHandler.characters("Hello".toCharArray(), 0, 5);
+			transformerHandler.endElement("", "", "title");
+			transformerHandler.endElement("", "", "head");
+			transformerHandler.startElement("", "", "body", new AttributesImpl());
+			transformerHandler.startElement("", "", "p", new AttributesImpl());
+			transformerHandler.characters("5 > 3".toCharArray(), 0, 5);
+			transformerHandler.endElement("", "", "p");
+			// note '>' character
+
+			// load with snakeyaml
+			in = Files.newInputStream(Paths.get(fileName));
+			@SuppressWarnings("unchecked")
+			ArrayList<LinkedHashMap<Object, Object>> members = (ArrayList<LinkedHashMap<Object, Object>>) new Yaml()
+					.load(in);
+			System.err.println(
+					String.format("Loaded %d members of the group", members.size()));
+			for (LinkedHashMap<Object, Object> row : members) {
+				transformerHandler.startElement("", "", "tr", new AttributesImpl());
+				System.err.println(String.format("Loaded %d propeties of the artist",
+						row.keySet().size()));
+				jsonString = ouputObjectMapper.writeValueAsString(row.values());
+				System.err.println(jsonString);
+				// Artist artist = (Artist) row;
+				for (Object key : row.keySet()) {
+					transformerHandler.startElement("", "", "td", new AttributesImpl());
+					if (row.get(key) != null) {
+						String value = row.get(key).toString();
+						transformerHandler.characters(value.toCharArray(), 0,
+								value.length());
+					}
+					transformerHandler.endElement("", "", "td");
+				}
+				transformerHandler.endElement("", "", "tr");
+			}
+			transformerHandler.endElement("", "", "body");
+			transformerHandler.endElement("", "", "html");
+			transformerHandler.endDocument();
+			writer.close();
+		} catch (IOException e) {
+		} catch (TransformerConfigurationException e) {
+		} catch (SAXException e) {
+
 		}
 	}
 
