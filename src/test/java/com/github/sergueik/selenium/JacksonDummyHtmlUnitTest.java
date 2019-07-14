@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,11 +15,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -42,9 +38,6 @@ import org.yaml.snakeyaml.Yaml;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-// import avax.xml.parsers.SAXParserFactory;
-
 import com.google.gson.Gson;
 
 /**
@@ -140,7 +133,6 @@ public class JacksonDummyHtmlUnitTest {
 	public void testLoadGenericYAMLWithJackson() {
 
 		String fileName = buildPathtoResourceFile("generic.yaml");
-		InputStream in;
 		try {
 			// load with Jackson
 			Map<String, Object> data = Collections.EMPTY_MAP;
@@ -198,7 +190,11 @@ public class JacksonDummyHtmlUnitTest {
 						row.keySet().size()));
 				jsonString = ouputObjectMapper.writeValueAsString(row.values());
 				System.err.println(jsonString);
+				// Cannot cast from LinkedHashMap<Object,Object> to
+				// JacksonDummyHtmlUnitTest.Artist
 				// Artist artist = (Artist) row;
+				Artist artist = new Artist((int) row.get("id"),
+						(String) row.get("name"), (String) row.get("plays"));
 			}
 			System.err.println("Serialize as JSON:" + new Gson().toJson(members));
 		} catch (IOException e) {
@@ -212,7 +208,6 @@ public class JacksonDummyHtmlUnitTest {
 	@Test(enabled = true)
 	public void testRenderYAMLtoHTMLReport() {
 		String fileName = buildPathtoResourceFile("group.yaml");
-		InputStream in;
 
 		String encoding = "UTF-8";
 		try {
@@ -220,6 +215,7 @@ public class JacksonDummyHtmlUnitTest {
 			OutputStreamWriter writer = new OutputStreamWriter(fos, encoding);
 			StreamResult streamResult = new StreamResult(writer);
 
+			// https://www.programcreek.com/java-api-examples/?class=javax.xml.transform.sax.SAXTransformerFactory&method=setAttribute
 			SAXTransformerFactory saxFactory = (SAXTransformerFactory) TransformerFactory
 					.newInstance();
 			TransformerHandler transformerHandler = saxFactory
@@ -234,43 +230,71 @@ public class JacksonDummyHtmlUnitTest {
 			writer.write("<!DOCTYPE html>\n");
 			writer.flush();
 			transformerHandler.startDocument();
+
+			String newline = System.getProperty("line.separator");
+			if (newline == null) {
+				newline = "\r\n"; // Windows formatting
+			}
 			transformerHandler.startElement("", "", "html", new AttributesImpl());
 			transformerHandler.startElement("", "", "head", new AttributesImpl());
 			transformerHandler.startElement("", "", "title", new AttributesImpl());
-			transformerHandler.characters("Hello".toCharArray(), 0, 5);
+			transformerHandler.characters("Group".toCharArray(), 0, 5);
 			transformerHandler.endElement("", "", "title");
 			transformerHandler.endElement("", "", "head");
+			// @formatter:off
+			String css = "table, th , td  {\n" +
+				"  font-size: 2em;\n" +
+				"  font-family: Arial, sans-serif;\n" +
+				"  border: 1px solid grey;\n" +
+				"  border-collapse: collapse;\n" +
+				"  padding: 5px;\n" +
+				"} \n" +
+				"table tr:nth-child(odd)	{\n" +
+				 "  background-color: #f1f1f1;\n" +
+				"}\n" +
+				"table tr:nth-child(even) {\n" +
+				"  background-color: #ffffff;\n" +
+				"}";
+			// @formatter:on
+			transformerHandler.startElement("", "", "style", new AttributesImpl());
+			transformerHandler.characters(css.toCharArray(), 0, css.length());
+			transformerHandler.endElement("", "", "style");
 			transformerHandler.startElement("", "", "body", new AttributesImpl());
-			transformerHandler.startElement("", "", "p", new AttributesImpl());
-			transformerHandler.characters("5 > 3".toCharArray(), 0, 5);
-			transformerHandler.endElement("", "", "p");
+			// transformerHandler.startElement("", "", "p", new AttributesImpl());
+			// transformerHandler.characters("5 > 3".toCharArray(), 0, 5);
+			// transformerHandler.endElement("", "", "p");
 			// note '>' character
 
 			// load with snakeyaml
-			in = Files.newInputStream(Paths.get(fileName));
+			InputStream in = Files.newInputStream(Paths.get(fileName));
 			@SuppressWarnings("unchecked")
 			ArrayList<LinkedHashMap<Object, Object>> members = (ArrayList<LinkedHashMap<Object, Object>>) new Yaml()
 					.load(in);
 			System.err.println(
 					String.format("Loaded %d members of the group", members.size()));
+			transformerHandler.startElement("", "", "table", new AttributesImpl());
 			for (LinkedHashMap<Object, Object> row : members) {
-				transformerHandler.startElement("", "", "tr", new AttributesImpl());
+				AttributesImpl attributes = new AttributesImpl();
+				attributes.addAttribute("", "", "id", "string",
+						row.get("id").toString());
+				transformerHandler.startElement("", "", "tr", attributes);
 				System.err.println(String.format("Loaded %d propeties of the artist",
 						row.keySet().size()));
 				jsonString = ouputObjectMapper.writeValueAsString(row.values());
 				System.err.println(jsonString);
 				// Artist artist = (Artist) row;
 				for (Object key : row.keySet()) {
-					transformerHandler.startElement("", "", "td", new AttributesImpl());
 					if (row.get(key) != null) {
+						transformerHandler.startElement("", "", "td", new AttributesImpl());
 						String value = row.get(key).toString();
 						transformerHandler.characters(value.toCharArray(), 0,
 								value.length());
+						transformerHandler.endElement("", "", "td");
 					}
-					transformerHandler.endElement("", "", "td");
 				}
 				transformerHandler.endElement("", "", "tr");
 			}
+			transformerHandler.endElement("", "", "table");
 			transformerHandler.endElement("", "", "body");
 			transformerHandler.endElement("", "", "html");
 			transformerHandler.endDocument();
@@ -290,9 +314,13 @@ public class JacksonDummyHtmlUnitTest {
 		try {
 			// load with snakeyaml
 			in = Files.newInputStream(Paths.get(fileName));
+			@SuppressWarnings("unchecked")
 			Map<String, Object> data = (Map<String, Object>) new Yaml().load(in);
+			@SuppressWarnings("unchecked")
 			Map<String, Object> userData = (Map<String, Object>) data.get("user");
+			@SuppressWarnings("unchecked")
 			ArrayList<String> roles = (ArrayList<String>) userData.get("roles");
+			@SuppressWarnings("unchecked")
 			User user = new User((String) userData.get("name"),
 					(String) userData.get("familyname"), (int) userData.get("age"),
 					(Map<String, Object>) userData.get("address"),
@@ -339,10 +367,12 @@ public class JacksonDummyHtmlUnitTest {
 		private Map<String, Object> address;
 		private String[] roles;
 
+		@SuppressWarnings("unused")
 		public String getFamilyname() {
 			return familyname;
 		}
 
+		@SuppressWarnings("unused")
 		public void setFamilyname(String data) {
 			this.familyname = data;
 		}
@@ -351,14 +381,17 @@ public class JacksonDummyHtmlUnitTest {
 			return name;
 		}
 
+		@SuppressWarnings("unused")
 		public void setName(String data) {
 			this.name = data;
 		}
 
+		@SuppressWarnings("unused")
 		public int getAge() {
 			return age;
 		}
 
+		@SuppressWarnings("unused")
 		public void setAge(int data) {
 			this.age = data;
 		}
@@ -367,6 +400,7 @@ public class JacksonDummyHtmlUnitTest {
 			return address;
 		}
 
+		@SuppressWarnings("unused")
 		public void setAddress(Map<String, Object> data) {
 			this.address = data;
 		}
@@ -375,10 +409,12 @@ public class JacksonDummyHtmlUnitTest {
 			return roles;
 		}
 
+		@SuppressWarnings("unused")
 		public void setRoles(String[] data) {
 			this.roles = data;
 		}
 
+		@SuppressWarnings("unused")
 		// default constructor needed for jackson
 		public User() {
 
@@ -401,35 +437,43 @@ public class JacksonDummyHtmlUnitTest {
 		private String plays;
 		private int id;
 
+		@SuppressWarnings("unused")
 		public String getName() {
 			return name;
 		}
 
+		@SuppressWarnings("unused")
 		public void setName(String data) {
 			this.name = data;
 		}
 
+		@SuppressWarnings("unused")
 		public String getPlays() {
 			return plays;
 		}
 
+		@SuppressWarnings("unused")
 		public void setPlays(String data) {
 			this.plays = data;
 		}
 
+		@SuppressWarnings("unused")
 		public int getId() {
 			return id;
 		}
 
+		@SuppressWarnings("unused")
 		public void setId(int data) {
 			this.id = data;
 		}
 
+		@SuppressWarnings("unused")
 		public Artist() {
 
 		}
 
-		public Artist(String name, String role, int id) {
+		@SuppressWarnings("unused")
+		public Artist(int id, String name, String plays) {
 			super();
 			this.name = name;
 			this.id = id;
