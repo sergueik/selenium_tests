@@ -88,6 +88,7 @@ public class Yaml2JSONTest {
 
 				// TODO: provide accurate java.reflection.Type argument to serialize
 				/// https://www.programcreek.com/java-api-examples/index.php?api=com.google.gson.JsonSerializer
+				// JsonElement rowJson = serializer.serialize(artist, null, null);
 				JsonElement rowJson = serializer.serialize(artist, null, null);
 				group.add(rowJson);
 				System.err
@@ -120,6 +121,12 @@ public class Yaml2JSONTest {
 			if (type != null) {
 				result.add("staticInfo",
 						new JsonPrimitive(((Artist) type).getStaticInfo()));
+			} else {
+				String staticInfo = data.getStaticInfo();
+				System.err.println("Static info: " + staticInfo);
+				if (staticInfo != null) {
+					result.add("staticInfo", new JsonPrimitive(staticInfo));
+				}
 			}
 
 			@SuppressWarnings("unused")
@@ -136,6 +143,14 @@ public class Yaml2JSONTest {
 			*/
 			return result;
 		}
+		// TODO: java.lang.ClassCastException: java.lang.Class cannot be cast to
+		// com.github.sergueik.selenium.Yaml2JSONTest$Artist
+		/*
+				public JsonElement serialize(final Artist data,
+						final JsonSerializationContext context) {
+					// return serialize(data, new TypeVariable<String>(), context);
+				}
+		*/
 	}
 
 	public static class Artist {
@@ -173,12 +188,15 @@ public class Yaml2JSONTest {
 			staticInfo = UUID.randomUUID().toString();
 		}
 
-		public static String getStaticInfo() {
-			return staticInfo;
+		public /* static */ String getStaticInfo() {
+			return Artist.staticInfo;
 		}
 
 		public Artist(int id, String name, String plays) {
 			super();
+			if (Artist.staticInfo == null) {
+				Artist.staticInfo = UUID.randomUUID().toString();
+			}
 			this.name = name;
 			this.id = id;
 			this.plays = plays;
