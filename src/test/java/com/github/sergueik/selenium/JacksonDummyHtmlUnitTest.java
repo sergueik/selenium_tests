@@ -30,7 +30,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.testng.annotations.Test;
+
+
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.yaml.snakeyaml.Yaml;
@@ -38,15 +39,19 @@ import org.yaml.snakeyaml.Yaml;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import com.google.gson.Gson;
 
+import org.testng.annotations.Test;
+
 /**
-* Sample test scenario for YAML file loading intended to use outside
+* Sample test scenarios for YAML file loading and then serialized into a variery of formats intended to use outside
 * based on https://dzone.com/articles/read-yaml-in-java-with-jackson
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 public class JacksonDummyHtmlUnitTest {
 
+	@SuppressWarnings("unused")
 	private static boolean debug = false;
 
 	private static final String dataFileName = "user.yaml";
@@ -65,9 +70,11 @@ public class JacksonDummyHtmlUnitTest {
 	private static ObjectMapper ouputObjectMapper = new ObjectMapper();
 	// fallback to JSON
 
+	@SuppressWarnings("unused")
 	private static String yamlString = null;
 	private static String jsonString = null;
 
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager
 			.getLogger(JacksonDummyHtmlUnitTest.class);
 
@@ -90,7 +97,7 @@ public class JacksonDummyHtmlUnitTest {
 
 		final String testName = "testLoadAnchorReferencedYAMLWithJackson";
 		String fileName = buildPathtoResourceFile("anchor_reference.yaml");
-		InputStream in;
+
 		try {
 			// load with Jackson
 			Map<String, Object> data = Collections.EMPTY_MAP;
@@ -188,11 +195,11 @@ public class JacksonDummyHtmlUnitTest {
 			for (LinkedHashMap<Object, Object> row : members) {
 				System.err.println(String.format("Loaded %d propeties of the artist",
 						row.keySet().size()));
-				jsonString = ouputObjectMapper.writeValueAsString(row.values());
-				System.err.println(jsonString);
+				ouputObjectMapper.writeValueAsString(row.values());
 				// Cannot cast from LinkedHashMap<Object,Object> to
 				// JacksonDummyHtmlUnitTest.Artist
 				// Artist artist = (Artist) row;
+				@SuppressWarnings("unused")
 				Artist artist = new Artist((int) row.get("id"),
 						(String) row.get("name"), (String) row.get("plays"));
 			}
@@ -216,6 +223,7 @@ public class JacksonDummyHtmlUnitTest {
 			StreamResult streamResult = new StreamResult(writer);
 
 			// https://www.programcreek.com/java-api-examples/?class=javax.xml.transform.sax.SAXTransformerFactory&method=setAttribute
+			// https://www.programcreek.com/java-api-examples/javax.xml.transform.sax.TransformerHandler
 			SAXTransformerFactory saxFactory = (SAXTransformerFactory) TransformerFactory
 					.newInstance();
 			TransformerHandler transformerHandler = saxFactory
@@ -243,7 +251,7 @@ public class JacksonDummyHtmlUnitTest {
 			transformerHandler.endElement("", "", "head");
 			// @formatter:off
 			String css = "table, th , td  {\n" +
-				"  font-size: 2em;\n" +
+				"  font-size: 1em;\n" +
 				"  font-family: Arial, sans-serif;\n" +
 				"  border: 1px solid grey;\n" +
 				"  border-collapse: collapse;\n" +
@@ -280,8 +288,7 @@ public class JacksonDummyHtmlUnitTest {
 				transformerHandler.startElement("", "", "tr", attributes);
 				System.err.println(String.format("Loaded %d propeties of the artist",
 						row.keySet().size()));
-				jsonString = ouputObjectMapper.writeValueAsString(row.values());
-				System.err.println(jsonString);
+				System.err.println(ouputObjectMapper.writeValueAsString(row.values()));
 				// Artist artist = (Artist) row;
 				for (Object key : row.keySet()) {
 					if (row.get(key) != null) {
@@ -472,7 +479,6 @@ public class JacksonDummyHtmlUnitTest {
 
 		}
 
-		@SuppressWarnings("unused")
 		public Artist(int id, String name, String plays) {
 			super();
 			this.name = name;
