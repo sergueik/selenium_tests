@@ -4,18 +4,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Type;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.testng.annotations.Test;
+
 import org.yaml.snakeyaml.Yaml;
 
+import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -39,7 +49,6 @@ public class Yaml2JSONTest {
 
 		String fileName = "group.yaml";
 
-		String encoding = "UTF-8";
 		List<String> group = new ArrayList<>();
 		try {
 			InputStream in = Files.newInputStream(
@@ -65,7 +74,7 @@ public class Yaml2JSONTest {
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void conversionCorrectedTest() throws Exception {
 		String fileName = "group.yaml";
 		String encoding = "UTF-8";
@@ -86,10 +95,83 @@ public class Yaml2JSONTest {
 				Artist artist = new Artist((int) row.get("id"),
 						(String) row.get("name"), (String) row.get("plays"));
 
-				// TODO: provide accurate java.reflection.Type argument to serialize
-				/// https://www.programcreek.com/java-api-examples/index.php?api=com.google.gson.JsonSerializer
-				// JsonElement rowJson = serializer.serialize(artist, null, null);
+				// TODO: refacor avoiding need to explicitly set the hard to instantiate
+				// argument of the type java.reflection.Type to expliticly invoke
+				// serialize
+				// https://www.programcreek.com/java-api-examples/index.php?api=com.google.gson.JsonSerializer
 				JsonElement rowJson = serializer.serialize(artist, null, null);
+				group.add(rowJson);
+				System.err
+						.println("JSON serialization or artist:\n" + rowJson.toString());
+
+			}
+			System.err
+					.println("JSON serialization or one group:\n" + gson.toJson(group));
+			writer.write(gson.toJson(group));
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			System.err.println("Excption (ignored) " + e.toString());
+		}
+	}
+
+	@Test(enabled = true)
+	public void conversionRefactoredTest() throws Exception {
+		String fileName = "group.yaml";
+		String encoding = "UTF-8";
+		List<JsonElement> group = new ArrayList<>();
+		try {
+			FileOutputStream fos = new FileOutputStream("report.json");
+			OutputStreamWriter writer = new OutputStreamWriter(fos, encoding);
+
+			InputStream in = Files.newInputStream(
+					Paths.get(String.join(System.getProperty("file.separator"),
+							Arrays.asList(System.getProperty("user.dir"), "src", "test",
+									"resources", fileName))));
+			@SuppressWarnings("unchecked")
+			ArrayList<LinkedHashMap<Object, Object>> members = (ArrayList<LinkedHashMap<Object, Object>>) new Yaml()
+					.load(in);
+
+			for (LinkedHashMap<Object, Object> row : members) {
+				Artist artist = new Artist((int) row.get("id"),
+						(String) row.get("name"), (String) row.get("plays"));
+
+				// https://www.programcreek.com/java-api-examples/index.php?api=com.google.gson.JsonSerializer
+				Gson gson = new GsonBuilder()
+						.registerTypeAdapter(Artist.class, new JsonSerializer<Artist>() {
+							@Override
+							public JsonElement serialize(final Artist data, final Type type,
+									final JsonSerializationContext context) {
+								JsonObject result = new JsonObject();
+								int id = data.getId();
+								if (id != 0) {
+									result.add("id", new JsonPrimitive(id));
+								}
+
+								@SuppressWarnings("unused")
+								String name = data.getName();
+								// filter what to (not) serialize
+
+								String plays = data.getPlays();
+								if (plays != null && !plays.isEmpty()) {
+									result.add("plays", new JsonPrimitive(plays));
+								}
+								return result;
+							}
+						}).setFieldNamingStrategy(new FieldNamingStrategy() {
+							Pattern iPattern = Pattern.compile("i([A-Z])(.*)");
+
+							@Override
+							public String translateName(Field f) {
+								Matcher matcher = iPattern.matcher(f.getName());
+								if (matcher.matches())
+									return matcher.group(1).toLowerCase() + matcher.group(2);
+								else
+									return f.getName();
+							}
+						}).setPrettyPrinting().create();
+				JsonElement rowJson = gson.toJsonTree(artist, Artist.class);
+
 				group.add(rowJson);
 				System.err
 						.println("JSON serialization or artist:\n" + rowJson.toString());
@@ -107,7 +189,6 @@ public class Yaml2JSONTest {
 
 	// https://stackoverflow.com/questions/11038553/serialize-java-object-with-gson
 	public static class ArtistSerializer implements JsonSerializer<Artist> {
-		@SuppressWarnings("static-access")
 		@Override
 		public JsonElement serialize(final Artist data, final Type type,
 				final JsonSerializationContext context) {
@@ -143,14 +224,6 @@ public class Yaml2JSONTest {
 			*/
 			return result;
 		}
-		// TODO: java.lang.ClassCastException: java.lang.Class cannot be cast to
-		// com.github.sergueik.selenium.Yaml2JSONTest$Artist
-		/*
-				public JsonElement serialize(final Artist data,
-						final JsonSerializationContext context) {
-					// return serialize(data, new TypeVariable<String>(), context);
-				}
-		*/
 	}
 
 	public static class Artist {
