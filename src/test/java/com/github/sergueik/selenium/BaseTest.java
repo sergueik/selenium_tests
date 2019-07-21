@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
@@ -1419,4 +1420,35 @@ public class BaseTest {
 				prepareBodyHTML(pageBody), timeout);
 	}
 
+	// home-brewed method for clearing dynamic react input
+	// which retain the text value after being cleared by a regular method
+	// https://github.com/SeleniumHQ/selenium/issues/6741
+	protected void customClearInputAction(By locator) {
+		// disable implicit wait
+		int delay = 200;
+
+		driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+		wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+		WebElement element = driver.findElement(locator);
+
+		element.sendKeys(Keys.chord(Keys.CONTROL, "a", Keys.DELETE));
+
+		// alternative
+		while (element.getAttribute("value") != "") {
+			element.sendKeys(Keys.BACK_SPACE);
+		}
+	}
+
+	protected void customSendKeys(By locator, String value) {
+		// disable implicit wait
+		int delay = 200;
+
+		driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+		wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+		WebElement element = driver.findElement(locator);
+		// https://github.com/SeleniumHQ/selenium/issues/6741
+		actions.click(element).pause(delay).keyDown(Keys.CONTROL).sendKeys("a")
+				.keyUp(Keys.CONTROL).pause(delay).sendKeys(Keys.BACK_SPACE).pause(delay)
+				.sendKeys(value).perform();
+	}
 }
