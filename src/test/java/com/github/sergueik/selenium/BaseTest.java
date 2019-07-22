@@ -14,8 +14,7 @@ import static java.lang.System.err;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.net.URI;
@@ -227,7 +226,7 @@ public class BaseTest {
 		for (String extensionName : this.chromeExtensions) {
 			String extensionFilePath = this.extensionDir + "\\" + extensionName
 					+ ".crx";
-			// System.err.println("About to load extension " + extensionFilePath);
+			// err.println("About to load extension " + extensionFilePath);
 			File extensionFile = new File(extensionFilePath);
 
 			// origin:
@@ -244,14 +243,14 @@ public class BaseTest {
 
 					extensionFileInputStream.close();
 					chromeExtensionsBase64Encoded.add(new String(base64EncodedByteArray));
-					System.err.println(String.format(
+					err.println(String.format(
 							"Chrome extension successfully encoded and added: %s...",
 							new String(base64EncodedByteArray).substring(0, 64)));
 				} catch (FileNotFoundException e1) {
-					System.err.println(
+					err.println(
 							"Chrome extension not found: " + extensionFilePath + " " + e1);
 				} catch (IOException e2) {
-					System.err.println("Problem with reading Chrome extension: " + e2);
+					err.println("Problem with reading Chrome extension: " + e2);
 				}
 			}
 			chromeOptions.addEncodedExtensions(chromeExtensionsBase64Encoded);
@@ -278,12 +277,12 @@ public class BaseTest {
 		 */
 
 		/*
-		 * System.err.println(String.format("%s=%s", "System.env('webdriver.driver')",
+		 * err.println(String.format("%s=%s", "System.env('webdriver.driver')",
 		 * System.getenv("webdriver.driver"))); System.err
 		 * .println(String.format("%s=%s", "getPropertyEnv('webdriver.driver')",
 		 * getPropertyEnv("webdriver.driver", "")));
 		 */
-		System.err.println("Launching " + browser);
+		err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
 			System.setProperty("webdriver.chrome.driver",
 					osName.equals("windows")
@@ -331,7 +330,7 @@ public class BaseTest {
 					// check file existence
 					for (String path : paths) {
 						File exe = new File(path);
-						System.err.println("Inspecting browser path: " + path);
+						err.println("Inspecting browser path: " + path);
 						if (exe.exists()) {
 							chromeOptions.setBinary(path);
 						}
@@ -473,7 +472,7 @@ public class BaseTest {
 			 * profile.setPreference("general.useragent.override",
 			 * "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0");
 			 */
-			// System.err.println(System.getProperty("user.dir"));
+			// err.println(System.getProperty("user.dir"));
 			capabilities.setCapability(FirefoxDriver.PROFILE, profile);
 			try {
 				DriverWrapper.add("firefox", capabilities);
@@ -535,7 +534,7 @@ public class BaseTest {
 	@BeforeMethod
 	public void beforeMethod(Method method) {
 		String methodName = method.getName();
-		System.err.println("Test Name: " + methodName + "\n");
+		err.println("Test Name: " + methodName + "\n");
 	}
 
 	// INFO: Unable to drain process streams. Ignoring but the exception being
@@ -567,7 +566,7 @@ public class BaseTest {
 
 	public void highlight(WebElement element, long highlightInterval,
 			String color) {
-		System.err.println("Color: " + color);
+		err.println("Color: " + color);
 		if (wait == null) {
 			wait = new WebDriverWait(driver, flexibleWait);
 		}
@@ -584,8 +583,37 @@ public class BaseTest {
 			Thread.sleep(highlightInterval);
 			executeScript("arguments[0].style.border=''", element);
 		} catch (InterruptedException e) {
-			// System.err.println("Exception (ignored): " + e.toString());
+			// err.println("Exception (ignored): " + e.toString());
 		}
+	}
+
+	// based on:
+	// https://github.com/fudax/selenium_recorder/blob/master/src/main/java/com/star/bot/apis/JScriptCollection.java
+	public void unhideElement(WebElement element) {
+		/*
+				// https://letskodeit.teachable.com/pages/practice
+				// hide-textbox
+				var unhide = function(element) {
+				    element.style.visibility = 'visible';
+				    element.style.height = '1px';
+				    element.style.width = '1px';
+				    element.style.opacity = 1;
+				}
+				var e = document.querySelector("#hide-textbox");
+				unhide(e);
+		 */
+		int size = 20;
+		// @formatter:off
+		executeScript(
+				String.format(
+					"var element = arguments[0];"
+				+ "element.style.visibility = 'visible';"
+				+ "element.style.height = '%dpx';"
+				+ "element.style.width = '%dpx';"
+				+ "element.style.opacity = 1;", size, size),
+				element);
+		// @formatter:on
+		wait.until(ExpectedConditions.visibilityOf(element));
 	}
 
 	// based on: discussion of using webdriver versus container element in waits
@@ -593,6 +621,7 @@ public class BaseTest {
 	// http://software-testing.ru/forum/index.php?/topic/37820-tcelesoobraznost-webdriverwait/
 	public void waitVisibilityInside(final WebElement container, final By by,
 			final int timeout) {
+		@SuppressWarnings("unused")
 		boolean status = false;
 		try {
 			status = (new WebDriverWait(driver, timeout))
@@ -604,7 +633,7 @@ public class BaseTest {
 						}
 					});
 		} catch (Exception e) {
-			System.err.println("Exception: " + e.toString());
+			err.println("Exception: " + e.toString());
 			status = true;
 		}
 	}
@@ -639,7 +668,7 @@ public class BaseTest {
 		try {
 			executeScript(script, selector, text);
 		} catch (Exception e) {
-			System.err.println("Ignored: " + e.toString());
+			err.println("Ignored: " + e.toString());
 		}
 	}
 
@@ -653,7 +682,7 @@ public class BaseTest {
 			wait.until(ExpectedConditions.visibilityOf(element));
 			executeScript(script, element, text);
 		} catch (Exception e) {
-			System.err.println("Ignored: " + e.toString());
+			err.println("Ignored: " + e.toString());
 		}
 	}
 
@@ -684,7 +713,7 @@ public class BaseTest {
 			Thread.sleep(highlightInterval);
 			executeScript(String.format("%s\nhighlight_remove();", highlightScript));
 		} catch (InterruptedException e) {
-			// System.err.println("Ignored: " + e.toString());
+			// err.println("Ignored: " + e.toString());
 		}
 
 	}
@@ -733,13 +762,13 @@ public class BaseTest {
 					.cast(driver);
 			/*
 			 *
-			 * // currently unsafe System.err.println(arguments.length +
+			 * // currently unsafe err.println(arguments.length +
 			 * " arguments received."); String argStr = "";
 			 * 
 			 * for (int i = 0; i < arguments.length; i++) { argStr = argStr + " " +
 			 * (arguments[i] == null ? "null" : arguments[i].toString()); }
 			 * 
-			 * System.err.println("Calling " + script.substring(0, 40) + "..." + \n" + "with
+			 * err.println("Calling " + script.substring(0, 40) + "..." + \n" + "with
 			 * arguments: " + argStr);
 			 */
 			return javascriptExecutor.executeScript(script, arguments);
@@ -800,12 +829,12 @@ public class BaseTest {
 				.includeHostKeyChecks(false).usingUserInfo(sshUser).build();
 
 		ExecResults execResults = ssh.executeCommand(command);
-		System.err.println(execResults.getOutput().toString());
+		err.println(execResults.getOutput().toString());
 	}
 
 	// https://www.javaworld.com/article/2071275/core-java/when-runtime-exec---won-t.html?page=2
 	public static void killProcess(String processName) {
-		System.err.println("Killing the process: " + processName);
+		err.println("Killing the process: " + processName);
 
 		if (processName.isEmpty()) {
 			return;
@@ -853,20 +882,20 @@ public class BaseTest {
 			int exitCode = process.waitFor();
 			// ignore exit code 128: the process "<browser driver>" not found.
 			if (exitCode != 0 && (exitCode ^ 128) != 0) {
-				System.err.println("Process exit code: " + exitCode);
+				err.println("Process exit code: " + exitCode);
 				if (processOutput.length() > 0) {
-					System.err.println("<OUTPUT>" + processOutput + "</OUTPUT>");
+					err.println("<OUTPUT>" + processOutput + "</OUTPUT>");
 				}
 				if (processError.length() > 0) {
 					// e.g.
 					// The process "chromedriver.exe"
 					// with PID 5540 could not be terminated.
 					// Reason: Access is denied.
-					System.err.println("<ERROR>" + processError + "</ERROR>");
+					err.println("<ERROR>" + processError + "</ERROR>");
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Exception (ignored): " + e.getMessage());
+			err.println("Exception (ignored): " + e.getMessage());
 		}
 	}
 
@@ -912,6 +941,7 @@ public class BaseTest {
 	// https://github.com/TsvetomirSlavov/JavaScriptForSeleniumMyCollection/blob/master/src/utils/UtilsQAAutoman.java
 	// https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/interactions/internal/Coordinates.html
 	// https://www.programcreek.com/java-api-examples/index.php?api=org.openqa.selenium.interactions.internal.Coordinates
+	@SuppressWarnings("deprecation")
 	public void scrolltoElement(WebElement element) {
 		Coordinates coordinate;
 		try {
@@ -920,7 +950,7 @@ public class BaseTest {
 			coordinate.onPage();
 			coordinate.inViewPort();
 		} catch (ClassCastException e) {
-			System.err.println("Exception (ignored)" + e.toString());
+			err.println("Exception (ignored)" + e.toString());
 			actions.moveToElement(element).build().perform();
 		}
 	}
@@ -1033,7 +1063,7 @@ public class BaseTest {
 		try {
 			// element.getLocation()
 			Point location = element.getLocation();
-			System.err.println("Scrolling to " + location.y);
+			err.println("Scrolling to " + location.y);
 			scroll(location.x, location.y);
 		} catch (UnsupportedCommandException e) {
 
@@ -1049,7 +1079,7 @@ public class BaseTest {
 		newHandles.removeAll(oldHandles);
 		// the remaining item is the new window handle
 		for (String handle : newHandles) {
-			System.err.println("Returning hanlde: " + handle);
+			err.println("Returning hanlde: " + handle);
 			return handle;
 		}
 		return null;
@@ -1076,15 +1106,15 @@ public class BaseTest {
 					force);
 
 			if (debug) {
-				System.err.println("Result: " + result);
+				err.println("Result: " + result);
 			}
 			highlight(element.findElement(By.xpath("..")));
 			if (debug) {
-				System.err.println(xpathOfElement(element));
+				err.println(xpathOfElement(element));
 			}
 		} catch (Exception e) {
 			// temporarily catch all exceptions.
-			System.err.println("Exception: " + e.toString());
+			err.println("Exception: " + e.toString());
 		}
 
 	}
@@ -1244,7 +1274,7 @@ public class BaseTest {
 	protected String getPageContent(String pagename) {
 		try {
 			URI uri = BaseTest.class.getClassLoader().getResource(pagename).toURI();
-			System.err.println("Testing local file: " + uri.toString());
+			err.println("Testing local file: " + uri.toString());
 			return uri.toString();
 		} catch (URISyntaxException e) { // NOTE: multi-catch statement is not
 			// supported in -source 1.6
@@ -1261,17 +1291,17 @@ public class BaseTest {
 					public Alert apply(WebDriver d) {
 						Alert alert = null;
 						try {
-							System.err.println("getAlert evaluating alert");
+							err.println("getAlert evaluating alert");
 							alert = d.switchTo().alert();
 							if (alert != null) {
-								System.err.println("getAlert detected alert");
+								err.println("getAlert detected alert");
 								return alert;
 							} else {
-								System.err.println("getAlert see no alert");
+								err.println("getAlert see no alert");
 								return null;
 							}
 						} catch (NoAlertPresentException e) {
-							System.err.println("getAlert see no alert");
+							err.println("getAlert see no alert");
 							return null;
 						}
 					}
@@ -1359,7 +1389,7 @@ public class BaseTest {
 	// https://github.com/Ardesco/Selenium-Maven-Template/blob/master/src/test/java/com/lazerycode/selenium/tests/GoogleExampleIT.java#L13
 	// usage:
 	// wait.until(pageTitleEndsWith("#inbox"));
-	// System.err.println("Page title: " + driver.getTitle());
+	// err.println("Page title: " + driver.getTitle());
 	// e.g. Page title: https://mail.google.com/mail/u/0/#inbox
 	private ExpectedCondition<Boolean> pageTitleEndsWith(final String search) {
 		// return java 8 lambda
@@ -1380,7 +1410,7 @@ public class BaseTest {
 		String pageBody = getScriptContent(pageName);
 		executeScript("document.write(arguments[0]);", pageBody); // TODO: special
 		if (debug) {
-			System.err.println("Wrote document: " + pageBody);
+			err.println("Wrote document: " + pageBody);
 		}
 	}
 
@@ -1418,22 +1448,24 @@ public class BaseTest {
 		openEmptyPlaceholderPage();
 		String pageBody = getScriptContent(pageName);
 		if (debug) {
-			System.err.println("Writing into body element: "
-					+ prepareBodyHTML(pageBody) + " with a timeout " + timeout);
+			err.println("Writing into body element: " + prepareBodyHTML(pageBody)
+					+ " with a timeout " + timeout);
 		}
 		executeScript(
 				"setTimeout(function(){ document.getElementsByTagName('body')[0].innerHTML = arguments[0];  }, arguments[1]);",
 				prepareBodyHTML(pageBody), timeout);
 	}
 
-	// origin:
+	// based on:
 	// https://github.com/fudax/selenium_recorder/blob/master/src/main/java/com/star/bot/apis/WebDriverBotApis.java
 	public boolean clickByJavaScript(WebElement element) {
 		wait.until(ExpectedConditions.visibilityOf(element));
 		String result = (String) executeScript("return arguments[0].click();",
 				element);
-		// e.g. clickByJavaScript result: Press a button!
-		err.println("clickByJavaScript result: " + result);
+		if (debug) {
+			// e.g. clickByJavaScript result: Press a button!
+			err.println("clickByJavaScript result: " + result);
+		}
 		return (result != null);
 	}
 
