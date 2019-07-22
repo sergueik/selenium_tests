@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import java.lang.reflect.Method;
+import static java.lang.System.err;
+
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -173,6 +175,10 @@ public class BaseTest {
 
 	public void setScriptTimeout(int value) {
 		this.scriptTimeout = value;
+	}
+
+	public int getFlexibleWait() {
+		return this.flexibleWait;
 	}
 
 	public void setFlexibleWait(int value) {
@@ -1420,10 +1426,21 @@ public class BaseTest {
 				prepareBodyHTML(pageBody), timeout);
 	}
 
+	// origin:
+	// https://github.com/fudax/selenium_recorder/blob/master/src/main/java/com/star/bot/apis/WebDriverBotApis.java
+	public boolean clickByJavaScript(WebElement element) {
+		wait.until(ExpectedConditions.visibilityOf(element));
+		String result = (String) executeScript("return arguments[0].click();",
+				element);
+		// e.g. clickByJavaScript result: Press a button!
+		err.println("clickByJavaScript result: " + result);
+		return (result != null);
+	}
+
 	// home-brewed method for clearing dynamic react input
 	// which retain the text value after being cleared by a regular method
 	// https://github.com/SeleniumHQ/selenium/issues/6741
-	protected void customClearInputAction(By locator) {
+	protected void customClear(By locator) {
 		// disable implicit wait
 		int delay = 200;
 

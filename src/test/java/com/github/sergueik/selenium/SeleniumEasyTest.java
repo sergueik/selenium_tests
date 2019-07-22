@@ -4,7 +4,12 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 
+import java.io.IOException;
+
+import static java.lang.System.err;
+
 import java.lang.reflect.Method;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +22,7 @@ import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -26,6 +32,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -45,16 +52,21 @@ public class SeleniumEasyTest extends BaseTest {
 	// super
 	private Alert alert = null;
 
+	@BeforeClass
+	public void beforeClass() throws IOException {
+		// Chrome appear to be hanging
+		// possibly trying to warn abour blocked content from unauthorized source
+		// found on http://www.seleniumeasy.com/test
+		super.setBrowser("firefox");
+		super.setFlexibleWait(30);
+		super.beforeClass();
+		assertThat(driver, notNullValue());
+	}
+
 	@BeforeMethod
 	public void BeforeMethod(Method method) {
 		super.beforeMethod(method);
 		driver.get(baseURL);
-		/*
-		ExpectedCondition<Boolean> urlChange = driver -> driver.getCurrentUrl()
-				.matches(String.format("^%s.*", baseURL));
-		wait.until(urlChange);
-		System.err.println("BeforeMethod: Current  URL: " + driver.getCurrentUrl());
-		*/
 	}
 
 	@AfterMethod
@@ -64,6 +76,22 @@ public class SeleniumEasyTest extends BaseTest {
 					result.getMethod().getMethodName(), verificationErrors.toString()));
 		}
 		driver.get("about:blank");
+	}
+
+	@Test(enabled = true)
+	public void conditionTest() {
+		driver.get("https://www.seleniumeasy.com/");
+		sleep(1000);
+		ExpectedCondition<Boolean> urlChange = driver -> driver.getCurrentUrl()
+				.matches(String.format("^%s.*", baseURL));
+		try {
+			driver.get(baseURL);
+			wait.until(urlChange);
+			System.err.println("Confirmed change of url: " + driver.getCurrentUrl());
+		} catch (TimeoutException e) {
+			err.println("Exception (ignored): " + e.toString());
+		}
+
 	}
 
 	// https://www.seleniumeasy.com/test/table-sort-search-demo.html
@@ -139,7 +167,8 @@ public class SeleniumEasyTest extends BaseTest {
 					.println("Acting on: " + buttonElement.getAttribute("outerHTML"));
 			highlight(buttonElement);
 			flash(buttonElement);
-			buttonElement.click();
+			// buttonElement.click();
+			clickByJavaScript(buttonElement);
 			sleep(1000);
 		} catch (Exception e) {
 			System.err.println("Exception: " + e.toString());

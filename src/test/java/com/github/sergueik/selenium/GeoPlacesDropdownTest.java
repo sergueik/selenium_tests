@@ -1,13 +1,13 @@
 package com.github.sergueik.selenium;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,6 +20,7 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -33,9 +34,6 @@ import org.testng.annotations.Test;
 */
 
 public class GeoPlacesDropdownTest extends BaseTest {
-
-	private static final Logger log = LogManager
-			.getLogger(GeoPlacesDropdownTest.class);
 
 	private String baseURL = "https://developers.google.com/maps/documentation/javascript/examples/places-placeid-geocoder";
 
