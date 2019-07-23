@@ -44,7 +44,7 @@ import org.testng.annotations.Test;
 public class UnhideElementTest extends BaseTest {
 
 	private static String baseURL = "https://letskodeit.teachable.com/pages/practice";
-
+	// redirects to https://learn.letskodeit.com/p/practice
 	private static final StringBuffer verificationErrors = new StringBuffer();
 
 	@BeforeMethod
@@ -66,13 +66,27 @@ public class UnhideElementTest extends BaseTest {
 	public void javascriptUnhideTest() {
 		// Arrange
 		By locator = By.id("hide-textbox");
-		WebElement element = driver.findElement(locator);
-		unhideElement(element);
-		element = wait
+		WebElement element = wait
 				.until(ExpectedConditions.visibilityOfElementLocated(locator));
-		System.err.println("Acting on: " + element.getAttribute("outerHTML"));
+		locator = By.id("displayed-text");
+		WebElement checkElement = driver.findElement(locator);
+		System.err.println("Acting on: " + checkElement.getAttribute("outerHTML"));
+		actions.moveToElement(checkElement).build().perform();
+		sleep(1000);
+		// NOTE: highlight appears to produce no visual effect on the
+		// bootstrap-skinned
+		// button
 		highlight(element);
 		flash(element);
+		element.click();
+		sleep(1000);
+		checkElement = driver.findElement(locator);
+		System.err.println("Unhidden: " + checkElement.getAttribute("outerHTML"));
+		unhideElement(checkElement);
+		// NOTE: fails while applying javascript
+
+		sleep(10000);
+
 	}
 
 }

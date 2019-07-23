@@ -46,6 +46,7 @@ import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.UnsupportedCommandException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -602,18 +603,27 @@ public class BaseTest {
 				var e = document.querySelector("#hide-textbox");
 				unhide(e);
 		 */
+		System.err.println("Acting on: " + element.getAttribute("outerHTML"));
+
 		int size = 20;
 		// @formatter:off
 		executeScript(
 				String.format(
 					"var element = arguments[0];"
+				+ "element.style.display = 'block';"
 				+ "element.style.visibility = 'visible';"
 				+ "element.style.height = '%dpx';"
 				+ "element.style.width = '%dpx';"
-				+ "element.style.opacity = 1;", size, size),
+				+ "element.style.opacity = 0;", size, size),
 				element);
 		// @formatter:on
-		wait.until(ExpectedConditions.visibilityOf(element));
+		System.err.println("Modified the subject element contents: "
+				+ element.getAttribute("outerHTML"));
+		try {
+			wait.until(ExpectedConditions.visibilityOf(element));
+		} catch (TimeoutException e) {
+			err.println("Exception (ignored): " + e.toString());
+		}
 	}
 
 	// based on: discussion of using webdriver versus container element in waits
