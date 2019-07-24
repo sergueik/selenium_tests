@@ -1,38 +1,15 @@
 package com.github.sergueik.selenium;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.*;
-
-import java.io.IOException;
-
-import static java.lang.System.err;
 
 import java.lang.reflect.Method;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoAlertPresentException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -65,26 +42,49 @@ public class UnhideElementTest extends BaseTest {
 	@Test(enabled = true)
 	public void javascriptUnhideTest() {
 		// Arrange
-		By locator = By.id("hide-textbox");
-		WebElement element = wait
-				.until(ExpectedConditions.visibilityOfElementLocated(locator));
-		locator = By.id("displayed-text");
-		WebElement checkElement = driver.findElement(locator);
-		System.err.println("Acting on: " + checkElement.getAttribute("outerHTML"));
-		actions.moveToElement(checkElement).build().perform();
+		By hideButtonLocator = By.id("hide-textbox");
+		WebElement hideButton = wait.until(
+				ExpectedConditions.visibilityOfElementLocated(hideButtonLocator));
+		By elementLocator = By.id("displayed-text");
+		WebElement element = driver.findElement(elementLocator);
+		System.err.println("Acting on: " + element.getAttribute("outerHTML"));
+		actions.moveToElement(element).build().perform();
+		assertThat(element.isDisplayed(), is(true));
 		sleep(1000);
-		// NOTE: highlight appears to produce no visual effect on the
-		// bootstrap-skinned
-		// button
-		highlight(element);
-		flash(element);
-		element.click();
+		// NOTE: highlight method has no visual effect on the
+		// bootstrap-skinned button
+		highlight(hideButton);
+		flash(hideButton);
+		hideButton.click();
 		sleep(1000);
-		checkElement = driver.findElement(locator);
-		System.err.println("Unhidden: " + checkElement.getAttribute("outerHTML"));
-		unhideElement(checkElement);
-		// NOTE: fails while applying javascript
+		element = driver.findElement(elementLocator);
+		System.err.println("Hidden: " + element.getAttribute("outerHTML"));
+		assertThat(element.isDisplayed(), is(false));
 
+		// NOTE: fails while applying javascript
+		By showButtonLocator = By.id("show-textbox");
+		WebElement showButton = driver.findElement(showButtonLocator);
+		showButton.click();
+		element = driver.findElement(elementLocator);
+		System.err.println("Shown: " + element.getAttribute("outerHTML"));
+		assertThat(element.isDisplayed(), is(true));
+		// run the button "onClick" handlers directly
+		sleep(1000);
+		executeScript("window.hideElement()");
+		sleep(1000);
+		assertThat(element.isDisplayed(), is(false));
+		executeScript("window.showElement()");
+		sleep(1000);
+		assertThat(element.isDisplayed(), is(true));
+		// run the button "onClick" handlers directly
+		sleep(1000);
+		executeScript("window.hideElement()");
+		sleep(1000);
+		// try brute force - commented - fails to achieve
+		unhideElement(element);
+		sleep(1000);
+		assertThat(element.isDisplayed(), is(true));
+		// run the button "onClick" handlers directly
 		sleep(10000);
 
 	}

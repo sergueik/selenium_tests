@@ -603,10 +603,23 @@ public class BaseTest {
 				var e = document.querySelector("#hide-textbox");
 				unhide(e);
 		 */
+		/*
+		 	function hideElement() {
+				var x = document.getElementById("displayed-text");
+				//style.visibility = "hidden";
+				x.style.display = "none";
+			}
+			function showElement() {
+				var x = document.getElementById("displayed-text");
+				//style.visibility = "visible";
+				x.style.display = "block";
+			}
+		 */
 		System.err.println("Acting on: " + element.getAttribute("outerHTML"));
 
 		int size = 20;
 		// @formatter:off
+		/*
 		executeScript(
 				String.format(
 					"var element = arguments[0];"
@@ -616,7 +629,14 @@ public class BaseTest {
 				+ "element.style.width = '%dpx';"
 				+ "element.style.opacity = 0;", size, size),
 				element);
+				*/
 		// @formatter:on
+		// @formatter:off
+		executeScript(
+					"var element = arguments[0];"
+				+ "element.style.display = 'block';", element);
+				// @formatter:on
+
 		System.err.println("Modified the subject element contents: "
 				+ element.getAttribute("outerHTML"));
 		try {
