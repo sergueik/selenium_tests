@@ -342,6 +342,7 @@ public class BaseTest {
 				}
 			}
 			// see also: https://developers.google.com/recaptcha/docs/faq
+			// https://peter.sh/experiments/chromium-command-line-switches/
 			for (String optionAgrument : (new String[] {
 					"--user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0",
 					"--allow-running-insecure-content", "--allow-insecure-localhost",

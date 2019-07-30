@@ -27,6 +27,11 @@ public class UnhideElementTest extends BaseTest {
 	@BeforeMethod
 	public void BeforeMethod(Method method) {
 		super.beforeMethod(method);
+
+		System.err.println("Property \"selenium.version\" = "
+				+ System.getProperty("selenium.version"));
+		System.err.println("Property \"selenium.version\" = "
+				+ getPropertyEnv("selenium.version", "unknown"));
 		driver.get(baseURL);
 	}
 

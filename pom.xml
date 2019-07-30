@@ -29,7 +29,7 @@
     <!-- open-ended version setting leads to quickly polluting the maven local repository cache ~/.m2/repository/com/fasterxml/jackson with snapshot versions. -->
     <jackson.version>[2.9.9,)</jackson.version>
     <jackson.version>2.9.9</jackson.version>
-  <!-- this will allow maven download snapshot versions like 2.10.0-SNAPSHOT 
+    <!-- this will allow maven download snapshot versions like 2.10.0-SNAPSHOT 
   from ossrh e.g.:
   https://oss.sonatype.org/content/repositories/snapshots/
 om/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotatio
@@ -66,13 +66,12 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
     <xerces.version>2.12.0</xerces.version>
   </properties>
   <dependencies>
-<!-- https://mvnrepository.com/artifact/xerces/xercesImpl -->
-<dependency>
-    <groupId>xerces</groupId>
-    <artifactId>xercesImpl</artifactId>
-    <version>${xerces.version}</version>
-</dependency>
-	  
+    <!-- https://mvnrepository.com/artifact/xerces/xercesImpl -->
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>${xerces.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.rationaleemotions</groupId>
       <artifactId>simple-ssh</artifactId>
@@ -334,6 +333,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
               <skip>false</skip>
               <systemPropertyVariables>
                 <webdriver.driver>${browser.name}</webdriver.driver>
+                <selenium.version2>${selenium.version}</selenium.version2>
                 <property.filepath>${property.filepath}</property.filepath>
               </systemPropertyVariables>
             </configuration>
