@@ -62,7 +62,8 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.internal.Coordinates;
 
 // NOTE: deprecated. Used in scrolltoElement
-import org.openqa.selenium.internal.Locatable;
+// Removed in version 3.141.59 - that is the last 3.x version as of 8/1/2019
+// import org.openqa.selenium.internal.Locatable;
 
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
@@ -974,6 +975,9 @@ public class BaseTest {
 	// https://www.programcreek.com/java-api-examples/index.php?api=org.openqa.selenium.interactions.internal.Coordinates
 	@SuppressWarnings("deprecation")
 	public void scrolltoElement(WebElement element) {
+		// TODO: read property and act accordingly
+		String seleniumVersion = System.getProperty("selenium.version", "");
+		/*
 		Coordinates coordinate;
 		try {
 			coordinate = ((Locatable) element).getCoordinates();
@@ -984,6 +988,7 @@ public class BaseTest {
 			err.println("Exception (ignored)" + e.toString());
 			actions.moveToElement(element).build().perform();
 		}
+		*/
 	}
 
 	protected String cssSelectorOfElement(WebElement element) {

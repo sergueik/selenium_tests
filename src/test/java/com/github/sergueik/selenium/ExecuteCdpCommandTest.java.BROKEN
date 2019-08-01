@@ -1,0 +1,58 @@
+package com.github.sergueik.selenium;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.lang.reflect.Method;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+/**
+ * Selected test scenarios for Selenium WebDriver
+ * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
+ */
+// based on
+// https://github.com/SeleniumHQ/selenium/blob/master/java/client/src/org/openqa/selenium/chromium/ChromiumDriver.java
+
+public class ExecuteCdpCommandTest extends BaseTest {
+
+	private static String baseURL = "https://letskodeit.teachable.com/pages/practice";
+	// redirects to https://learn.letskodeit.com/p/practice
+	private static final StringBuffer verificationErrors = new StringBuffer();
+
+	@BeforeMethod
+	public void BeforeMethod(Method method) {
+		super.beforeMethod(method);
+
+		System.err.println("Property \"selenium.version\" = "
+				+ System.getProperty("selenium.version"));
+		System.err.println("Property \"selenium.version\" = "
+				+ getPropertyEnv("selenium.version", "unknown"));
+		driver.get(baseURL);
+	}
+
+	@AfterMethod
+	public void AfterMethod(ITestResult result) {
+		if (verificationErrors.length() != 0) {
+			throw new RuntimeException(String.format("Error(s) in the method %s : %s",
+					result.getMethod().getMethodName(), verificationErrors.toString()));
+		}
+		driver.get("about:blank");
+	}
+
+	@Test(enabled = true)
+	public void executeCdpCommandTest() {
+		// Arrange
+		// Available only in version 4.0 Selenium Driver
+		driver.executeCdpCommand();
+
+	}
+
+}

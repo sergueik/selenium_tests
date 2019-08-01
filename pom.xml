@@ -44,6 +44,10 @@ s-2.10.0-20190601.024115-4.pom
     <maven.compiler.target>1.8</maven.compiler.target>
     <phantomjsdriver.version>1.2.1</phantomjsdriver.version>
     <selenium.version>3.13.0</selenium.version>
+    <!-- cannot upgrade -  4.0.0 is too different - in particular Selenium driver no longer has Actions -->
+    <selenium.version>4.0.0-alpha-2</selenium.version>
+    <selenium.version>3.141.59</selenium.version>
+    <selenium-chrome-driver.version>${selenium.version}</selenium-chrome-driver.version>
     <selenium-firefox-driver.version>3.13.0</selenium-firefox-driver.version>
     <selenium-ie-driver.version>3.13.0</selenium-ie-driver.version>
     <!-- TODO:
@@ -182,6 +186,12 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <artifactId>selenium-firefox-driver</artifactId>
       <version>${selenium-firefox-driver.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+    <artifactId>selenium-chrome-driver</artifactId>
+      <version>${selenium-chrome-driver.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-ie-driver</artifactId>
@@ -333,7 +343,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
               <skip>false</skip>
               <systemPropertyVariables>
                 <webdriver.driver>${browser.name}</webdriver.driver>
-                <selenium.version2>${selenium.version}</selenium.version2>
+                <selenium.version>${selenium.version}</selenium.version>
                 <property.filepath>${property.filepath}</property.filepath>
               </systemPropertyVariables>
             </configuration>
