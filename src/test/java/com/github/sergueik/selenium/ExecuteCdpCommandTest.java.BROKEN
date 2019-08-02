@@ -51,6 +51,10 @@ public class ExecuteCdpCommandTest extends BaseTest {
 	public void executeCdpCommandTest() {
 		// Arrange
 		// Available only in version 4.0 Selenium Driver
+		// https://github.com/SeleniumHQ/selenium/blob/master/java/client/src/org/openqa/selenium/chromium/ChromiumDriver.java
+		// public Map<String, Object> executeCdpCommand(String commandName, Map<String, Object> parameters)
+		// that can be used for example to invoke setUserAgentOverride during the test
+		// https://chromedevtools.github.io/devtools-protocol/tot/Network#method-setUserAgentOverride
 		driver.executeCdpCommand();
 
 	}
