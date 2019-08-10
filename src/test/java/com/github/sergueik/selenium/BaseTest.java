@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1536,4 +1538,29 @@ public class BaseTest {
 				.keyUp(Keys.CONTROL).pause(delay).sendKeys(Keys.BACK_SPACE).pause(delay)
 				.sendKeys(value).perform();
 	}
-}
+
+	// based on: https://xpinjection.com/articles/waits-and-timeouts-in-webdriver/
+	// also explanation of misc. WebDriverWait- related details in good Russian
+	// translation
+	private static By locator;
+	private static String attributeName;
+	private static String attributeValue;
+	static {
+		//
+		@SuppressWarnings("unused")
+		Function<? super WebDriver, String> hasAttribute = new ExpectedCondition<String>() {
+			@Override
+			public String apply(WebDriver webDriver) {
+				return webDriver.findElement(locator).getAttribute(attributeName);
+			}
+		};
+		@SuppressWarnings("unused")
+		Predicate<WebDriver> hasExpectedValueOfAtribute = new Predicate<WebDriver>() {
+			@Override
+			public boolean test(WebDriver webDriver) {
+				return webDriver.findElement(locator).getAttribute(attributeName)
+						.contains(attributeValue);
+			}
+		};
+	}
+};
