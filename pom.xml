@@ -26,16 +26,15 @@
     <htmlunit.version>2.33</htmlunit.version>
     <java.version>1.8</java.version>
     <json.version>20080701</json.version>
-    <!-- open-ended version setting leads to quickly polluting the maven local repository cache ~/.m2/repository/com/fasterxml/jackson with snapshot versions. -->
     <jackson.version>[2.9.9,)</jackson.version>
-    <!-- this will allow maven download snapshot versions like 2.10.0-SNAPSHOT 
+    <!-- open-ended version expression will allow maven download snapshot versions like 2.10.0-SNAPSHOT
   from ossrh e.g.:
   https://oss.sonatype.org/content/repositories/snapshots/
 om/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotatio
 s-2.10.0-20190601.024115-4.pom
-  -->
+    which will lead to quickly polluting the maven local repository cache ~/.m2/repository/com/fasterxml/jackson with snapshot versions. -->
     <jackson.version>2.9.9</jackson.version>
-    <!-- NOTE: [ERROR] 'dependencies.dependency.version' must not contain any of these characters \/:"<>|?* -->
+    <jackson-databind.version>2.9.9.3</jackson-databind.version>
     <jsoup.version>1.11.3</jsoup.version>
     <junit.version>4.12</junit.version>
     <log4j.version>2.5</log4j.version>
@@ -45,7 +44,7 @@ s-2.10.0-20190601.024115-4.pom
     <phantomjsdriver.version>1.2.1</phantomjsdriver.version>
     <!-- cannot upgrade -  4.0.0 is too different - in particular Selenium driver no longer has Actions -->
     <selenium.version>4.0.0-alpha-2</selenium.version>
-    <!-- 3.141.59 - is the last 3.x version as of 8/1/2019 --> 
+    <!-- 3.141.59 - is the last 3.x version as of 8/1/2019 -->
     <selenium.version>3.141.59</selenium.version>
     <selenium.version>3.13.0</selenium.version>
     <selenium-chrome-driver.version>${selenium.version}</selenium-chrome-driver.version>
@@ -122,8 +121,7 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <!-- <version>${jackson.version}</version> -->
-      <version>2.9.9.2</version>
+      <version>${jackson-databind.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -327,7 +325,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
             <suiteXmlFile>src/test/resources/suites/testng.xml</suiteXmlFile>
 	  </suiteXmlFiles>
 	  -->
-          <!-- For parallel runs with e.g. Vagrant https://github.com/sergueik/selenium-fluxbox  
+          <!-- For parallel runs with e.g. Vagrant https://github.com/sergueik/selenium-fluxbox
 	  <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dparallel=tests -DthreadCount=2 </argLine>
 	  -->
           <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
