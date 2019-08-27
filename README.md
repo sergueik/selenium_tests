@@ -49,6 +49,8 @@ password=${env.TEST_PASSWORD}
  * [seleniumcapsules](https://github.com/yujunliang/seleniumcapsules)
  * [ahussan/Java8LamdaExpressionAndStreamAPITest](https://github.com/ahussan/Java8LamdaExpressionAndStreamAPITest)
  * [sskorol/selenium-camp-17](https://github.com/sskorol/selenium-camp-17)
+ * [cssSelector advantages review](https://www.pineboat.in/post/css-selectors-selenium-webdriver-find-element-xpath-replaced/)
+ * [JQuery to vanilla JavaScript DSL conversion rules](https://gist.github.com/dorokhin/8d47e91676a39c04534ea9633b98dbdb)
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
