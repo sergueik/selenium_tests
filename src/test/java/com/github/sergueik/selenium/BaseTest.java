@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -325,6 +326,11 @@ public class BaseTest {
 			// no cookies are allowed
 
 			chromeOptions.setExperimentalOption("prefs", chromePrefs);
+			// "disable-infobars" option replacement
+			// to suppress "Chrome is being controlled by automated test software"
+			chromeOptions.setExperimentalOption("excludeSwitches",
+					Collections.singletonList("enable-automation"));
+			chromeOptions.setExperimentalOption("useAutomationExtension", false);
 			if (osName.equals("windows")) {
 				// TODO: jni
 				if (System.getProperty("os.arch").contains("64")) {

@@ -8,7 +8,7 @@ import static org.testng.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-
+import java.util.Map;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -66,6 +66,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 /**
 * Sample test scenario for web page scraping with HTMLUnit
@@ -267,7 +269,24 @@ public class HtmlUnitTest extends BaseTest {
 			jsonString = prettify
 					? mapper.writerWithDefaultPrettyPrinter().writeValueAsString(objItem)
 					: mapper.writeValueAsString(objItem);
-		} catch (JsonProcessingException e) {
+			System.err.println("Processing JSON: " + jsonString);
+			Gson parser = new Gson();
+			// create json parser
+			// based on https://toster.ru/q/659184
+			Type type = new TypeToken<Map<String, ObjectItem[]>>() {
+			}.getType();
+			// create custom type
+			try {
+				@SuppressWarnings("unused")
+				Map<String, ObjectItem[]> data = parser.fromJson(jsonString, type);
+				// parse data to
+			} catch (JsonSyntaxException e2) {
+				// com.google.gson.JsonSyntaxException: java.lang.IllegalStateException:
+				// Expected BEGIN_ARRAY but was STRING at line 2 column 14 path $.
+				System.err.println("Exception (ignored) " + e2.toString());
+			}
+		} catch (JsonProcessingException e1) {
+			System.err.println("Exception (ignored) " + e1.toString());
 
 		}
 		System.err.println(
