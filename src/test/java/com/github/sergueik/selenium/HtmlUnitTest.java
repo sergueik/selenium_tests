@@ -190,7 +190,8 @@ public class HtmlUnitTest extends BaseTest {
 		pageSource = driver.getPageSource();
 	}
 
-	@Test(enabled = true)
+	// temporarily disable
+	@Test(enabled = false)
 	public void testVisual() {
 		elements = driver.findElements(By.xpath(rowXpath));
 		assertThat(elements, notNullValue());
@@ -270,23 +271,52 @@ public class HtmlUnitTest extends BaseTest {
 					? mapper.writerWithDefaultPrettyPrinter().writeValueAsString(objItem)
 					: mapper.writeValueAsString(objItem);
 			System.err.println("Processing JSON: " + jsonString);
-			Gson parser = new Gson();
-			// create json parser
 			// based on https://toster.ru/q/659184
-			Type type = new TypeToken<Map<String, ObjectItem[]>>() {
-			}.getType();
-			// create custom type
+
+			// Type type1 = new TypeToken<ObjectItem>().getType();
+			// The constructor TypeToken<ObjectItem>() is not visible
+			// hence the empty args
+			Type type1 = new TypeToken<ObjectItem>() { }.getType();
 			try {
+				// create json parser
+				Gson parser = new Gson();
 				@SuppressWarnings("unused")
-				Map<String, ObjectItem[]> data = parser.fromJson(jsonString, type);
+				ObjectItem data1 = parser.fromJson(jsonString, type1);
+				// parse data to
+			} catch (JsonSyntaxException e1) {
+				// Expected BEGIN_OBJECT but was STRING
+				System.err.println("Exception (ignored) " + e1.toString());
+			}
+
+			// create custom type
+			Type type2 = new TypeToken<Map<String, ObjectItem[]>>() {
+			}.getType();
+			try {
+				// create json parser
+				Gson parser = new Gson();
+				@SuppressWarnings("unused")
+				Map<String, ObjectItem[]> data2 = parser.fromJson(jsonString, type2);
 				// parse data to
 			} catch (JsonSyntaxException e2) {
-				// com.google.gson.JsonSyntaxException: java.lang.IllegalStateException:
-				// Expected BEGIN_ARRAY but was STRING at line 2 column 14 path $.
+				// Expected BEGIN_ARRAY but was STRING
 				System.err.println("Exception (ignored) " + e2.toString());
 			}
-		} catch (JsonProcessingException e1) {
-			System.err.println("Exception (ignored) " + e1.toString());
+			// based on https://toster.ru/q/659184
+			// create custom type
+			Type type3 = new TypeToken<Map<String, ObjectItem>>() {
+			}.getType();
+			try {
+				// create json parser
+				Gson parser = new Gson();
+				@SuppressWarnings("unused")
+				Map<String, ObjectItem> data3 = parser.fromJson(jsonString, type3);
+				// parse data to
+			} catch (JsonSyntaxException e3) {
+				// Expected BEGIN_OBJECT but was STRING
+				System.err.println("Exception (ignored) " + e3.toString());
+			}
+		} catch (JsonProcessingException e) {
+			System.err.println("Exception (ignored) " + e.toString());
 
 		}
 		System.err.println(
