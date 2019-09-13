@@ -31,11 +31,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.yaml.snakeyaml.Yaml;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -56,6 +57,7 @@ public class JacksonDummyHtmlUnitTest {
 
 	private static final String dataFileName = "user.yaml";
 	private static final YAMLFactory yamlFactory = new YAMLFactory();
+
 	// cannot find symbol
 	// [ERROR] symbol: method
 	// configure(com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature,boolean)
@@ -66,7 +68,21 @@ public class JacksonDummyHtmlUnitTest {
 				.configure(YAMLGenerator.Feature.ALWAYS_QUOTE_NUMBERS_AS_STRINGS, true);
 	}
 	*/
-	private static ObjectMapper inputObjectMapper = new ObjectMapper(yamlFactory);
+
+	// https://www.geeksforgeeks.org/parse-json-java/
+	// load strongly-typed objects from JSON via
+	// com.fasterxml.jackson.databind.ObjectMapper.ObjectMapper
+	// https://www.baeldung.com/jackson-object-mapper-tutorial
+	// use default argument-less constructor
+	private static ObjectMapper inputJSONObjectMapper = new ObjectMapper();
+	// see also http://tutorials.jenkov.com/java-json/jackson-objectmapper.html
+	// https://www.journaldev.com/2324/jackson-json-java-parser-api-example-tutorial
+	// see also: https://www.baeldung.com/rest-template
+	// see also https://toster.ru/q/662209
+	// NOTE: org.springframework.web.client.RestTemplate - extremely heavy
+
+	private static ObjectMapper inputYAMLObjectMapper = new ObjectMapper(
+			yamlFactory);
 	private static ObjectMapper ouputObjectMapper = new ObjectMapper();
 	// fallback to JSON
 
@@ -79,9 +95,38 @@ public class JacksonDummyHtmlUnitTest {
 			.getLogger(JacksonDummyHtmlUnitTest.class);
 
 	@Test(enabled = true)
+	public void testJSONLoad() {
+		try {
+		// @formatter:off
+			String jsonOfUser = "{" + 
+			   " \"name\": \"Test User\"," + 
+			   " \"age\": 30," + 
+			   " \"address\": {" + 
+			    "    \"line1\": \"My Address Line 1\"," + 
+			    "    \"line2\": null," + 
+			    "    \"city\": \"Washington D.C.\"" + 
+			    "    \"zip\": 20000" + 
+			    "}," + 
+			    "\"roles\": [" + 
+			    "    \"User\"," + 
+			    "    \"Editor\"" + 
+			    "]" + 
+			"};";
+		// @formatter:on
+			User user = inputJSONObjectMapper.readValue(jsonOfUser, User.class);
+			jsonString = ouputObjectMapper.writeValueAsString(user);
+		} catch (JsonProcessingException e) {
+
+		} catch (IOException e) {
+
+		}
+		System.err.println(String.format("testYAMLtoJSON:\n%s\n", jsonString));
+	}
+
+	@Test(enabled = true)
 	public void testYAMLtoJSON() {
 		try {
-			User user = inputObjectMapper.readValue(
+			User user = inputYAMLObjectMapper.readValue(
 					new File(buildPathtoResourceFile(dataFileName)), User.class);
 			jsonString = ouputObjectMapper.writeValueAsString(user);
 		} catch (/* IOException e|| JsonParseException e || JsonMappingException e */ Exception e) {
@@ -101,7 +146,7 @@ public class JacksonDummyHtmlUnitTest {
 		try {
 			// load with Jackson
 			Map<String, Object> data = Collections.EMPTY_MAP;
-			data = (Map<String, Object>) inputObjectMapper.readValue(
+			data = (Map<String, Object>) inputYAMLObjectMapper.readValue(
 					new File(fileName), new TypeReference<Map<String, Object>>() {
 					});
 			System.err.println(testName + ":\n" + ReflectionToStringBuilder
@@ -143,7 +188,7 @@ public class JacksonDummyHtmlUnitTest {
 		try {
 			// load with Jackson
 			Map<String, Object> data = Collections.EMPTY_MAP;
-			data = (Map<String, Object>) inputObjectMapper.readValue(
+			data = (Map<String, Object>) inputYAMLObjectMapper.readValue(
 					new File(fileName), new TypeReference<Map<String, Object>>() {
 					});
 			System.err.println(
@@ -347,7 +392,7 @@ public class JacksonDummyHtmlUnitTest {
 	public void testLoadYAML() {
 
 		try {
-			User user = inputObjectMapper.readValue(
+			User user = inputYAMLObjectMapper.readValue(
 					new File(buildPathtoResourceFile(dataFileName)), User.class);
 			assertThat(user.getName(), is("Test User"));
 			// Expected: null
