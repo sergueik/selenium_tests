@@ -44,7 +44,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
-* Sample test scenario for web page scraping with Jsoup and HTML::TagParser using on recordset of  node attribute scan
+* Sample test scenario for web page scraping with Jsoup and saving
+* the data for subsequent processing with HTML::TagParser
+* using on recordset of node attribute scan
 * which is more precise than browsing of immediate (grand-) children
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
@@ -53,11 +55,13 @@ import org.testng.annotations.Test;
 // https://www.baeldung.com/java-with-jsoup
 // https://www.programcreek.com/java-api-examples/?class=org.jsoup.nodes.Document&method=getElementsByAttributeValue
 // https://jsoup.org/cookbook/extracting-data/selector-syntax
+// https://jsoup.org/cookbook/
 // https://github.com/kawanet/HTML-TagParser
 // https://github.com/GeReV/NSoup
 // https://www.nuget.org/packages/NSoup/
 // https://github.com/matarillo/dcsoup
 // https://github.com/zzzprojects/html-agility-pack
+
 public class JsoupProbe2Test extends BaseTest {
 
 	private static DumperOptions options = new DumperOptions();

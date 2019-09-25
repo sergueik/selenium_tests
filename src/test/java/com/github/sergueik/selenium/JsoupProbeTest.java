@@ -65,8 +65,8 @@ import static org.hamcrest.Matchers.greaterThan;
 import java.util.regex.Pattern;
 
 /**
-* Sample test scenario for web page scraping via joup based on chained  fast track node attribute scan
-* that is a lot less code than chained browse of immediate (grand-) children
+* Sample test scenario for web page scraping via joup based on chained fasttrack
+* node attribute scan which seems to take a lot less code than the chained browsing of immediate (grand-) children
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 

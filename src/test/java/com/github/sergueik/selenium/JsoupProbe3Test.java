@@ -22,7 +22,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
-* Sample test scenario for building  strongly typed link extracted from web page via joup
+* Sample test scenario for building strongly typed data object extracted from web page via joup
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
 

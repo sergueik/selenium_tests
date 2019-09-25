@@ -98,19 +98,19 @@ public class JacksonDummyHtmlUnitTest {
 	public void testJSONLoad() {
 		try {
 		// @formatter:off
-			String jsonOfUser = "{" + 
-			   " \"name\": \"Test User\"," + 
-			   " \"age\": 30," + 
-			   " \"address\": {" + 
-			    "    \"line1\": \"My Address Line 1\"," + 
-			    "    \"line2\": null," + 
-			    "    \"city\": \"Washington D.C.\"" + 
-			    "    \"zip\": 20000" + 
-			    "}," + 
-			    "\"roles\": [" + 
-			    "    \"User\"," + 
-			    "    \"Editor\"" + 
-			    "]" + 
+			String jsonOfUser = "{" +
+			   " \"name\": \"Test User\"," +
+			   " \"age\": 30," +
+			   " \"address\": {" +
+			    "    \"line1\": \"My Address Line 1\"," +
+			    "    \"line2\": null," +
+			    "    \"city\": \"Washington D.C.\"" +
+			    "    \"zip\": 20000" +
+			    "}," +
+			    "\"roles\": [" +
+			    "    \"User\"," +
+			    "    \"Editor\"" +
+			    "]" +
 			"};";
 		// @formatter:on
 			User user = inputJSONObjectMapper.readValue(jsonOfUser, User.class);
