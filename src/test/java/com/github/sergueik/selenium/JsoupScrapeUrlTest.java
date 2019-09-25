@@ -1,7 +1,6 @@
 package com.github.sergueik.selenium;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
@@ -11,46 +10,38 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
-* Sample test scenario for scraping the javascript-disabled google search result via joup
-* The tutorial does not explain exactly how to turn off the Javascript in Chrome
-*
-* @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
-*/
+ * Sample test scenario for scraping the google search result via jsoup
+ *
+ * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
+ */
 
 public class JsoupScrapeUrlTest {
 
-	private static final Logger log = LogManager
-			.getLogger(JsoupScrapeUrlTest.class);
+	// private static final Logger log = LogManager.getLogger(JsoupScrapeUrlTest.class);
 
 	private static Document jsoupDocument;
 	private static Elements jsoupElements;
-	private static Document childDocument;
 
-	private static String attributeName;
-	private static Elements jsoupElementAttributes;
 	private static String attributeValue;
-	private static List<Article> articleList = new ArrayList<>();
+	private static List<SearchResult> searchResultList = new ArrayList<>();
 
 	private static final String baseUrl = "https://www.google.com/";
 	private static final String queryTerm = "appium";
-	// disable Javascript in Chrome through
+	// disable Javascript
+	// in Chrome, interactively through
 	// chrome://settings/content/javascript?search=script
-	// interactively
-	// disable Javascript in firefox through about:config
-	// interactively
+	// in Firefox, interactively through about:config
+	//
 	// then collect the useragent through http://useragentstring.com/
 	// see also:
 	// https://stackoverflow.com/questions/48249/is-there-a-way-to-embed-a-browser-in-java
@@ -61,11 +52,10 @@ public class JsoupScrapeUrlTest {
 	@BeforeClass
 	public void loadUrl() {
 		try {
-			jsoupDocument = Jsoup
-					.connect(baseUrl + String.format("search?q=%s",
-							URLEncoder.encode(queryTerm, "UTF-8")))
+			jsoupDocument = Jsoup.connect(baseUrl + String.format("search?q=%s", URLEncoder.encode(queryTerm, "UTF-8")))
 					.userAgent(userAgent).get();
-			// chop the unneeded part of the query &gbv=1&sei=Y52KXYaxFoiW5wLy2KiQBA
+			// chop the unneeded part of the query
+			// &gbv=1&sei=Y52KXYaxFoiW5wLy2KiQBA
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e.toString());
 		} catch (IOException e) {
@@ -90,21 +80,19 @@ public class JsoupScrapeUrlTest {
 			attributeValue = link.attr("href");
 			if (!title.matches("Cached")) {
 				if (!attributeValue.isEmpty()) {
-					String url = attributeValue.replaceFirst("^/url\\?q=", "")
-							.replaceFirst("/search\\?q=related:", "");
+					String url = attributeValue.replaceFirst("^/url\\?q=", "").replaceFirst("/search\\?q=related:", "");
 					if (url.startsWith("http")) {
-						articleList.add(new Article(title, url));
+						searchResultList.add(new SearchResult(title, url));
 					}
 				}
 			}
 		});
-		articleList.forEach(System.err::println);
+		searchResultList.forEach(System.err::println);
 	}
 
 	@Test(enabled = true)
 	public void testAttributeValueContaining() {
-		jsoupElements = jsoupDocument.getElementsByAttributeValueContaining("class",
-				"l");
+		jsoupElements = jsoupDocument.getElementsByAttributeValueContaining("class", "l");
 		assertThat(jsoupElements.size(), greaterThan(0));
 
 		jsoupElements.forEach(link -> {
@@ -113,46 +101,38 @@ public class JsoupScrapeUrlTest {
 			if (!title.matches("Cached")) {
 				attributeValue = link.attr("href");
 				if (!attributeValue.isEmpty()) {
-					String url = attributeValue.replaceFirst("^/url\\?q=", "")
-							.replaceFirst("/search\\?q=related:", "");
+					String url = attributeValue.replaceFirst("^/url\\?q=", "").replaceFirst("/search\\?q=related:", "");
 					if (url.startsWith("http")) {
-						articleList.add(new Article(title, url));
+						searchResultList.add(new SearchResult(title, url));
 					}
 				}
 			}
 		});
-		articleList.forEach(System.err::println);
+		searchResultList.forEach(System.err::println);
 	}
 
-	private static class Article {
+	private static class SearchResult {
 		private String title;
 		private String url;
 
-		public Article(String title, String url) {
+		public SearchResult(String title, String url) {
 			this.title = title;
 			this.url = url;
 		}
 
-		public String getUrl() {
-			return url;
-		}
-
-		public void setUrl(String value) {
-			this.url = value;
-		}
-
-		public String getTitle() {
-			return title;
-		}
-
-		public void setTitle(String value) {
-			this.title = value;
-		}
-
+		/*
+		 * public String getUrl() { return url; }
+		 * 
+		 * public void setUrl(String value) { this.url = value; }
+		 * 
+		 * public String getTitle() { return title; }
+		 * 
+		 * public void setTitle(String value) { this.title = value; }
+		 * 
+		 */
 		@Override
 		public String toString() {
-			return "Article{" + "url=\"" + url + '"' + ',' + "title=\"" + title + '"'
-					+ '}';
+			return "SearchResult{" + "url=\"" + url + '"' + ',' + "title=\"" + title + '"' + '}';
 		}
 	}
 }
