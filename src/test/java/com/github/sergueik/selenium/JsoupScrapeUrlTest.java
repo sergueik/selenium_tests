@@ -4,14 +4,22 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-// import org.apache.logging.log4j.LogManager;
-// import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.Log;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -27,7 +35,8 @@ import org.testng.annotations.Test;
 
 public class JsoupScrapeUrlTest {
 
-	// private static final Logger log = LogManager.getLogger(JsoupScrapeUrlTest.class);
+	private static final Logger logger = LogManager
+			.getLogger(JsoupScrapeUrlTest.class);
 
 	private static Document jsoupDocument;
 	private static Elements jsoupElements;
@@ -52,7 +61,9 @@ public class JsoupScrapeUrlTest {
 	@BeforeClass
 	public void loadUrl() {
 		try {
-			jsoupDocument = Jsoup.connect(baseUrl + String.format("search?q=%s", URLEncoder.encode(queryTerm, "UTF-8")))
+			jsoupDocument = Jsoup
+					.connect(baseUrl + String.format("search?q=%s",
+							URLEncoder.encode(queryTerm, "UTF-8")))
 					.userAgent(userAgent).get();
 			// chop the unneeded part of the query
 			// &gbv=1&sei=Y52KXYaxFoiW5wLy2KiQBA
@@ -80,7 +91,8 @@ public class JsoupScrapeUrlTest {
 			attributeValue = link.attr("href");
 			if (!title.matches("Cached")) {
 				if (!attributeValue.isEmpty()) {
-					String url = attributeValue.replaceFirst("^/url\\?q=", "").replaceFirst("/search\\?q=related:", "");
+					String url = attributeValue.replaceFirst("^/url\\?q=", "")
+							.replaceFirst("/search\\?q=related:", "");
 					if (url.startsWith("http")) {
 						searchResultList.add(new SearchResult(title, url));
 					}
@@ -92,7 +104,8 @@ public class JsoupScrapeUrlTest {
 
 	@Test(enabled = true)
 	public void testAttributeValueContaining() {
-		jsoupElements = jsoupDocument.getElementsByAttributeValueContaining("class", "l");
+		jsoupElements = jsoupDocument.getElementsByAttributeValueContaining("class",
+				"l");
 		assertThat(jsoupElements.size(), greaterThan(0));
 
 		jsoupElements.forEach(link -> {
@@ -101,16 +114,53 @@ public class JsoupScrapeUrlTest {
 			if (!title.matches("Cached")) {
 				attributeValue = link.attr("href");
 				if (!attributeValue.isEmpty()) {
-					String url = attributeValue.replaceFirst("^/url\\?q=", "").replaceFirst("/search\\?q=related:", "");
+					String url = attributeValue.replaceFirst("^/url\\?q=", "")
+							.replaceFirst("/search\\?q=related:", "");
 					if (url.startsWith("http")) {
 						searchResultList.add(new SearchResult(title, url));
 					}
 				}
 			}
 		});
-		searchResultList.forEach(System.err::println);
+		searchResultList.forEach(logger::info);
 	}
 
+	// NOTE: http://proxylist.hidemyass.com is redirecting to proxy trial page
+	// https://www.hidemyass.com/en-us/index
+	// NOTE: entries offered by
+	// https://free-proxy-list.net/
+	// https://free.proxy-sale.com/
+	// are non-responding in various ways
+	@Test(enabled = true)
+	public void testProxy() throws IOException {
+
+		URL url = new URL("http://www.example.com/");
+		// java.net.ConnectException: conection timeout
+		// java.net.SocketException: Unexpected end of file from server
+		// https://free.proxy-sale.com/
+		final String proxy = "167.71.254.71";
+		final int port = 3128;
+
+		HttpURLConnection httpURLConnection = (HttpURLConnection) url
+				.openConnection(
+						new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxy, port)));
+
+		httpURLConnection.connect();
+
+		String line = null;
+		StringBuffer tmp = new StringBuffer();
+		BufferedReader in = new BufferedReader(
+				new InputStreamReader(httpURLConnection.getInputStream()));
+		while ((line = in.readLine()) != null) {
+			tmp.append(line);
+		}
+
+		Document doc = Jsoup.parse(String.valueOf(tmp));
+		logger.info(doc.body().text());
+	}
+
+	// http://httpbin.org/#/Response_formats
+	// http://httpbin.org/get
 	private static class SearchResult {
 		private String title;
 		private String url;
@@ -132,7 +182,8 @@ public class JsoupScrapeUrlTest {
 		 */
 		@Override
 		public String toString() {
-			return "SearchResult{" + "url=\"" + url + '"' + ',' + "title=\"" + title + '"' + '}';
+			return "SearchResult{" + "url=\"" + url + '"' + ',' + "title=\"" + title
+					+ '"' + '}';
 		}
 	}
 }
