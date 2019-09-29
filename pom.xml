@@ -41,7 +41,7 @@ s-2.10.0-20190601.024115-4.pom
     <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <phantomjsdriver.version>1.2.1</phantomjsdriver.version>
+    <phantomjsdriver.version>1.4.4</phantomjsdriver.version>
     <!-- cannot upgrade -  4.0.0 is too different - in particular Selenium driver no longer has Actions -->
     <selenium.version>4.0.0-alpha-2</selenium.version>
     <!-- 3.141.59 - is the last 3.x version as of 8/1/2019 -->
@@ -189,10 +189,9 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
     </dependency>
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
-    <artifactId>selenium-chrome-driver</artifactId>
+      <artifactId>selenium-chrome-driver</artifactId>
       <version>${selenium-chrome-driver.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-ie-driver</artifactId>
@@ -243,12 +242,18 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <artifactId>sqlite-jdbc</artifactId>
       <version>${sqlite-jdbc.version}</version>
     </dependency>
-<dependency>
-    <groupId>com.mashape.unirest</groupId>
-    <artifactId>unirest-java</artifactId>
-    <version>${unirest-java.version}</version>
-</dependency>
-
+    <dependency>
+      <groupId>com.mashape.unirest</groupId>
+      <artifactId>unirest-java</artifactId>
+      <version>${unirest-java.version}</version>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>org.omegat</groupId>
+      <artifactId>jmyspell-core</artifactId>
+      <version>1.0.0-beta-2</version>
+    </dependency>
+    -->
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
@@ -477,5 +482,12 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
+    <!-- 
+    <repository>
+      <id>omegat</id>
+      <name>OmegaT Repository</name>
+      <url>https://dl.bintray.com/omegat-org/maven/</url>
+    </repository>
+    -->
   </repositories>
 </project>
