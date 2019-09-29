@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -28,8 +29,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * Sample test scenario for scraping the google search result via jsoup
- *
+ * Sample test scenario for scraping via jsoup
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
@@ -125,6 +125,29 @@ public class JsoupScrapeUrlTest {
 		searchResultList.forEach(logger::info);
 	}
 
+	@Test(enabled = true)
+	public void testjsoupProxyMethod() {
+
+		final String ip = "167.71.254.71";
+		final int port = 3128;
+		final String url = "http://www.example.com/";
+		try {
+			/*
+			 Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
+			 Jsoup.connect(url).proxy(proxy)
+			 */
+			jsoupDocument = Jsoup.connect(url).proxy(ip, port).userAgent(userAgent)
+					.header("Content-Language", "en-US").get();
+			assertThat(jsoupDocument, notNullValue());
+			System.err.println(jsoupDocument.html());
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e.toString());
+		} catch (IOException e) {
+			throw new RuntimeException(e.toString());
+		}
+
+	}
+
 	// NOTE: http://proxylist.hidemyass.com is redirecting to proxy trial page
 	// https://www.hidemyass.com/en-us/index
 	// NOTE: entries offered by
@@ -138,12 +161,12 @@ public class JsoupScrapeUrlTest {
 		// java.net.ConnectException: conection timeout
 		// java.net.SocketException: Unexpected end of file from server
 		// https://free.proxy-sale.com/
-		final String proxy = "167.71.254.71";
+		final String ip = "167.71.254.71";
 		final int port = 3128;
 
 		HttpURLConnection httpURLConnection = (HttpURLConnection) url
 				.openConnection(
-						new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxy, port)));
+						new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port)));
 
 		httpURLConnection.connect();
 
