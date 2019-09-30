@@ -247,13 +247,6 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <artifactId>unirest-java</artifactId>
       <version>${unirest-java.version}</version>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>org.omegat</groupId>
-      <artifactId>jmyspell-core</artifactId>
-      <version>1.0.0-beta-2</version>
-    </dependency>
-    -->
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
@@ -482,12 +475,5 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
-    <!-- 
-    <repository>
-      <id>omegat</id>
-      <name>OmegaT Repository</name>
-      <url>https://dl.bintray.com/omegat-org/maven/</url>
-    </repository>
-    -->
   </repositories>
 </project>
