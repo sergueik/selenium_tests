@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.testng.annotations.Test;
-
+import org.xml.sax.SAXException;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.gson.FieldNamingStrategy;
@@ -36,6 +36,25 @@ import com.google.gson.JsonSerializer;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
+
+// convert falsely mapped child elements to attributes
+
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 public class Yaml2JSONTest {
 
@@ -180,23 +199,19 @@ public class Yaml2JSONTest {
 	// https://www.thejavaprogrammer.com/convert-json-to-xml-or-xml-to-json-in-java/
 	// https://chillyfacts.com/java-program-convert-json-xml/
 	@Test(enabled = true)
-	public void conversionJSONXMLTest() {
-		// String xmlInData = "<student><name>Neeraj
-		// Mishra</name><age>22</age></student>";
+	public void conversionJSONXMLTest() throws SAXException {
 		// https://readlearncode.com/microservices/tomcat-server-xml-example/
 		String xmlInData = "<?xml version='1.0' encoding='utf-8'?><Server> <Service name='Catalina'> <Engine name='Catalina' defaultHost='localhost'> <Host name='localhost' appBase='webapps' unpackWARs='true' autoDeploy='true'> <Valve className='org.apache.catalina.valves.AccessLogValve' directory='logs' /> </Host> </Engine> </Service> </Server>";
 		/*
-		 input:
-			<?xml version="1.0" encoding="utf-8"?>
-			<Server>
-			  <Service name="Catalina">
-			    <Engine name="Catalina" defaultHost="localhost">
-			      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
-			        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"/>
-			      </Host>
-			    </Engine>
-			  </Service>
-			</Server>
+		 * input: 
+		 <?xml version="1.0" encoding="utf-8"?> <Server> 
+		 <Service name="Catalina"> <Engine name="Catalina" defaultHost="localhost">
+		 <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true"> 
+		 <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"/>
+		 </Host>
+		 </Engine>
+		 </Service>
+		 </Server>
 		 */
 		String xmlOut = null;
 		String jsonData = null;
@@ -215,28 +230,60 @@ public class Yaml2JSONTest {
 			xmlOut = XML.toString(jsonObj);
 			System.err.println("XML data: " + xmlOut);
 			/*
-			 becomes:
-			 <?xml version="1.0" encoding="utf-8"?>
-				<Server>
-				  <Service>
-				    <name>Catalina</name>
-				    <Engine>
-				      <defaultHost>localhost</defaultHost>
-				      <name>Catalina</name>
-				      <Host>
-				        <autoDeploy>true</autoDeploy>
-				        <appBase>webapps</appBase>
-				        <name>localhost</name>
-				        <unpackWARs>true</unpackWARs>
-				        <Valve>
-				          <className>org.apache.catalina.valves.AccessLogValve</className>
-				          <directory>logs</directory>
-				        </Valve>
-				      </Host>
-				    </Engine>
-				  </Service>
-				</Server>
+			 * becomes: 
+			 <?xml version="1.0" encoding="utf-8"?> <Server>
+			 <Service> <name>Catalina</name> 
+			 <Engine>
+			 <defaultHost>localhost</defaultHost> 
+			 <name>Catalina</name> <Host>
+			 <autoDeploy>true</autoDeploy> 
+			 <appBase>webapps</appBase>
+			 <name>localhost</name> 
+			 <unpackWARs>true</unpackWARs> <Valve>
+			 <className>org.apache.catalina.valves.AccessLogValve</className>
+			 <directory>logs</directory> 
+			 </Valve> 
+			 </Host> 
+			 </Engine> 
+			 </Service>
+			 </Server>
 			 */
+			// http://www.java2s.com/Tutorials/Java/Java_XML/0200__Java_XSLT_Intro.htm
+
+			// https://stackoverflow.com/questions/655411/converting-xml-elements-to-xml-attributes-using-xslt
+			/*
+			 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'> 
+			 <xsl:template match='Service'>
+			 <Server>
+			 <xsl:apply-templates/>
+			 </Server>
+			 </xsl:template> 
+			 <xsl:template match='Service'> <Service>
+			 <xsl:for-each select='name'> <xsl:attribute name='{name()}'>
+			 <xsl:value-of select='text()'/> 
+			 </xsl:attribute> 
+			 </xsl:for-each>
+			 * </Service> </xsl:template> </xsl:stylesheet>
+			 */
+			String xsl = "<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'> <xsl:template match='Service'> <Server> <xsl:apply-templates/> </Server> </xsl:template> <xsl:template match='Service'> <Service> <xsl:for-each select='name'> <xsl:attribute name='{name()}'> <xsl:value-of select='text()'/> </xsl:attribute> </xsl:for-each> </Service> </xsl:template> </xsl:stylesheet> ";
+			StreamSource xmlDataSource = new StreamSource(xmlOut);
+			StreamSource styleSource = new StreamSource(xsl);
+
+			// https://www.yegor256.com/2015/02/02/xsl-transformations-in-java.html
+			// final XSL xslDocument = new XSLDocument(
+			try {
+				// Schema schema = sf.newSchema(styleSource);
+				TransformerFactory factory = TransformerFactory.newInstance();
+				StreamResult result = new StreamResult(System.err);
+				Transformer transformer = factory.newTransformer(styleSource);
+				if (transformer != null) {
+					transformer.transform(xmlDataSource, result);
+				}
+			} catch (TransformerException e) {
+				System.err.println("Exception (ignored): " + e.toString());
+				//
+				// e.printStackTrace();
+			}
 		} catch (JSONException e) {
 			System.err.println("Exception (ignored): " + e.toString());
 		}
