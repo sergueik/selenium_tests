@@ -181,9 +181,23 @@ public class Yaml2JSONTest {
 	// https://chillyfacts.com/java-program-convert-json-xml/
 	@Test(enabled = true)
 	public void conversionJSONXMLTest() {
-		// String xmlInData = "<student><name>Neeraj Mishra</name><age>22</age></student>";
+		// String xmlInData = "<student><name>Neeraj
+		// Mishra</name><age>22</age></student>";
 		// https://readlearncode.com/microservices/tomcat-server-xml-example/
 		String xmlInData = "<?xml version='1.0' encoding='utf-8'?><Server> <Service name='Catalina'> <Engine name='Catalina' defaultHost='localhost'> <Host name='localhost' appBase='webapps' unpackWARs='true' autoDeploy='true'> <Valve className='org.apache.catalina.valves.AccessLogValve' directory='logs' /> </Host> </Engine> </Service> </Server>";
+		/*
+		 input:
+			<?xml version="1.0" encoding="utf-8"?>
+			<Server>
+			  <Service name="Catalina">
+			    <Engine name="Catalina" defaultHost="localhost">
+			      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+			        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"/>
+			      </Host>
+			    </Engine>
+			  </Service>
+			</Server>
+		 */
 		String xmlOut = null;
 		String jsonData = null;
 		// convert XML to JSON
@@ -200,7 +214,29 @@ public class Yaml2JSONTest {
 			jsonObj = new JSONObject(jsonData);
 			xmlOut = XML.toString(jsonObj);
 			System.err.println("XML data: " + xmlOut);
-			
+			/*
+			 becomes:
+			 <?xml version="1.0" encoding="utf-8"?>
+				<Server>
+				  <Service>
+				    <name>Catalina</name>
+				    <Engine>
+				      <defaultHost>localhost</defaultHost>
+				      <name>Catalina</name>
+				      <Host>
+				        <autoDeploy>true</autoDeploy>
+				        <appBase>webapps</appBase>
+				        <name>localhost</name>
+				        <unpackWARs>true</unpackWARs>
+				        <Valve>
+				          <className>org.apache.catalina.valves.AccessLogValve</className>
+				          <directory>logs</directory>
+				        </Valve>
+				      </Host>
+				    </Engine>
+				  </Service>
+				</Server>
+			 */
 		} catch (JSONException e) {
 			System.err.println("Exception (ignored): " + e.toString());
 		}
@@ -273,7 +309,7 @@ public class Yaml2JSONTest {
 		public void setId(int data) {
 			this.id = data;
 		}
-ar
+
 		public Artist() {
 			staticInfo = UUID.randomUUID().toString();
 		}
