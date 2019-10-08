@@ -14,11 +14,14 @@ import static java.lang.System.err;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-
 import java.nio.file.Paths;
+
 import java.text.Normalizer;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import java.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +66,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.internal.Coordinates;
-
 // NOTE: deprecated. Used in scrolltoElement
-
 import org.openqa.selenium.internal.Locatable;
 
 import org.openqa.selenium.logging.LogType;
@@ -76,7 +77,7 @@ import org.openqa.selenium.remote.RemoteWebElement;
 
 // https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/support/ui/FluentWait.html#pollingEvery-java.time.Duration-
 // NOTE: needs java.time.Duration not the org.openqa.selenium.support.ui.Duration;
-import java.time.Duration;
+
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -88,7 +89,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
-import org.testng.internal.Nullable;
+import javax.annotation.Nullable;
 
 import com.rationaleemotions.ExecutionBuilder;
 import com.rationaleemotions.SshKnowHow;
@@ -1188,8 +1189,7 @@ public class BaseTest {
 		return driver.switchTo().window(parentHandle);
 	}
 
-	protected String xPathToCSS(
-			String xpath /* , @Nullable WebElement element */) {
+	protected String xPathToCSS(String xpath) {
 		String result = null;
 		try {
 			result = (String) executeScript(getScriptContent("cssify.js"),
@@ -1197,6 +1197,11 @@ public class BaseTest {
 		} catch (WebDriverException e) {
 		}
 		return result;
+	}
+
+	// dummy: added just to smoke test the testng 6.11 to 6.14 migration
+	protected String xPathToCSS(String xpath, @Nullable WebElement element) {
+		return xPathToCSS(xpath);
 	}
 
 	// origin: https://github.com/RomanIovlev/Css-to-XPath-Java
