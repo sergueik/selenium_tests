@@ -58,7 +58,14 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
 -->
     <snakeyaml.version>1.24</snakeyaml.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
-    <testng.version>6.11</testng.version>
+    <!-- 6.12+ cannot find symbol symbol:
+        class Nullable location: package org.testng.internal
+    public @interface Nullable { removed past 6.11 release
+    Mar 3 2017
+    commit/6de2a49c5321dfb1e5aeaaf36578e8f6c577713e
+    Replace internal @nullable by javax.annotation.Nullable
+    -->
+    <testng.version>6.14.3</testng.version>
     <unirest-java.version>1.4.9</unirest-java.version>
     <gson.version>2.8.5</gson.version>
     <guava.version>23.1</guava.version>
