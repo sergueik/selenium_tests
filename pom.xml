@@ -448,7 +448,7 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
     <repository>
       <id>osgeo</id>
       <name>osgeo repo</name>
-      <url>http://download.osgeo.org/webdav/geotools/</url>
+      <url>https://download.osgeo.org/webdav/geotools/</url>
     </repository>
     <repository>
       <id>seasar</id>
@@ -465,15 +465,20 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
     </repository>
     <repository>
       <id>central</id>
-      <url>http://central.maven.org/maven2/</url>
+      <url>https://repo1.maven.org/maven2/</url>
     </repository>
     <repository>
       <id>consol</id>
-      <url>http://labs.consol.de/maven/repository/</url>
+      <url>https://labs.consol.de/maven/repository/</url>
     </repository>
     <repository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+    <repository>
+      <id>project.local</id>
+      <name>project</name>
+      <url>file:${project.basedir}/repo</url>
     </repository>
   </repositories>
 </project>
