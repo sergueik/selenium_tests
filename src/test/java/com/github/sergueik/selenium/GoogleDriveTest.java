@@ -106,6 +106,7 @@ public class GoogleDriveTest {
 	List<String> cookieNames = new ArrayList<>(
 			Arrays.asList(new String[] { "NID", "GAPS" }));
 
+        // TODO: this is currently only working on a Windows system
 	private static WebDriver setupDriver() {
 		System.setProperty("webdriver.gecko.driver",
 				new File("c:/java/selenium/geckodriver.exe").getAbsolutePath());
