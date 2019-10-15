@@ -27,7 +27,8 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.internal.Nullable;
+// import org.testng.internal.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Selected test scenarios for Selenium WebDriver
