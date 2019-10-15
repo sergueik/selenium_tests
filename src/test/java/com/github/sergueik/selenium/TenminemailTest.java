@@ -11,6 +11,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -130,13 +131,37 @@ public class TenminemailTest extends BaseTest {
 		WebElement emailInputElement = driver
 				.findElement(By.cssSelector(emailInputCssSelector));
 		emailInputElement.click();
-		System.err.println("Clicked input");
-		emailInputElement.click();
-		sleep(10000);
-		String email = (String) executeScript(
-				"return window.getSelection().toString()");
+		sleep(1000);
+		String email = getSelectionText();
 		System.err.println("example email : " + email);
-		// non-empty, but looking for stale element reference
+		// non-empty, but still looking for triggering stale element reference
+		email = (String) executeScript(getScriptContent("getText.js"),
+				driver.findElement(By.cssSelector(emailInputCssSelector)), false);
+		System.err.println("example email text (try 2) : " + email);
+		assertThat(email, is(""));
+		System.err.println("example email value (try 3) : "
+				+ driver.findElement(By.cssSelector(emailInputCssSelector))
+						.getAttribute("value"));
+
+		email = (String) executeScript(String
+				.format("var element=document.querySelector('%s');" + "var elementText="
+						+ "element.getAttribute('value').replace(/\\n/, ' ')" + "||"
+						+ "element.textContent.replace(/\\n/, ' ')" + "||"
+						+ "element.innerText.replace(/\\n/, ' ')" + "||"
+						+ "element.getAttribute('placeholder')" + "||" + "'';"
+						+ "return elementText;", emailInputCssSelector));
+		System.err.println("example email text (try 4) : " + email); // empty
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> attributes = (Map<String, Object>) executeScript(
+				getScriptContent("getAttributes.js"),
+				// example email text (try 5) : [aria-describedby, class,
+				// data-original-title, data-placement, id, onclick, readonly, type,
+				// value]
+				driver.findElement(By.cssSelector(emailInputCssSelector)));
+		System.err
+				.println("example email value (try 5) : " + attributes.get("value")); // empty
+
 		try {
 			highlight(emailInputElement);
 		} catch (StaleElementReferenceException e) {

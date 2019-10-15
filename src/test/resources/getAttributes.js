@@ -7,11 +7,11 @@
 // see also: getStyle
 // http://www.htmlgoodies.com/html5/css/referencing-css3-properties-using-javascript.html#fbid=88eQV8NzD6Q 
 getAttributes = function(element) {
-    var items = {};
-    for (index = 0; index < element.attributes.length; ++index) {
-        items[element.attributes[index].name] = element.attributes[index].value
-    };
-    return items;
+  var items = {};
+  for (index = 0; index < element.attributes.length; ++index) {
+      items[element.attributes[index].name] = element.attributes[index].value
+  };
+  return items;
 }
 
 var element = arguments[0];

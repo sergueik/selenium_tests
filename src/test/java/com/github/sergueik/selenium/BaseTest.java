@@ -1050,6 +1050,15 @@ public class BaseTest {
 				elementText, debug);
 	}
 
+	protected String getSelectionText(boolean debug) {
+		return (String) executeScript(getScriptContent("getSelectionText.js"),
+				debug);
+	}
+
+	protected String getSelectionText() {
+		return getSelectionText(false);
+	}
+
 	protected boolean isElementNotVisible(By locator) {
 		try {
 			// disable implicit wait
