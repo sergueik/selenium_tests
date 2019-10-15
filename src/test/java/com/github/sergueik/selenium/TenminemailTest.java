@@ -86,7 +86,7 @@ public class TenminemailTest extends BaseTest {
 						+ "return elementText;", emailInputCssSelector));
 		System.err.println("input#mail text: " + email); // empty
 		assertThat(email, is(""));
-		emailInputElement.click();
+		emailInputElement.click(); // stale element reference is posible
 		System.err.println("Clicked input");
 		// sleep(1000);
 		email = (String) executeScript("return window.getSelection().toString()");
@@ -108,7 +108,7 @@ public class TenminemailTest extends BaseTest {
 	}
 
 	//
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void getStaleEmailElementReferenceTest() {
 		// Arrange
 		WebElement buttonElement;
@@ -129,27 +129,18 @@ public class TenminemailTest extends BaseTest {
 		}
 		WebElement emailInputElement = driver
 				.findElement(By.cssSelector(emailInputCssSelector));
-		System.err.println(
-				"example email:" + emailInputElement.getAttribute("outerHTML"));
-
-		// NOTE: org.openqa.selenium.UnhandledAlertException
-		String email = (String) executeScript(String
-				.format("var element=document.querySelector('%s');" + "var elementText="
-						+ "element.getAttribute('value').replace(/\\n/, ' ')" + "||"
-						+ "element.textContent.replace(/\\n/, ' ')" + "||"
-						+ "element.innerText.replace(/\\n/, ' ')" + "||"
-						+ "element.getAttribute('placeholder')" + "||" + "'';"
-						+ "return elementText;", emailInputCssSelector));
-		System.err.println("input#mail text: " + email); // empty
 		emailInputElement.click();
 		System.err.println("Clicked input");
-		sleep(1000);
-		email = (String) executeScript("return window.getSelection().toString()");
-		System.err.println("example email (try 1): " + email); // empty
+		emailInputElement.click();
+		sleep(10000);
+		String email = (String) executeScript(
+				"return window.getSelection().toString()");
+		System.err.println("example email : " + email);
+		// non-empty, but looking for stale element reference
 		try {
 			highlight(emailInputElement);
 		} catch (StaleElementReferenceException e) {
-			System.err.println("Exception (ignored) " + e.toString());
+			System.err.println("Exception * (ignored) " + e.toString());
 		}
 
 		//
