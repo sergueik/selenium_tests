@@ -125,7 +125,9 @@ public class JsoupScrapeUrlTest {
 		searchResultList.forEach(logger::info);
 	}
 
-	@Test(enabled = true)
+	// throws RuntimeException because of the public proxy server connection timed
+	// out
+	@Test(enabled = false)
 	public void testjsoupProxyMethod() {
 
 		final String ip = "167.71.254.71";
@@ -154,7 +156,7 @@ public class JsoupScrapeUrlTest {
 	// https://free-proxy-list.net/
 	// https://free.proxy-sale.com/
 	// are non-responding in various ways
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void testProxy() throws IOException {
 
 		URL url = new URL("http://www.example.com/");
