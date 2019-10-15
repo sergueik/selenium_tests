@@ -12,6 +12,8 @@ import static org.testng.Assert.assertTrue;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -26,6 +28,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.github.sergueik.selenium.BaseTest;
+
 public class TenminemailTest extends BaseTest {
 
 	// based on discussion:
@@ -33,7 +37,7 @@ public class TenminemailTest extends BaseTest {
 	// https://10minemail.com/en/
 	private static String baseURL = "https://10minemail.com/en/";
 	private static final StringBuffer verificationErrors = new StringBuffer();
-	private static String defaultScript = null;
+	private final static String cssSelector = "#mail";
 
 	@BeforeMethod
 	public void BeforeMethod(Method method) {
@@ -50,16 +54,14 @@ public class TenminemailTest extends BaseTest {
 		driver.get("about:blank");
 	}
 
-	private final static String emailInputCssSelector = "#mail";
-
 	//
 	@Test(enabled = true)
 	public void getNewRandomEmailTest() {
 		// Arrange
 		WebElement buttonElement;
 		try {
-			buttonElement = wait.until(ExpectedConditions
-					.visibilityOfElementLocated(By.xpath("//*[@id='click-to-delete']")));
+			buttonElement = wait
+					.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id='click-to-delete']")));
 			// NOTE: unnoticed bad copy paste quotes in XPath
 			// "//*[@id=“click-to-delete”]"
 			// lead to TimeoutException waiting for visibility of element located
@@ -73,101 +75,63 @@ public class TenminemailTest extends BaseTest {
 			System.err.println("Exception (aborting) " + e.toString());
 			return;
 		}
-		WebElement emailInputElement = driver
-				.findElement(By.cssSelector(emailInputCssSelector));
-		System.err.println(
-				"Input element: " + emailInputElement.getAttribute("outerHTML"));
+		WebElement emailInputElement = driver.findElement(By.cssSelector(cssSelector));
+		System.err.println("Input element: " + emailInputElement.getAttribute("outerHTML"));
 
-		String email = (String) executeScript(String
-				.format("var element=document.querySelector('%s');" + "var elementText="
+		String text = (String) executeScript(String.format(
+				"var element=document.querySelector('%s');" + "var elementText="
 						+ "element.getAttribute('value').replace(/\\n/, ' ')" + "||"
-						+ "element.textContent.replace(/\\n/, ' ')" + "||"
-						+ "element.innerText.replace(/\\n/, ' ')" + "||"
-						+ "element.getAttribute('placeholder')" + "||" + "'';"
-						+ "return elementText;", emailInputCssSelector));
-		System.err.println("input#mail text: " + email); // empty
-		assertThat(email, is(""));
-		emailInputElement.click(); // stale element reference is posible
+						+ "element.textContent.replace(/\\n/, ' ')" + "||" + "element.innerText.replace(/\\n/, ' ')"
+						+ "||" + "element.getAttribute('placeholder')" + "||" + "'';" + "return elementText;",
+				cssSelector));
+		System.err.println("input#mail text: " + text);
+		assertThat(text, is(""));
+		emailInputElement.click(); // stale element reference is possible
 		System.err.println("Clicked input");
 		// sleep(1000);
-		email = (String) executeScript("return window.getSelection().toString()");
-		assertThat(email, notNullValue());
-		System.err.println("example email (try 1): " + email); // not empty
-		email = (String) executeScript("function getSelectionText() { "
-				+ "var text = '';" + "if (window.getSelection) {"
+		text = (String) executeScript("return window.getSelection().toString()");
+		assertThat(text, notNullValue());
+		System.err.println("Selection text email (try 1): " + text); // not empty
+		text = (String) executeScript("function getSelectionText() { " + "var text = '';" + "if (window.getSelection) {"
 				+ "    text = window.getSelection().toString();"
 				+ " } else if (document.selection && document.selection.type != 'Control') {"
-				+ "     text = document.selection.createRange().text;" + "  }"
-				+ "   return text;" + "};return getSelectionText();");
-		assertThat(email, notNullValue());
-		System.err.println("example email (try 2): " + email); // not empty
-		try {
-			highlight(emailInputElement);
-		} catch (StaleElementReferenceException e) {
-			System.err.println("Exception (ignored) " + e.toString());
-		}
-	}
-
-	//
-	@Test(enabled = true)
-	public void getStaleEmailElementReferenceTest() {
-		// Arrange
-		WebElement buttonElement;
-		try {
-			buttonElement = wait.until(ExpectedConditions
-					.visibilityOfElementLocated(By.xpath("//*[@id='click-to-delete']")));
-			if (buttonElement != null) {
-
-				actions.moveToElement(buttonElement).build().perform();
-				buttonElement.click();
-				sleep(1000);
-			}
-		} catch (TimeoutException e) {
-			System.err.println("Exception (ignored) " + e.toString());
-		} catch (RuntimeException e) {
-			System.err.println("Exception (ignored) " + e.toString());
-			return;
-		}
-		WebElement emailInputElement = driver
-				.findElement(By.cssSelector(emailInputCssSelector));
-		emailInputElement.click();
-		sleep(1000);
-		String email = getSelectionText();
-		System.err.println("example email : " + email);
+				+ "     text = document.selection.createRange().text;" + "  }" + "   return text;"
+				+ "};return getSelectionText();");
+		assertThat(text, notNullValue());
+		System.err.println("Selection text email (try 2): " + text); // not empty
+		text = getSelectionText();
+		System.err.println("Selection text email (try 3): " + text);
 		// non-empty, but still looking for triggering stale element reference
-		email = (String) executeScript(getScriptContent("getText.js"),
-				driver.findElement(By.cssSelector(emailInputCssSelector)), false);
-		System.err.println("example email text (try 2) : " + email);
-		assertThat(email, is(""));
-		System.err.println("example email value (try 3) : "
-				+ driver.findElement(By.cssSelector(emailInputCssSelector))
-						.getAttribute("value"));
+		text = (String) executeScript(getScriptContent("getText.js"), driver.findElement(By.cssSelector(cssSelector)),
+				false);
+		// innerText of input DOM element type is empty
+		assertThat(text, is(""));
+		System.err.println("Input text (try 1) : " + text);
+		System.err.println(
+				"Input value (try 1): " + driver.findElement(By.cssSelector(cssSelector)).getAttribute("value"));
 
-		email = (String) executeScript(String
-				.format("var element=document.querySelector('%s');" + "var elementText="
-						+ "element.getAttribute('value').replace(/\\n/, ' ')" + "||"
-						+ "element.textContent.replace(/\\n/, ' ')" + "||"
-						+ "element.innerText.replace(/\\n/, ' ')" + "||"
-						+ "element.getAttribute('placeholder')" + "||" + "'';"
-						+ "return elementText;", emailInputCssSelector));
-		System.err.println("example email text (try 4) : " + email); // empty
+		text = (String) executeScript(String.format("var element=document.querySelectorAll('%s')[0];"
+				+ "var elementText=" + "element.value.replace(/\\n/, ' ')" + "||"
+				+ "element.textContent.replace(/\\n/, ' ')" + "||" + "element.innerText.replace(/\\n/, ' ')" + "||"
+				+ "element.getAttribute('placeholder')" + "||" + "'';" + "return elementText;", cssSelector));
+		System.err.println("Text or value (try 1) : " + text); // empty
 
 		@SuppressWarnings("unchecked")
-		Map<String, Object> attributes = (Map<String, Object>) executeScript(
-				getScriptContent("getAttributes.js"),
-				// example email text (try 5) : [aria-describedby, class,
-				// data-original-title, data-placement, id, onclick, readonly, type,
-				// value]
-				driver.findElement(By.cssSelector(emailInputCssSelector)));
-		System.err
-				.println("example email value (try 5) : " + attributes.get("value")); // empty
-
+		// example email text (try 5) : [aria-describedby, class,
+		// data-original-title, data-placement, id, onclick, readonly, type,
+		// value]
+		Map<String, Object> attributes = (Map<String, Object>) executeScript(getScriptContent("getAttributes.js"),
+				driver.findElement(By.cssSelector(cssSelector)));
+		System.err.println("Attributes: ");
+		for (Entry<String, Object> entry : attributes.entrySet()) {
+			System.err.println(String.format("%s = \"%s\"", entry.getKey(), entry.getValue().toString()));
+		}
+		System.err.println("Input value (try 2): " + attributes.get("value"));
 		try {
 			highlight(emailInputElement);
 		} catch (StaleElementReferenceException e) {
-			System.err.println("Exception * (ignored) " + e.toString());
+			System.err.println("Exception (ignored) " + e.toString());
 		}
-
-		//
 	}
+
 }

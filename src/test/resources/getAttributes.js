@@ -9,7 +9,12 @@
 getAttributes = function(element) {
   var items = {};
   for (index = 0; index < element.attributes.length; ++index) {
-      items[element.attributes[index].name] = element.attributes[index].value
+	// the "value" attribute is special, needs to be accessed through direct getter
+      if (element.attributes[index].name === 'value'){
+        items[element.attributes[index].name] = element.value;
+      } else {
+        items[element.attributes[index].name] = element.attributes[index].value;
+      }
   };
   return items;
 }
