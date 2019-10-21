@@ -64,6 +64,7 @@ public class TabTest extends BaseTest {
 		// Arrange
 		parentHandle = driver.getWindowHandle(); // Save parent window
 		numberOfWindows = driver.getWindowHandles().size();
+		// Act
 		try {
 			logoElement = wait.until(ExpectedConditions
 					.visibilityOfElementLocated(By.cssSelector(cssSelector)));
@@ -73,6 +74,7 @@ public class TabTest extends BaseTest {
 						"Ctrl-clicking on: " + logoElement.getAttribute("outerHTML"));
 				logoElement.sendKeys(Keys.chord(Keys.CONTROL, Keys.RETURN));
 			}
+			// Assert
 			// switch to the other window now
 			boolean isChildWindowOpen = wait
 					.until(ExpectedConditions.numberOfWindowsToBe(2));
@@ -88,19 +90,21 @@ public class TabTest extends BaseTest {
 
 	@Test(enabled = true, expectedExceptions = {
 			org.openqa.selenium.TimeoutException.class }, expectedExceptionsMessageRegExp = "Expected condition failed: waiting for number of open windows to be \\d .*$")
+	// see:
+	// https://howtodoinjava.com/testng/testng-expected-exception-and-expected-message-tutorial/
 	public void emptyNewTabTest() {
 		// Arrange
 		parentHandle = driver.getWindowHandle(); // Save parent window
 		numberOfWindows = driver.getWindowHandles().size();
 		WebElement bodyElement = driver.findElement(By.cssSelector("body"));
 		assertThat(bodyElement, notNullValue());
-		// body Element is not null
+		// Act
 		if (bodyElement != null) {
 			bodyElement.sendKeys(Keys.CONTROL + "t");
 		}
 		// makes no difference
 		if (bodyElement != null) {
-			bodyElement.sendKeys(Keys.chord(Keys.CONTROL, "t"));
+			bodyElement.sendKeys(Keys.chord(Keys.CONTROL, "n"));
 		}
 
 		WebDriverWait waitShort = new WebDriverWait(driver, 3);
@@ -119,21 +123,47 @@ public class TabTest extends BaseTest {
 		// Arrange
 		parentHandle = driver.getWindowHandle(); // Save parent window
 		numberOfWindows = driver.getWindowHandles().size();
+		// Act
 		try {
 			logoElement = wait.until(ExpectedConditions
 					.visibilityOfElementLocated(By.cssSelector(cssSelector)));
 			if (logoElement != null) {
 				actions.moveToElement(logoElement).build().perform();
-				String script = "var element = arguments[0];"
-						+ "var attribute = document.createAttribute('target');"
-						+ "attribute.value = '_blank';"
-						+ "element.setAttributeNode(attribute);";
-				String result = (String) executeScript(script, logoElement);
-				assertThat(result, nullValue());
+				setTargetAttribute(logoElement);
 				System.err.println("Clicking on modified element:"
 						+ logoElement.getAttribute("outerHTML"));
 				logoElement.click();
 			}
+			// Assert
+			boolean isChildWindowOpen = wait
+					.until(ExpectedConditions.numberOfWindowsToBe(numberOfWindows + 1));
+			if (isChildWindowOpen) {
+				// switch to the other window now
+				walkTabs(parentHandle);
+			}
+		} catch (TimeoutException e) {
+			System.err.println("Exception (aborting) " + e.toString());
+			return;
+		}
+	}
+
+	@Test(enabled = true)
+	public void getLinkTargetAlternariveTabOpenTest() {
+		// Arrange
+		parentHandle = driver.getWindowHandle(); // Save parent window
+		numberOfWindows = driver.getWindowHandles().size();
+		// Act
+		try {
+			logoElement = wait.until(ExpectedConditions
+					.visibilityOfElementLocated(By.cssSelector(cssSelector)));
+			if (logoElement != null) {
+				actions.moveToElement(logoElement).build().perform();
+				setAttribute(logoElement, "target", "_blank");
+				System.err.println("Clicking on modified element:"
+						+ logoElement.getAttribute("outerHTML"));
+				logoElement.click();
+			}
+			// Assert
 			boolean isChildWindowOpen = wait
 					.until(ExpectedConditions.numberOfWindowsToBe(numberOfWindows + 1));
 			if (isChildWindowOpen) {

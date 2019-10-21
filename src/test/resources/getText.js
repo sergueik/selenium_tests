@@ -4,7 +4,7 @@
  * arguments[0] {Element} The event target.
  * arguments[1] {Boolean} Whether to concatenate element text fragments with spaces.
  */
-// based on  http://stackoverflow.com/questions/6743912/get-the-pure-text-without-html-element-by-javascript
+// based on http://stackoverflow.com/questions/6743912/get-the-pure-text-without-html-element-by-javascript
 getText = function(element, addSpaces) {
 	var i, result, text, child;
 	if (element.childNodes && element.childNodes > 1) {
