@@ -1,71 +1,32 @@
 package com.github.sergueik.selenium;
 
-import java.io.File;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.testng.ITestResult;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
-
-import static org.hamcrest.Matchers.greaterThan;
-import java.util.regex.Pattern;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
-* Sample test scenario for web page scraping via joup based on chained fasttrack
+* Sample test scenarios for web page scraping via joup based on chained fasttrack
 * node attribute scan which seems to take a lot less code than the chained browsing of immediate (grand-) children
 * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
 */
@@ -143,6 +104,34 @@ public class JsoupProbeTest extends BaseTest {
 		}
 	}
 
+	@Test(enabled = true)
+	public void testPageSourceElementsGet() {
+		// NOTE: too big
+		// System.err.println("Page Source: " + pageSource);
+		jsoupDocument = Jsoup.parse(pageSource);
+
+		attributeName = "type";
+		attributeValue = "text/javascript"; // can be part of
+
+		// getElementsByTag does not traverdse the DOM
+		// jsoupDocument.getElementsByTag("div").get(0);
+		Element jsoupElement = jsoupDocument
+				.getElementsByAttributeValueContaining(attributeName, attributeValue)
+				.get(0);
+		// System.err.println("Element: " + jsoupElement.html());
+		System.err.println("Element: " + jsoupElement.outerHtml());
+		attributeName = "";
+		attributeValue = "container"; // can be one of classes
+
+		jsoupElement = jsoupDocument
+				.select(String.format("%s.%s", attributeName, attributeValue)).get(1);
+		System.err.println("Element: " + jsoupElement.outerHtml());
+
+		String tagName = "div";
+		jsoupElement = jsoupDocument.select(tagName).get(1);
+		System.err.println("Element: " + jsoupElement.outerHtml());
+	}
+
 	// temporarily disable to reduce logging
 	@Test(enabled = false)
 	public void testOneCallPageSource() {
@@ -150,7 +139,6 @@ public class JsoupProbeTest extends BaseTest {
 
 		attributeName = "class";
 		attributeValue = "productListing";
-		jsoupDocument.select(".productListing");
 		jsoupElements = jsoupDocument.getElementsByAttributeValue(attributeName,
 				attributeValue);
 		assertThat(jsoupElements, notNullValue());
