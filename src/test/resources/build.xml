@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<project name="MyProject" default="dist" basedir=".">
+  <description> simple example build file </description>
+  <!-- set global properties for this build -->
+  <property name="base_url" value="https://chromedriver.storage.googleapis.com/LATEST_RELEASE"/>
+  <property environment="env"/>
+  <property name="chrome_version" value="79"/>
+  <condition property="temp" value="${env.TEMP}" else="/tmp">
+    <isset property="env.TEMP"/>
+  </condition>
+  <property name="response" location="${temp}/response"/>
+  <!--
+Documentation:
+https://chromedriver.chromium.org/downloads/version-selection
+https://chromedriver.storage.googleapis.com/LATEST_RELEASE_79
+79.0.3945.16
+https://chromedriver.storage.googleapis.com/index.html?path=79.0.3945.16
+-->
+  <!--
+https://ant.apache.org/bindownload.cgi
+NOTE: do not install ant via apt-get -
+it has openjdk-8-jre-headless as a required dependency
+and would update alternatives in an undesired way
+-->
+  <target name="init">
+    <mkdir dir="${response}"/>
+    <get src="${base_url}_${chrome_version}" dest="${response}/chromedriver_version.txt" verbose="true" usetimestamp="false"/>
+  </target>
+  <target name="dist" depends="init" description="generate the distribution">
+    <loadresource property="chromedriver_version">
+      <file file="${response}/chromedriver_version.txt"/>
+    </loadresource>
+    <propertyfile file="${response}/versions.properties" comment="Chromedriver Version properties">
+      <!--  apparently cannot generate webdrivermanager-style properties file
+https://github.com/bonigarcia/webdrivermanager/blob/master/src/main/resources/versions.properties with entries like chrome79=79.0.3945.16
+      - the "chrome${chome_version}" key is created by ant propertyfile task https://ant.apache.org/manual/Tasks/propertyfile.html
+see also: https://www.jitendrazaa.com/blog/java/creating-custom-ant-plugin-or-task-in-java/  -->
+      <entry key="chrome${chome_version}" value="${chromedriver_version}"/>
+    </propertyfile>
+  </target>
+  <target name="clean" description="clean up">
+    <!-- Delete the ${response} directory trees -->
+    <delete dir="${response}"/>
+  </target>
+</project>
