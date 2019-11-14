@@ -10,6 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -33,7 +38,7 @@ import org.testng.annotations.Test;
 * https://www.w3schools.com/cssref/pr_background-image.asp
 */
 
-// Based on
+// Based on forum ??
 
 public class CssBackgroundImageTest extends BaseTest {
 
@@ -45,6 +50,16 @@ public class CssBackgroundImageTest extends BaseTest {
 	private static final int y = 15;
 	private static final int width = 30;
 	private static final int height = 25;
+
+	static List<String> OSes = Arrays
+			.asList(new String[] { "windows", "dos", "mac", "linux" });
+
+	static Map<String, String> defaultBrowsers = new HashMap<>();
+	static {
+		defaultBrowsers.put("windows", "Chrome");
+		defaultBrowsers.put("linux", "Firefox");
+		defaultBrowsers.put("mac", "Safari");
+	}
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -91,7 +106,7 @@ public class CssBackgroundImageTest extends BaseTest {
 					BufferedImage b = ImageIO.read(new File(compareImagePath));
 				}
 			} catch (IOException e) {
-				System.err.println("Ignored: " + e.toString());
+				System.err.println("(backgroundImageTest) Ignored: " + e.toString());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -115,6 +130,31 @@ public class CssBackgroundImageTest extends BaseTest {
 		imageStream.close();
 
 		return image;
+	}
+
+	/*
+		
+		a somewhat more sophisticated 
+		"помогите реализовать с использованием Streams и Лямбда" - challenge 
+		featuring nested loop 
+		
+		Set<Team> teams = new HashSet<>();
+	  
+	  for (Team team : scenario.getTeamsActive()) {
+	    for (UserAsLearner userAsLearner : learners) {
+	      if(team.getLearners().contains(userAsLearner)) {
+	        teams.add(team);
+	        break;
+	      }
+	    }
+	  }
+	  */
+	@Test(enabled = true)
+	public void browserFilterTest() {
+		List<String> result = OSes.stream().filter(o -> {
+			return (defaultBrowsers.containsKey(o)) ? true : false;
+		}).collect(Collectors.toList());
+
 	}
 
 }
