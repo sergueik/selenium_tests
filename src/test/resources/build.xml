@@ -31,11 +31,15 @@ and would update alternatives in an undesired way
       <file file="${response}/chromedriver_version.txt"/>
     </loadresource>
     <propertyfile file="${response}/versions.properties" comment="Chromedriver Version properties">
-      <!--  apparently cannot generate webdrivermanager-style properties file
+      <!--  generate webdrivermanager-style properties file
 https://github.com/bonigarcia/webdrivermanager/blob/master/src/main/resources/versions.properties with entries like chrome79=79.0.3945.16
-      - the "chrome${chome_version}" key is created by ant propertyfile task https://ant.apache.org/manual/Tasks/propertyfile.html
+      https://ant.apache.org/manual/Tasks/propertyfile.html
 see also: https://www.jitendrazaa.com/blog/java/creating-custom-ant-plugin-or-task-in-java/  -->
-      <entry key="chrome${chome_version}" value="${chromedriver_version}"/>
+      <entry key="chrome${chrome_version}" value="${chromedriver_version}"/>
+      <!-- debugging
+        <entry key="value" value="${chromedriver_version}"/>
+        <entry key="key" value="chrome${chrome_version}"/>
+      -->
     </propertyfile>
   </target>
   <target name="clean" description="clean up">
