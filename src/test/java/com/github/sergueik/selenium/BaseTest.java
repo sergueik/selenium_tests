@@ -25,6 +25,7 @@ import java.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.NotFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 // NOTE:
 // import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -568,6 +574,9 @@ public class BaseTest {
 		if (osName.equals("windows")) {
 			killProcess(browserDrivers.get(browser));
 		}
+		if (osName.equals("windows")) {
+			purgeScopedDirs();
+		}
 	}
 
 	public void highlight(WebElement element) {
@@ -841,6 +850,39 @@ public class BaseTest {
 			}
 		}
 		return value;
+	}
+
+	// delete all "scoped_dir" folders under temp
+	// https://stackoverflow.com/questions/43289035/chromedriver-not-deleting-scoped-dir-in-temp-folder-after-test-is-complete
+	// https://www.programcreek.com/java-api-examples/?class=org.apache.commons.io.FileUtils&method=listFilesAndDirs
+	public static void purgeScopedDirs() {
+		Collection<File> folders = FileUtils.listFilesAndDirs(
+				new File(System.getProperty("java.io.tmpdir")),
+				(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE),
+				(IOFileFilter) DirectoryFileFilter.DIRECTORY);
+
+		folders.stream().filter(f -> f.getName().matches("scoped_dir.*"))
+				.forEach(f -> {
+					try {
+						System.err.println("Removing: " + f.getCanonicalPath());
+						FileUtils.deleteDirectory(f);
+					} catch (IOException e) {
+						System.err.println("Exception (ignored): " + e.toString());
+					}
+				});
+
+		// c# example
+		/*
+			foreach (string tempfile in Directory.GetDirectories(System.IO.Path.GetTempPath(), "scoped_dir*", SearchOption.AllDirectories)) {
+				try {
+					System.IO.DirectoryInfo directory = new System.IO.DirectoryInfo(tempfolder);
+					foreach (System.IO.DirectoryInfo subDirectory in directory.GetDirectories())
+						subDirectory.Delete(true);
+				} catch (Exception e) {
+					writeEx("Exception: " + e.Message);
+				}
+			}
+		 */
 	}
 
 	// origin: https://github.com/rationaleemotions/simplessh

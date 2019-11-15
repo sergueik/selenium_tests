@@ -24,10 +24,13 @@ import javax.imageio.stream.ImageInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import org.testng.annotations.AfterClass;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -65,6 +68,15 @@ public class CssBackgroundImageTest extends BaseTest {
 	public void beforeClass() throws IOException {
 		super.beforeClass();
 		assertThat(driver, notNullValue());
+	}
+
+	@AfterTest(alwaysRun = true)
+	public void afterTest() {
+		super.afterTest();
+		if (osName.equals("windows")) {
+			super.purgeScopedDirs();
+			// some directories may remain
+		}
 	}
 
 	@BeforeMethod
@@ -132,11 +144,14 @@ public class CssBackgroundImageTest extends BaseTest {
 		return image;
 	}
 
+	// a somewhat more sophisticated
+	// "помогите реализовать с использованием Streams и Лямбда" - challenge
+	// featuring nested loop
+	// https://vertex-academy.com/tutorials/ru/java-8-stream-flatmap/
+	// https://www.mkyong.com/java8/java-8-flatmap-example/
+	// https://toster.ru/q/684099?e=8261758#comment_2045385
+
 	/*
-		
-		a somewhat more sophisticated 
-		"помогите реализовать с использованием Streams и Лямбда" - challenge 
-		featuring nested loop 
 		
 		Set<Team> teams = new HashSet<>();
 	  

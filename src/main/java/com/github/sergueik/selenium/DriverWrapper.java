@@ -47,10 +47,8 @@ public class DriverWrapper extends RemoteWebDriver {
 	private static ConcurrentHashMap<String, RemoteWebDriver> driverInventory = new ConcurrentHashMap<String, RemoteWebDriver>();
 
 	public static List<String> getDriverInventoryDump() {
-		return driverInventory.entrySet().stream()
-				.map(_entry -> String.format("%s => %s %d", _entry.getKey(),
-						_entry.getValue().getClass(), _entry.getValue().hashCode()))
-				.collect(Collectors.toList());
+		return driverInventory.entrySet().stream().map(_entry -> String.format("%s => %s %d", _entry.getKey(),
+				_entry.getValue().getClass(), _entry.getValue().hashCode())).collect(Collectors.toList());
 	}
 
 	@SuppressWarnings("deprecation")
@@ -59,8 +57,7 @@ public class DriverWrapper extends RemoteWebDriver {
 		if (browser.trim().equalsIgnoreCase("remote")) {
 			try {
 				driver = new RemoteWebDriver(new URL(hubUrl), capabilities);
-			} catch (MalformedURLException | UnreachableBrowserException
-					| NoSuchSessionException e) { // hub down ?
+			} catch (MalformedURLException | UnreachableBrowserException | NoSuchSessionException e) { // hub down ?
 				System.err.println("Exception: " + e.toString());
 				// org.openqa.selenium.NoSuchSessionException:
 				// Tried to run command without establishing a connection
@@ -77,9 +74,11 @@ public class DriverWrapper extends RemoteWebDriver {
 				try {
 					driver = new ChromeDriver(capabilities);
 				} catch (SessionNotCreatedException e) {
-					// session not created: This version of ChromeDriver only supports
-					// Chrome version 74
-					// Note: chromedriver.exe continues to run
+					// org.openqa.selenium.SessionNotCreatedException: session not created: This
+					// version of ChromeDriver only supports Chrome version 74
+					// with e.g. ChromeDriver 74.0.3729.6 and google-chrome version 77
+					// Note: after this exception the
+					// chromedriver.exe (chromedriver) would continues to run, on Windows (Linux)
 					throw new RuntimeException(e.toString());
 				}
 			}
@@ -89,15 +88,14 @@ public class DriverWrapper extends RemoteWebDriver {
 
 	public static RemoteWebDriver current() {
 		if (debug) {
-			System.err.println("Looking inventory by key: " + getThreadName() + "\n"
-					+ " => " + driverInventory.get(getThreadName()).getClass() + " "
+			System.err.println("Looking inventory by key: " + getThreadName() + "\n" + " => "
+					+ driverInventory.get(getThreadName()).getClass() + " "
 					+ driverInventory.get(getThreadName()).hashCode());
 		}
 		return driverInventory.get(getThreadName());
 	}
 
 	private static String getThreadName() {
-		return Thread.currentThread().getName() + "-"
-				+ Thread.currentThread().getId();
+		return Thread.currentThread().getName() + "-" + Thread.currentThread().getId();
 	}
 }
