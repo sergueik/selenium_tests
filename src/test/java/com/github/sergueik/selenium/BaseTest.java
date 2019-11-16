@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import static java.lang.System.err;
 
@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.NotFileFilter;
@@ -852,16 +853,63 @@ public class BaseTest {
 		return value;
 	}
 
+	// private static final String dirNamePattern = "scoped_dir.*";
+
+	private static class CustomDirectoryFileFilter extends AbstractFileFilter
+			implements Serializable {
+		private String dirNamePattern = null;
+
+		public void setDirNamePattern(String data) {
+			this.dirNamePattern = data;
+		}
+
+		public CustomDirectoryFileFilter() {
+		}
+
+		public CustomDirectoryFileFilter(String dirNamePattern) {
+			this.dirNamePattern = dirNamePattern;
+		}
+
+		@Override
+		public boolean accept(final File file) {
+			boolean status = file.isDirectory()
+					&& file.getName().matches(dirNamePattern);
+			if (status) {
+				System.err
+						.println(String.format("Matching item: \"%s\"", file.getName()));
+			}
+			return status;
+		}
+
+	}
+
 	// delete all "scoped_dir" folders under temp
 	// https://stackoverflow.com/questions/43289035/chromedriver-not-deleting-scoped-dir-in-temp-folder-after-test-is-complete
 	// https://www.programcreek.com/java-api-examples/?class=org.apache.commons.io.FileUtils&method=listFilesAndDirs
 	public static void purgeScopedDirs() {
-		Collection<File> folders = FileUtils.listFilesAndDirs(
-				new File(System.getProperty("java.io.tmpdir")),
-				(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE),
-				(IOFileFilter) DirectoryFileFilter.DIRECTORY);
 
-		folders.stream().filter(f -> f.getName().matches("scoped_dir.*"))
+		// cannot set additional properties if declared as instance of the
+		// superclass type
+		// AbstractFileFilter filter = new CustomDirectoryFileFilter();
+		CustomDirectoryFileFilter filter = new CustomDirectoryFileFilter();
+		filter.setDirNamePattern("scoped_dir.*");
+		FileUtils.listFilesAndDirs(new File(System.getProperty("java.io.tmpdir")),
+				(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE),
+				/* filter  */ new BaseTest.CustomDirectoryFileFilter("scoped_dir.*"))
+				.stream().forEach(f -> {
+					try {
+						System.err.println("About to remove: " + f.getCanonicalPath());
+						// FileUtils.deleteDirectory(f);
+					} catch (IOException e) {
+						System.err.println("Exception (ignored): " + e.toString());
+					}
+				});
+
+		FileUtils
+				.listFilesAndDirs(new File(System.getProperty("java.io.tmpdir")),
+						(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE),
+						(IOFileFilter) DirectoryFileFilter.DIRECTORY)
+				.stream().filter(f -> f.getName().matches("scoped_dir.*"))
 				.forEach(f -> {
 					try {
 						System.err.println("Removing: " + f.getCanonicalPath());
@@ -1618,4 +1666,4 @@ public class BaseTest {
 			}
 		};
 	}
-};
+}
