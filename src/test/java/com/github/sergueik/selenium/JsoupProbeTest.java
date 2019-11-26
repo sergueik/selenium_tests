@@ -1,10 +1,12 @@
 package com.github.sergueik.selenium;
 
+import static java.lang.System.err;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
+import java.io.FileWriter;
 import java.io.IOException;
 
 import java.util.Arrays;
@@ -35,6 +37,15 @@ import org.openqa.selenium.WebElement;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonWriter;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Sample test scenarios for web page scraping via joup based on chained
@@ -115,6 +126,28 @@ public class JsoupProbeTest extends BaseTest {
 			System.err.println(String.format("Processing jsoup selector \"%s\" %s",
 					jsoupSelector, jsoupElements.first().text()));
 		}
+	}
+
+	@Test(enabled = true)
+	public void testJsoupFlatten() {
+		JsonParser parser = new JsonParser();
+		JsonObject jsonObject = parser.parse(getScriptContent("mixed.json"))
+				.getAsJsonObject();
+		assertTrue(jsonObject.isJsonObject());
+		String result = jsonObject.toString();
+		System.err.println("Result: " + result);
+		/*
+		Gson gson = new GsonBuilder().create();
+		try {
+			JsonWriter jsonWriter = gson.newJsonWriter(new FileWriter("result.json"));
+			jsonWriter.setIndent(null);
+			jsonWriter.setLenient(true);
+			// for low level object to stream serialization
+			// https://static.javadoc.io/com.google.code.gson/gson/2.6.2/com/google/gson/stream/JsonWriter.html
+		} catch (IOException e) {
+			err.println("Exception (ignored): " + e.toString());
+		}
+		*/
 	}
 
 	@Test(enabled = true)
