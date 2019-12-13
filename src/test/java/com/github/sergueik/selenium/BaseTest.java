@@ -234,6 +234,7 @@ public class BaseTest {
 	// alternative:
 	// options = webdriver.ChromeOptions()
 	// options.add_argument("--app-id = mbopgmdnpcbohhpnfglgohlbhfongabi")
+	// mdnmhbnbebabimcjggckeoibchhckemm.crx
 	private void loadChromeExtensionsBase64Encoded(ChromeOptions chromeOptions) {
 		List<String> chromeExtensionsBase64Encoded = new ArrayList<>();
 		for (String extensionName : this.chromeExtensions) {
@@ -259,11 +260,11 @@ public class BaseTest {
 					err.println(String.format(
 							"Chrome extension successfully encoded and added: %s...",
 							new String(base64EncodedByteArray).substring(0, 64)));
-				} catch (FileNotFoundException e1) {
+				} catch (FileNotFoundException e) {
 					err.println(
-							"Chrome extension not found: " + extensionFilePath + " " + e1);
-				} catch (IOException e2) {
-					err.println("Problem with reading Chrome extension: " + e2);
+							"Chrome extension not found: " + extensionFilePath + " " + e);
+				} catch (IOException e) {
+					err.println("Problem with reading Chrome extension: " + e);
 				}
 			}
 			chromeOptions.addEncodedExtensions(chromeExtensionsBase64Encoded);
@@ -389,6 +390,9 @@ public class BaseTest {
 				}
 			}
 
+			System.err.println("Loading base64 encoded chrome extensions");
+			loadChromeExtensionsBase64Encoded(chromeOptions);
+
 			// http://learn-automation.com/handle-untrusted-certificate-selenium/
 			capabilities
 					.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
@@ -408,7 +412,6 @@ public class BaseTest {
 			 */
 			capabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
 
-			loadChromeExtensionsBase64Encoded(chromeOptions);
 			// see also:
 			// https://github.com/pulkitsinghal/selenium/blob/master/java/client/src/org/openqa/selenium/chrome/ChromeOptions.java
 			// For use with RemoteWebDriver

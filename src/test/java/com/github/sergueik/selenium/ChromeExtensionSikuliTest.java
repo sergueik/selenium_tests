@@ -58,6 +58,7 @@ import org.sikuli.script.Screen;
 public class ChromeExtensionSikuliTest extends BaseTest {
 
 	private String baseURL = "https://auth-demo.aerobatic.io/";
+	// private String baseURL = "https://www.wikipedia.org/";
 	private static List<String> chromeExtensions = new ArrayList<>();
 	static {
 		chromeExtensions.add("chropath"); // without .crx extension
@@ -77,6 +78,8 @@ public class ChromeExtensionSikuliTest extends BaseTest {
 	public void openExtensionPopupTest() {
 
 		Screen screen = new Screen();
+		// the image is in "src/main/resources"
+		// assert type
 		String imagePath = getResourcePath("chropath.png");
 		try {
 			screen.find(imagePath);
@@ -84,16 +87,32 @@ public class ChromeExtensionSikuliTest extends BaseTest {
 		} catch (FindFailed e) {
 			e.printStackTrace();
 		}
-
+		// NOTE: delay duration sensitive
+		sleep(1000);
+		try {
+			screen.find(imagePath);
+			screen.rightClick(imagePath);
+			sleep(500);
+			Match m = screen.findText("ChroPath");
+			m.click();
+		} catch (FindFailed e) {
+			e.printStackTrace();
+		}
+		sleep(500);
 		WebDriverWait wait = new WebDriverWait(driver, 5);
+
 		wait.until(ExpectedConditions.numberOfWindowsToBe(2));
 
 		String parentWindow = driver.getWindowHandle();
 		Set<String> allWindows = driver.getWindowHandles();
+		System.err.println("Observing " + allWindows.size() + " windows");
 		for (String curWindow : allWindows) {
+			System.err.println("Handle of the window: " + curWindow);
 			if (!parentWindow.equals(curWindow)) {
+				System.err.println("Title of the window: " + driver.getTitle());
 				driver.switchTo().window(curWindow);
 			}
 		}
+		driver.switchTo().window(parentWindow);
 	}
 }
