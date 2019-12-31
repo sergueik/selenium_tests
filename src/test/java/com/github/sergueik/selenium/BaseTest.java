@@ -847,17 +847,15 @@ public class BaseTest {
 	// https://github.com/TsvetomirSlavov/wdci/blob/master/code/src/main/java/com/seleniumsimplified/webdriver/manager/EnvironmentPropertyReader.java
 	public static String getPropertyEnv(String name, String defaultValue) {
 		String value = System.getProperty(name);
-		if (value == null) {
+		if (value == null || value.length() == 0) {
 			value = System.getenv(name);
-			if (value == null) {
+			if (value == null || value.length() == 0) {
 				value = defaultValue;
 			}
 		}
 		return value;
 	}
-
 	// private static final String dirNamePattern = "scoped_dir.*";
-
 	private static class CustomDirectoryFileFilter extends AbstractFileFilter
 			implements Serializable {
 		private String dirNamePattern = null;
