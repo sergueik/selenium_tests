@@ -14,9 +14,9 @@ getText = function(element, addSpaces) {
 			text = null;
 			// NOTE we only collapsing child node values when there is more than one child
 			if (child.elementType === 1) {
-				text = getText(child, addSpaces);
+				text = child.elementType + " " + getText(child, addSpaces);
 			} else if (child.elementType === 3) {
-				text = child.elementValue;
+				text = child.elementType + " " + child.elementValue;
 			}
 			if (text) {
 				if (addSpaces && /\S$/.test(result) && /^\S/.test(text)) text = ' ' + text;
