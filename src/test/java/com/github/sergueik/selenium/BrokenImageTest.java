@@ -7,8 +7,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.hasItems;
+import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,17 +36,22 @@ import org.testng.annotations.Test;
  * Selected test scenarios for Selenium WebDriver
  * 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com) based on
- * https://groups.google.com/forum/#!topic/selenium-users/OdXiZ4D4m6o
- * broken image discovery discussion
+ *          https://groups.google.com/forum/#!topic/selenium-users/OdXiZ4D4m6o
+ *          broken image discovery discussion
  */
 
 public class BrokenImageTest extends BaseTest {
 
 	private static final Logger log = LogManager.getLogger(BrokenImageTest.class);
-	private static List<String> srcList = new ArrayList<>();
+	private static List<String> brokenImages = new ArrayList<>();
 	static {
-		srcList.add("missing1.jpg");
-		srcList.add("missing2.jpg");
+		brokenImages.add("missing1.jpg");
+		brokenImages.add("missing2.jpg");
+	}
+	private static final Set<String> unrelatedImages = new HashSet<>();
+	static {
+		unrelatedImages.add("background.png");
+		unrelatedImages.add("other.jpg");
 	}
 	private static final StringBuffer report = new StringBuffer();
 
@@ -78,26 +85,30 @@ public class BrokenImageTest extends BaseTest {
 			}
 		}
 		// Assert
-		srcList.forEach(o -> assertThat(results, hasItems(o)));
+		brokenImages.forEach(o -> assertThat(results, hasItems(o)));
 		// Assert
-		assertThat(results, containsInAnyOrder(
-				Arrays.asList(equalTo("missing2.jpg"), equalTo("missing1.jpg"))));
-		assertThat("Checking ", results.toArray(),
-				arrayContainingInAnyOrder(srcList.toArray()));
+		assertThat(results, containsInAnyOrder(Arrays.asList(equalTo("missing2.jpg"), equalTo("missing1.jpg"))));
+		assertThat("Checking ", results.toArray(), arrayContainingInAnyOrder(brokenImages.toArray()));
 
 		// Assert
-		final Set<String> src2 = new HashSet<>();
-		src2.add("background.png");
-		src2.add("other.jpg");
-		Pattern pattern = Pattern
-				.compile("^(?!" + StringUtils.join(src2, "|") + ").*$");
+		Pattern pattern = Pattern.compile("^(?!" + StringUtils.join(unrelatedImages, "|") + ").*$");
 		System.err.println("Pattern: " + pattern.toString());
+
 		// Set<String> results2 = new HashSet<>();
 		// results.forEach(o -> results2.add(o.toString()));
 		String input = StringUtils.join(results.toArray(), "|");
 		System.err.println("Input: " + input);
 		Matcher matcher = pattern.matcher(input);
-		assertTrue(matcher.find());
+		assertThat(matcher.find(), is(true));
 
+		// Assert
+
+		pattern = Pattern.compile("(?:" + StringUtils.join(unrelatedImages, "|") + ")");
+		System.err.println("Pattern:\n" + pattern.toString());
+		input = StringUtils.join(results.toArray(), "|");
+		System.err.println("Input:\n" + input);
+		matcher = pattern.matcher(input);
+		assertThat(matcher.find(), is(false));
 	}
+
 }
