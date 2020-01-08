@@ -78,7 +78,6 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
     <xerces.version>2.12.0</xerces.version>
   </properties>
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/xerces/xercesImpl -->
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
