@@ -10,7 +10,7 @@
 // https://ynot408.wordpress.com/2011/09/22/drag-and-drop-using-selenium-webdriver/
 // http://elementalselenium.com/tips/39-drag-and-drop
 // https://gist.github.com/reinaldorossetti/074642e9f954b7119c557748836fcd42
-
+// https://sqa.stackexchange.com/questions/22534/why-drag-and-drop-is-not-working-in-selenium-webdriver
 simulate = function(element, eventName) {
 	var options = extend(defaultOptions, arguments[2] || {});
 	var oEvent, eventType = null;
