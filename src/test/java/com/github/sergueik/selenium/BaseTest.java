@@ -96,6 +96,10 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import javax.annotation.Nullable;
 
 import com.rationaleemotions.ExecutionBuilder;
@@ -163,6 +167,12 @@ public class BaseTest {
 	// use -P profile to override
 	private static final boolean headless = Boolean
 			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
+
+	/*
+	public String getExtensionDir() {
+		return extensionDir;
+	}
+	*/
 
 	public static String getBrowser() {
 		return browser;
@@ -257,9 +267,18 @@ public class BaseTest {
 
 					extensionFileInputStream.close();
 					chromeExtensionsBase64Encoded.add(new String(base64EncodedByteArray));
+
+					byte[] chromeExtensionHash = new byte[20];
+					try {
+						MessageDigest md = MessageDigest.getInstance("SHA-256");
+						chromeExtensionHash = md.digest(base64EncodedByteArray);
+					} catch (NoSuchAlgorithmException e) {
+						e.printStackTrace();
+					}
 					err.println(String.format(
-							"Chrome extension successfully encoded and added: %s...",
-							new String(base64EncodedByteArray).substring(0, 64)));
+							"Chrome extension successfully encoded and added from %s: hash: %s",
+							extensionFilePath.replaceFirst("^.*[\\/]", ""),
+							new String(Base64.encodeBase64(chromeExtensionHash))));
 				} catch (FileNotFoundException e) {
 					err.println(
 							"Chrome extension not found: " + extensionFilePath + " " + e);
@@ -855,6 +874,7 @@ public class BaseTest {
 		}
 		return value;
 	}
+
 	// private static final String dirNamePattern = "scoped_dir.*";
 	private static class CustomDirectoryFileFilter extends AbstractFileFilter
 			implements Serializable {
