@@ -245,6 +245,8 @@ public class BaseTest {
 	// options = webdriver.ChromeOptions()
 	// options.add_argument("--app-id = mbopgmdnpcbohhpnfglgohlbhfongabi")
 	// mdnmhbnbebabimcjggckeoibchhckemm.crx
+	// Alternatively add extension though File argument:
+	// https://www.testingexcellence.com/webdriver-tutorial-open-browser-extensions/
 	private void loadChromeExtensionsBase64Encoded(ChromeOptions chromeOptions) {
 		List<String> chromeExtensionsBase64Encoded = new ArrayList<>();
 		for (String extensionName : this.chromeExtensions) {

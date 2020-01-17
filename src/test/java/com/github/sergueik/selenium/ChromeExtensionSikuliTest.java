@@ -55,26 +55,51 @@ import org.sikuli.script.Screen;
 // http://www.software-testing-tutorials-automation.com/2016/05/how-to-get-browser-and-os-details-on.html
 // http://screenster.io/running-tests-from-selenium-ide-in-chrome/ screenster
 // http://screenster.io/running-tests-from-selenium-ide-in-chrome/ screenster
+// https://experitest.com/selenium-testing/browser-extension-selenium
+//
+
 public class ChromeExtensionSikuliTest extends BaseTest {
 
-	private String baseURL = "https://auth-demo.aerobatic.io/";
-	// private String baseURL = "https://www.wikipedia.org/";
+	// private String baseURL = "https://auth-demo.aerobatic.io/";
+
+	private String baseURL = "https://www.wikipedia.org/";
 	private static List<String> chromeExtensions = new ArrayList<>();
+	private static final String extensionId = "mooikfkahbdckldjjndioackbalphokd";
+	// "chrome://extensions/?id=%s"
+	// https://chrome.google.com/webstore/detail/selenium-ide/mooikfkahbdckldjjndioackbalphokd
+	// "ljngjbnaijcbncmcnjfhigebomdlkcjo";
+	// "mooikfkahbdckldjjndioackbalphokd";
 	static {
-		chromeExtensions.add("chropath"); // without .crx extension
+		// TODO : keep the hash of verified extension somwehere
+		// chromeExtensions.add("ChroPath"); // without .crx extension
+		chromeExtensions.add("Selenium IDE");
 	}
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
-		for (String chromeExtention : chromeExtensions) {
-			super.addChromeExtension(chromeExtention);
+		// calling static method of the super class
+		super.setExtensionDir(String.format("%s\\Downloads",
+				getPropertyEnv("USERPROFILE", "C:\\users\\sergueik")));
+		for (String extension : chromeExtensions) {
+			System.err.println("Adding extension: " + extension);
+			super.addChromeExtension(extension);
 		}
 		super.beforeClass();
+
 		assertThat(driver, notNullValue());
 		driver.get(baseURL);
 	}
 
-	@Test(priority = 1, enabled = false)
+	@Test(priority = 1, enabled = true)
+	public void openExtensionURLTest() {
+		driver.get(String.format("chrome-extension:///%s.html", extensionId));
+		sleep(10000);
+		// Requests to the server have been blocked by an extension.
+		// Try disabling your extensions.
+		// ERR_BLOCKED_BY_CLIENT
+	}
+
+	@Test(priority = 2, enabled = false)
 	public void openExtensionPopupTest() {
 
 		Screen screen = new Screen();
@@ -115,4 +140,5 @@ public class ChromeExtensionSikuliTest extends BaseTest {
 		}
 		driver.switchTo().window(parentWindow);
 	}
+
 }
