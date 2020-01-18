@@ -59,16 +59,42 @@ import static org.testng.Assert.assertTrue;
 
 public class CoordsTest extends BaseTest {
 
-	// private String baseURL = "https://ya.ru/";
-	// private String selector = "button.button"
-	// private String selector = "#text"
-
-	private static final String baseURL = "https://www.wikipedia.org/";
-	private static final String selector = "#searchInput";
-	private static final String id = "searchInput";
+	private String baseURL;
+	private String selector;
+	private static String id;
 
 	@Test(priority = 1, enabled = true)
-	public void getCoordsTest() {
+	public void getCoordsTest1() {
+		baseURL = "https://www.wikipedia.org/";
+		selector = "#searchInput";
+		driver.get(baseURL);
+		WebElement element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(selector))));
+		assertThat(element, notNullValue());
+		String data = (String) super.executeScript(
+				super.getScriptContent("getCoords.js"), selector, false);
+		System.err.println(data);
+		sleep(100);
+	}
+
+	@Test(priority = 1, enabled = false)
+	public void getCoordsTest2() {
+		baseURL = "https://www.wikipedia.org/";
+		id = "searchInput";
+		driver.get(baseURL);
+		WebElement element = wait
+				.until(ExpectedConditions.visibilityOf(driver.findElement(By.id(id))));
+		assertThat(element, notNullValue());
+		String data = (String) super.executeScript(
+				super.getScriptContent("getCoords2.js"), id, false);
+		System.err.println(data);
+		sleep(100);
+	}
+
+	@Test(priority = 3, enabled = true)
+	public void getCoordsTest3() {
+		baseURL = "https://ya.ru/";
+		selector = "button.button";
 		driver.get(baseURL);
 		WebElement element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.cssSelector(selector))));
@@ -81,8 +107,26 @@ public class CoordsTest extends BaseTest {
 		sleep(100);
 	}
 
-	@Test(priority = 1, enabled = true)
-	public void getCoordsTest2() {
+	@Test(priority = 4, enabled = true)
+	public void getCoordsTest4() {
+		baseURL = "https://ya.ru/";
+		selector = "#text";
+		driver.get(baseURL);
+		WebElement element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(selector))));
+		// no such element: Unable to locate element: {"method":"css
+		// selector","selector":" #text"}
+		assertThat(element, notNullValue());
+		String data = (String) super.executeScript(
+				super.getScriptContent("getCoords.js"), selector, false);
+		System.err.println(data);
+		sleep(100);
+	}
+
+	@Test(priority = 5, enabled = false)
+	public void getCoordsTest5() {
+		baseURL = "https://ya.ru/";
+		id = "text";
 		driver.get(baseURL);
 		WebElement element = wait
 				.until(ExpectedConditions.visibilityOf(driver.findElement(By.id(id))));
