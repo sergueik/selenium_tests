@@ -55,7 +55,7 @@ import static org.testng.Assert.assertTrue;
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
-// based on
+// inspred by https://qna.habr.com/q/700693
 
 public class CoordsTest extends BaseTest {
 
@@ -72,12 +72,11 @@ public class CoordsTest extends BaseTest {
 				.visibilityOf(driver.findElement(By.cssSelector(selector))));
 		assertThat(element, notNullValue());
 		String data = (String) super.executeScript(
-				super.getScriptContent("getCoords.js"), selector, false);
+				super.getScriptContent("getCoords.js"), selector, "css", false);
 		System.err.println(data);
-		sleep(100);
 	}
 
-	@Test(priority = 1, enabled = false)
+	@Test(priority = 1, enabled = true)
 	public void getCoordsTest2() {
 		baseURL = "https://www.wikipedia.org/";
 		id = "searchInput";
@@ -86,7 +85,7 @@ public class CoordsTest extends BaseTest {
 				.until(ExpectedConditions.visibilityOf(driver.findElement(By.id(id))));
 		assertThat(element, notNullValue());
 		String data = (String) super.executeScript(
-				super.getScriptContent("getCoords2.js"), id, false);
+				super.getScriptContent("getCoords.js"), id, "id", false);
 		System.err.println(data);
 		sleep(100);
 	}
@@ -98,13 +97,10 @@ public class CoordsTest extends BaseTest {
 		driver.get(baseURL);
 		WebElement element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.cssSelector(selector))));
-		// no such element: Unable to locate element: {"method":"css
-		// selector","selector":" #text"}
 		assertThat(element, notNullValue());
 		String data = (String) super.executeScript(
-				super.getScriptContent("getCoords.js"), selector, false);
+				super.getScriptContent("getCoords.js"), selector, "css", false);
 		System.err.println(data);
-		sleep(100);
 	}
 
 	@Test(priority = 4, enabled = true)
@@ -114,16 +110,13 @@ public class CoordsTest extends BaseTest {
 		driver.get(baseURL);
 		WebElement element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.cssSelector(selector))));
-		// no such element: Unable to locate element: {"method":"css
-		// selector","selector":" #text"}
 		assertThat(element, notNullValue());
 		String data = (String) super.executeScript(
-				super.getScriptContent("getCoords.js"), selector, false);
+				super.getScriptContent("getCoords.js"), selector, "css", false);
 		System.err.println(data);
-		sleep(100);
 	}
 
-	@Test(priority = 5, enabled = false)
+	@Test(priority = 5, enabled = true)
 	public void getCoordsTest5() {
 		baseURL = "https://ya.ru/";
 		id = "text";
@@ -132,8 +125,20 @@ public class CoordsTest extends BaseTest {
 				.until(ExpectedConditions.visibilityOf(driver.findElement(By.id(id))));
 		assertThat(element, notNullValue());
 		String data = (String) super.executeScript(
-				super.getScriptContent("getCoords2.js"), id, false);
+				super.getScriptContent("getCoords.js"), id, "id", false);
 		System.err.println(data);
-		sleep(100);
+	}
+
+	@Test(priority = 6, enabled = true)
+	public void getCoordsTest6() {
+		baseURL = "https://ya.ru/";
+		id = "text";
+		driver.get(baseURL);
+		WebElement element = wait
+				.until(ExpectedConditions.visibilityOf(driver.findElement(By.id(id))));
+		assertThat(element, notNullValue());
+		String data = (String) super.executeScript(
+				super.getScriptContent("getCoords.js"), element, "", false);
+		System.err.println(data);
 	}
 }

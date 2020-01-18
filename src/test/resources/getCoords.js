@@ -1,19 +1,46 @@
-var getCoords = function(selector, debug) {
-    var elem;
-    try {
-        elem = document.querySelector(selector);
-    } catch (e) {
+var getCoords = function(selector, kind, debug) {
+  var element;
+  try {
+    // NOTE: the 
+    // if (var =~/id/) {
+    // is not a valid Javascript, it is interpreted as
+    // to become an assigment: if (var = ~ /id/) replacing var with a -1
+    if (kind.match(/id/)) {
+      if (debug) {
+        alert('kind: ' + kind.toString() + '\t' + 'action: ' + 'getElementById');
+      }
+      element = document.getElementById(selector);
+    } else if (kind.match(/css/)) {
+      element = document.querySelector(selector);
+    } else {
+      element = selector;
     }
-    var t = null;
-    if (elem != null) {
-        t = elem.getBoundingClientRect();
-        if (debug) {
-            alert(JSON.stringify(t));
-        }
+  } catch (e) {}
+  var data = null;
+  if (element != null) {
+    data = element.getBoundingClientRect();
+    if (debug) {
+      alert("result: " + JSON.stringify(data));
+        /*
+        NOTE: Every alert call will lead to an exception in Selenium end
+        org.openqa.selenium.UnhandledAlertException:
+        unexpected alert open: {Alert text : result: {"x":284.5874938964844,"y": ...}
+        */
     }
-    return JSON.stringify(t);
+  }
+  return JSON.stringify(data);
 }
 
 var selector = arguments[0] || '#text';
-var debug = arguments[1];
-return getCoords(selector, debug);
+var kind = arguments[1];
+/*
+if (!kind) { kind = 'id'}
+*/
+var debug = arguments[2];
+var result = getCoords(selector, kind, debug);
+return JSON.stringify({
+  "selector": selector,
+  "kind": kind,
+  "debug": debug,
+  "result": result
+});
