@@ -30,12 +30,27 @@ public class CustomWaitTest extends BaseTest {
 	private static final String kind = "css";
 
 	@Test(enabled = true)
+	public void getCoordsTestWithAlertEnabled() {
+
+		driver.get(baseURL);
+		try {
+			System.err.println("starting wait");
+			super.executeScript(super.getScriptContent("customWait.js"), selector, kind, 10, 300, true);
+			// NOTE: currently not blocking
+			System.err.println("ending wait");
+		} catch (JavascriptException e) {
+			System.err.println("Exception (ignored): " + e.getMessage() + " Element must not be found");
+		}
+		sleep(1000);
+	}
+
+	@Test(enabled = false)
 	public void getCoordsTest() {
 
 		driver.get(baseURL);
 		try {
 			System.err.println("starting wait");
-			super.executeScript(super.getScriptContent("customWait.js"), selector, kind, 120, 300, true);
+			super.executeScript(super.getScriptContent("customWait.js"), selector, kind, 120, 300, false);
 			// NOTE: currently not blocking
 			System.err.println("ending wait");
 		} catch (JavascriptException e) {
