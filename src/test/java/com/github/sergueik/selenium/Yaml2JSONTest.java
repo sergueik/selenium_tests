@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,7 +63,8 @@ public class Yaml2JSONTest {
 	private final static boolean directConvertrsion = true;
 
 	private static Gson gson = directConvertrsion ? new Gson()
-			: new GsonBuilder().registerTypeAdapter(Artist.class, new ArtistSerializer()).create();
+			: new GsonBuilder()
+					.registerTypeAdapter(Artist.class, new ArtistSerializer()).create();
 
 	// OK for reporting of compound rowsets of data,
 	// but does not assemble an array of JSON correctly
@@ -72,19 +75,23 @@ public class Yaml2JSONTest {
 
 		List<String> group = new ArrayList<>();
 		try {
-			InputStream in = Files.newInputStream(Paths.get(String.join(System.getProperty("file.separator"),
-					Arrays.asList(System.getProperty("user.dir"), "src", "test", "resources", fileName))));
+			InputStream in = Files.newInputStream(
+					Paths.get(String.join(System.getProperty("file.separator"),
+							Arrays.asList(System.getProperty("user.dir"), "src", "test",
+									"resources", fileName))));
 			@SuppressWarnings("unchecked")
 			ArrayList<LinkedHashMap<Object, Object>> members = (ArrayList<LinkedHashMap<Object, Object>>) new Yaml()
 					.load(in);
 			ArtistSerializer serializer = new ArtistSerializer();
 			for (LinkedHashMap<Object, Object> row : members) {
-				Artist artist = new Artist((int) row.get("id"), (String) row.get("name"), (String) row.get("plays"));
+				Artist artist = new Artist((int) row.get("id"),
+						(String) row.get("name"), (String) row.get("plays"));
 
 				JsonElement rowJson = serializer.serialize(artist, null, null);
 				String rowStr = gson.toJson(artist);
 				group.add(rowStr);
-				System.err.println("JSON serialization of one row:\n" + rowJson.toString());
+				System.err
+						.println("JSON serialization of one row:\n" + rowJson.toString());
 			}
 		} catch (IOException e) {
 			System.err.println("Excption (ignored) " + e.toString());
@@ -100,14 +107,17 @@ public class Yaml2JSONTest {
 			FileOutputStream fos = new FileOutputStream("report.json");
 			OutputStreamWriter writer = new OutputStreamWriter(fos, encoding);
 
-			InputStream in = Files.newInputStream(Paths.get(String.join(System.getProperty("file.separator"),
-					Arrays.asList(System.getProperty("user.dir"), "src", "test", "resources", fileName))));
+			InputStream in = Files.newInputStream(
+					Paths.get(String.join(System.getProperty("file.separator"),
+							Arrays.asList(System.getProperty("user.dir"), "src", "test",
+									"resources", fileName))));
 			@SuppressWarnings("unchecked")
 			ArrayList<LinkedHashMap<Object, Object>> members = (ArrayList<LinkedHashMap<Object, Object>>) new Yaml()
 					.load(in);
 			ArtistSerializer serializer = new ArtistSerializer();
 			for (LinkedHashMap<Object, Object> row : members) {
-				Artist artist = new Artist((int) row.get("id"), (String) row.get("name"), (String) row.get("plays"));
+				Artist artist = new Artist((int) row.get("id"),
+						(String) row.get("name"), (String) row.get("plays"));
 
 				// TODO: refacor avoiding need to explicitly set the hard to
 				// instantiate
@@ -117,10 +127,12 @@ public class Yaml2JSONTest {
 				// https://www.programcreek.com/java-api-examples/index.php?api=com.google.gson.JsonSerializer
 				JsonElement rowJson = serializer.serialize(artist, null, null);
 				group.add(rowJson);
-				System.err.println("JSON serialization or artist:\n" + rowJson.toString());
+				System.err
+						.println("JSON serialization or artist:\n" + rowJson.toString());
 
 			}
-			System.err.println("JSON serialization or one group:\n" + gson.toJson(group));
+			System.err
+					.println("JSON serialization or one group:\n" + gson.toJson(group));
 			writer.write(gson.toJson(group));
 			writer.flush();
 			writer.close();
@@ -138,55 +150,61 @@ public class Yaml2JSONTest {
 			FileOutputStream fos = new FileOutputStream("report.json");
 			OutputStreamWriter writer = new OutputStreamWriter(fos, encoding);
 
-			InputStream in = Files.newInputStream(Paths.get(String.join(System.getProperty("file.separator"),
-					Arrays.asList(System.getProperty("user.dir"), "src", "test", "resources", fileName))));
+			InputStream in = Files.newInputStream(
+					Paths.get(String.join(System.getProperty("file.separator"),
+							Arrays.asList(System.getProperty("user.dir"), "src", "test",
+									"resources", fileName))));
 			@SuppressWarnings("unchecked")
 			ArrayList<LinkedHashMap<Object, Object>> members = (ArrayList<LinkedHashMap<Object, Object>>) new Yaml()
 					.load(in);
 
 			for (LinkedHashMap<Object, Object> row : members) {
-				Artist artist = new Artist((int) row.get("id"), (String) row.get("name"), (String) row.get("plays"));
+				Artist artist = new Artist((int) row.get("id"),
+						(String) row.get("name"), (String) row.get("plays"));
 
 				// https://www.programcreek.com/java-api-examples/index.php?api=com.google.gson.JsonSerializer
-				Gson gson = new GsonBuilder().registerTypeAdapter(Artist.class, new JsonSerializer<Artist>() {
-					@Override
-					public JsonElement serialize(final Artist data, final Type type,
-							final JsonSerializationContext context) {
-						JsonObject result = new JsonObject();
-						int id = data.getId();
-						if (id != 0) {
-							result.add("id", new JsonPrimitive(id));
-						}
+				Gson gson = new GsonBuilder()
+						.registerTypeAdapter(Artist.class, new JsonSerializer<Artist>() {
+							@Override
+							public JsonElement serialize(final Artist data, final Type type,
+									final JsonSerializationContext context) {
+								JsonObject result = new JsonObject();
+								int id = data.getId();
+								if (id != 0) {
+									result.add("id", new JsonPrimitive(id));
+								}
 
-						@SuppressWarnings("unused")
-						String name = data.getName();
-						// filter what to (not) serialize
+								@SuppressWarnings("unused")
+								String name = data.getName();
+								// filter what to (not) serialize
 
-						String plays = data.getPlays();
-						if (plays != null && !plays.isEmpty()) {
-							result.add("plays", new JsonPrimitive(plays));
-						}
-						return result;
-					}
-				}).setFieldNamingStrategy(new FieldNamingStrategy() {
-					Pattern iPattern = Pattern.compile("i([A-Z])(.*)");
+								String plays = data.getPlays();
+								if (plays != null && !plays.isEmpty()) {
+									result.add("plays", new JsonPrimitive(plays));
+								}
+								return result;
+							}
+						}).setFieldNamingStrategy(new FieldNamingStrategy() {
+							Pattern iPattern = Pattern.compile("i([A-Z])(.*)");
 
-					@Override
-					public String translateName(Field f) {
-						Matcher matcher = iPattern.matcher(f.getName());
-						if (matcher.matches())
-							return matcher.group(1).toLowerCase() + matcher.group(2);
-						else
-							return f.getName();
-					}
-				}).setPrettyPrinting().create();
+							@Override
+							public String translateName(Field f) {
+								Matcher matcher = iPattern.matcher(f.getName());
+								if (matcher.matches())
+									return matcher.group(1).toLowerCase() + matcher.group(2);
+								else
+									return f.getName();
+							}
+						}).setPrettyPrinting().create();
 				JsonElement rowJson = gson.toJsonTree(artist, Artist.class);
 
 				group.add(rowJson);
-				System.err.println("JSON serialization or artist:\n" + rowJson.toString());
+				System.err
+						.println("JSON serialization or artist:\n" + rowJson.toString());
 
 			}
-			System.err.println("JSON serialization or one group:\n" + gson.toJson(group));
+			System.err
+					.println("JSON serialization or one group:\n" + gson.toJson(group));
 			writer.write(gson.toJson(group));
 			writer.flush();
 			writer.close();
@@ -292,7 +310,8 @@ public class Yaml2JSONTest {
 	// https://stackoverflow.com/questions/11038553/serialize-java-object-with-gson
 	public static class ArtistSerializer implements JsonSerializer<Artist> {
 		@Override
-		public JsonElement serialize(final Artist data, final Type type, final JsonSerializationContext context) {
+		public JsonElement serialize(final Artist data, final Type type,
+				final JsonSerializationContext context) {
 			JsonObject result = new JsonObject();
 			int id = data.getId();
 			if (id != 0) {
@@ -301,7 +320,8 @@ public class Yaml2JSONTest {
 			// added static info from the serialized class
 			// NPE
 			if (type != null) {
-				result.add("staticInfo", new JsonPrimitive(((Artist) type).getStaticInfo()));
+				result.add("staticInfo",
+						new JsonPrimitive(((Artist) type).getStaticInfo()));
 			} else {
 				String staticInfo = data.getStaticInfo();
 				System.err.println("Static info: " + staticInfo);
@@ -323,6 +343,38 @@ public class Yaml2JSONTest {
 			 * JsonPrimitive(price));
 			 */
 			return result;
+		}
+	}
+
+	@Test(enabled = true)
+	public void conversionFromLambdaTest() throws Exception {
+		String sample = "First Second Third fourth fifth";
+		// unicode categories, following Perl regexp modifier semantics
+		// https://stackoverflow.com/questions/36312464/what-does-regex-pattern-pl-mean-in-java
+		String expression = "\\b(?:(\\p{Lu})|\\p{Ll})(?=\\p{L}{2})";
+		// too hairy
+		expression = "([A-Z])?([a-z]+)(\\s+)?";
+		System.err.println("expression: " + expression);
+		Pattern pattern = Pattern.compile(expression);
+		Matcher matcher = pattern.matcher(sample);
+		// inspired by https://qna.habr.com/q/702790?e=8478244#clarification_810900
+		// NOTE: the original question code quotoed below
+		// does not compile (at least in Java 8)
+		/*
+		System.out.println(matcher.replaceAll(u -> u.group(1) == null
+				? u.group().toUpperCase() : u.group().toLowerCase()));
+				*/
+		if (matcher.find()) {
+			System.err.println("Found matches");
+			// matcher.lookingAt();
+			while (matcher.find()) {
+				MatchResult matchResult = matcher.toMatchResult();
+				if (matchResult.group(1) == null) {
+					System.err.println(matchResult.group().toUpperCase());
+				} else {
+					System.err.println(matchResult.group().toLowerCase());
+				}
+			}
 		}
 	}
 

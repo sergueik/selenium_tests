@@ -1,5 +1,4 @@
-// Wait indefinitely
-
+// NOTE: not working
 var customWait = function(selector, kind, endtime, delay, debug) {
   var element = null;
   if (kind.match(/id/)) {
