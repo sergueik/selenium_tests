@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import static java.lang.System.err;
+import java.time.Duration;
 
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -533,6 +534,10 @@ public class BaseTest {
 				TimeUnit.SECONDS);
 		// Declare a wait time
 		wait = new WebDriverWait(driver, flexibleWait);
+
+		// NOTE: constructor WebDriverWait(WebDriver, Duration) is undefined
+		// with Selenium 3.x ?
+		// wait = new WebDriverWait(driver, Duration.ofSeconds(flexibleWait));
 
 		// Selenium Driver version sensitive code: 3.13.0 vs. 3.8.0 and older
 		wait.pollingEvery(Duration.ofMillis(pollingInterval));
