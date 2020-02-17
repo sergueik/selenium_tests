@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<!-- origin: https://www.w3schools.com/css/css_pseudo_elements.asp . 
+  appears to not work with file:// protocol. 
+  nees to be tested through 
+  https://www.w3schools.com/css/tryit.asp?filename=trycss_before -->
+<head>
+<style>
+h1::before {
+  content: url(red_dot.png);
+}
+</style>
+</head>
+<body>
+
+<h1>This is a heading</h1>
+<p>The ::before pseudo-element inserts content before the content of an element.</p>
+
+<h1>This is a heading</h1>
+<p><b>Note:</b> IE8 supports the content property only if a !DOCTYPE is specified.</p>
+
+</body>
+</html>
