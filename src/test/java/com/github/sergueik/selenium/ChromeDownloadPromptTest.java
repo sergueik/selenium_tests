@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -13,12 +14,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -32,8 +35,12 @@ import com.eclipsesource.json.JsonValue;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.testng.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.github.sergueik.selenium.BaseTest;
 
@@ -51,17 +58,63 @@ public class ChromeDownloadPromptTest {
 	private static final boolean debug = true;
 	private static WebDriver driver;
 	private static final String baseUrl = "https://intellipaat.com/blog/tutorial/selenium-tutorial/selenium-cheat-sheet/";
+	// private static final String script = "const docs =
+	// document.querySelector('downloads-manager').shadowRoot.querySelector('#downloadsList').shadowRoot.getElementsByTagName('downloads-item');";
+	private static final String script = "var getShadowElement = function getShadowElement(object,selector) { return object.shadowRoot.querySelector(selector);};   return getShadowElement(arguments[0],arguments[1]);";
+	private static JavascriptExecutor javascriptExecutor;
 
 	@BeforeClass
 	public void loadPage() throws IOException {
 		driver = createDriver();
+		javascriptExecutor = JavascriptExecutor.class.cast(driver);
+
 	}
 
 	@Test(enabled = true)
 	public void listPluginsTest() {
 		driver.navigate().to("chrome://downloads/");
-		// "chrome:://plugins/" no longer exists
-		// "chrome://extensions/" is unrelated
+		WebElement element = driver.findElement(By.tagName("downloads-manager"));
+		Object result1 = executeScript(script, element, "#downloadsList");
+		assertThat(result1, notNullValue());
+		if (debug) {
+			System.err.println("Result is: " + result1);
+		}
+		WebElement element2 = (WebElement) result1;
+		System.err.println("Result element: " + element2.getAttribute("outerHTML"));
+
+		Object result2 = executeScript(script,
+				element2.findElement(By.tagName("downloads-item")), "div#details");
+		assertThat(result2, notNullValue());
+		if (debug) {
+			System.err.println("Result is: " + result2);
+		}
+		WebElement element3 = (WebElement) result2;
+		System.err.println("Result element: " + element3.getAttribute("outerHTML"));
+		WebElement element4 = element3.findElement(By.cssSelector("span#name"));
+		assertThat(element4, notNullValue());
+		System.err.println("Result element: " + element4.getAttribute("outerHTML"));
+		final String element4HTML = element4.getAttribute("innerHTML");
+		System.err.println("Inspecting element: " + element4HTML);
+		assertThat(element4HTML, containsString("Selenium-Cheat-Sheet"));
+		// NOTE: the getText() is failing
+		try {
+			assertThat(element4.getText(), containsString("Selenium-Cheat-Sheet"));
+		} catch (AssertionError e) {
+			System.err.println("Exception (ignored) " + e.toString());
+		}
+		// can be OS-specific: "Selenium-Cheat-Sheet (10).pdf"
+
+		Pattern pattern = Pattern.compile(
+				String.format(".*Selenium-Cheat-Sheet(?:%s)*.pdf", " \\((\\d+)\\)"),
+				Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(element4HTML);
+		assertThat(matcher.find(), is(true));
+		assertThat(pattern.matcher(element4HTML).find(), is(true));
+		WebElement element5 = element3.findElement(By.cssSelector("a#url"));
+		assertThat(element5, notNullValue());
+		System.err
+				.println("Inspecting element: " + element5.getAttribute("outerHTML"));
+
 		sleep(10000);
 	}
 
@@ -164,12 +217,26 @@ public class ChromeDownloadPromptTest {
 		return new ChromeDriver(capabilities);
 	}
 
-	public void sleep(Integer milliSeconds) {
+	private void sleep(Integer milliSeconds) {
 		try {
 			Thread.sleep((long) milliSeconds);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private Object executeScript(String script, Object... arguments) {
+		// currently unsafe err.println(arguments.length + " arguments received.");
+		String argStr = "";
+
+		for (int i = 0; i < arguments.length; i++) {
+			argStr = argStr + " "
+					+ (arguments[i] == null ? "null" : arguments[i].toString());
+		}
+
+		System.err.println("Calling " + script.substring(0, 40) + "..." + "\n"
+				+ "with arguments: " + argStr);
+		return javascriptExecutor.executeScript(script, arguments);
 	}
 
 }
