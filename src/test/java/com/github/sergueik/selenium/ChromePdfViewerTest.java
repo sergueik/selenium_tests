@@ -7,16 +7,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -24,6 +26,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -35,15 +39,17 @@ import org.testng.annotations.Test;
 // https://www.edureka.co/community/2209/reading-the-pdf-file-using-selenium-webdriver
 // https://stackoverflow.com/questions/41877155/disabling-pdf-viewer-plugin-in-chromedriver
 // https://stackoverflow.com/questions/46937319/how-to-use-chrome-webdriver-in-selenium-to-download-files-in-python
-// Note: the following Chrome preference doesn't work since Chrome 57
-// "plugins.plugins_disabled": ["Chrome PDF Viewer"]
 
-
-public class ChromeDownloadPromptTest {
+public class ChromePdfViewerTest {
 
 	private static final boolean debug = true;
 	private static WebDriver driver;
 	private static JavascriptExecutor javascriptExecutor;
+	private static WebDriverWait wait;
+	public int flexibleWait = 60; // too long
+	public int implicitWait = 1;
+	public int pollingInterval = 500;
+	public int scriptTimeout = 5;
 	private static final String baseUrl = "https://intellipaat.com/blog/tutorial/selenium-tutorial/selenium-cheat-sheet/";
 	private static final String script = "var getShadowElement = function getShadowElement(object,selector) { return object.shadowRoot.querySelector(selector);};   return getShadowElement(arguments[0],arguments[1]);";
 
@@ -51,62 +57,56 @@ public class ChromeDownloadPromptTest {
 	public void loadPage() throws IOException {
 		driver = createDriver();
 		javascriptExecutor = JavascriptExecutor.class.cast(driver);
+		driver.manage().timeouts().setScriptTimeout(scriptTimeout,
+				TimeUnit.SECONDS);
+		wait = new WebDriverWait(driver, flexibleWait);
+		wait.pollingEvery(Duration.ofMillis(pollingInterval));
+
 	}
 
 	@Test(enabled = true)
-	public void listPluginsTest() {
-		driver.navigate().to("chrome://downloads/");
-		WebElement element = driver.findElement(By.tagName("downloads-manager"));
-		Object result1 = executeScript(script, element, "#downloadsList");
-		assertThat(result1, notNullValue());
-		if (debug) {
-			System.err.println("Result is: " + result1);
-		}
-		WebElement element2 = (WebElement) result1;
-		System.err.println("Result element: " + element2.getAttribute("outerHTML"));
-
-		Object result2 = executeScript(script,
-				element2.findElement(By.tagName("downloads-item")), "div#details");
-		assertThat(result2, notNullValue());
-		if (debug) {
-			System.err.println("Result is: " + result2);
-		}
-		WebElement element3 = (WebElement) result2;
-		System.err.println("Result element: " + element3.getAttribute("outerHTML"));
-		WebElement element4 = element3.findElement(By.cssSelector("span#name"));
-		assertThat(element4, notNullValue());
-		System.err.println("Result element: " + element4.getAttribute("outerHTML"));
-		final String element4HTML = element4.getAttribute("innerHTML");
-		System.err.println("Inspecting element: " + element4HTML);
-		assertThat(element4HTML, containsString("Selenium-Cheat-Sheet"));
-		// NOTE: the getText() is failing
-		try {
-			assertThat(element4.getText(), containsString("Selenium-Cheat-Sheet"));
-		} catch (AssertionError e) {
-			System.err.println("Exception (ignored) " + e.toString());
-		}
-		// can be OS-specific: "Selenium-Cheat-Sheet (10).pdf"
-
-		Pattern pattern = Pattern.compile(
-				String.format(".*Selenium-Cheat-Sheet(?:%s)*.pdf", " \\((\\d+)\\)"),
-				Pattern.CASE_INSENSITIVE);
-		Matcher matcher = pattern.matcher(element4HTML);
-		assertThat(matcher.find(), is(true));
-		assertThat(pattern.matcher(element4HTML).find(), is(true));
-		WebElement element5 = element3.findElement(By.cssSelector("a#url"));
-		assertThat(element5, notNullValue());
-		System.err
-				.println("Inspecting element: " + element5.getAttribute("outerHTML"));
-		sleep(1000);
-	}
-
-	@Test(enabled = true)
-	public void downloadPDFTest() {
+	public void viewPDFTest() {
 		driver.navigate().to(baseUrl);
 		WebElement element = driver.findElement(By.xpath(
 				"//*[@id=\"global\"]//a[contains(@href, \"Selenium-Cheat-Sheet.pdf\")]"));
+		final String parentHandle = driver.getWindowHandle();
 		element.click();
-		sleep(5000);
+		boolean isChildWindowOpen = wait
+				.until(ExpectedConditions.numberOfWindowsToBe(2));
+		if (isChildWindowOpen) {
+			Set<String> handles = driver.getWindowHandles();
+			// Switch to child window
+			for (String handle : handles) {
+				driver.switchTo().window(handle);
+				if (!parentHandle.equals(handle)) {
+					if (debug) {
+						System.err.println("Switched to " + handle + "\n" + "Title: "
+								+ driver.getTitle() + "\n" + "Page: " + driver.getPageSource());
+					}
+					element = driver.findElement(By.tagName("embed"));
+					assertThat(element, notNullValue());
+					if (debug) {
+						System.err
+								.println("Embedded: " + element.getAttribute("outerHTML"));
+					}
+					// inspect ?
+					try {
+						Object result1 = executeScript(script, element, "#content");
+						assertThat(result1, notNullValue());
+						if (debug) {
+							System.err.println("Result is: " + result1);
+						}
+					} catch (JavascriptException e) {
+						System.err.println("Exception (ignored): " + e.toString());
+					}
+
+					sleep(120000);
+
+					break;
+				}
+			}
+		}
+		driver.switchTo().window(parentHandle);
 	}
 
 	@AfterMethod
@@ -133,7 +133,7 @@ public class ChromeDownloadPromptTest {
 
 		ChromeOptions options = new ChromeOptions();
 		Map<String, Object> chromePrefs = new HashMap<>();
-		chromePrefs.put("plugins.always_open_pdf_externally", true);
+		// chromePrefs.put("plugins.always_open_pdf_externally", true);
 		Map<String, Object> plugin = new HashMap<>();
 		plugin.put("enabled", false);
 		plugin.put("name", "Chrome PDF Viewer");
