@@ -126,6 +126,10 @@ public class ValueChangeWaitTest extends BaseTest {
 		} catch (Exception e) {
 			System.err.println("Exception: " + e.toString());
 		}
+		// https://stackoverflow.com/questions/45246280/selenium-drivers-page-source-different-than-browser
+		System.err.println("The page source:" + driver.getPageSource());
+		System.err.println("The form HTML:"
+				+ driver.findElement(By.cssSelector("form")).getAttribute("innerHTML"));
 	}
 
 }
