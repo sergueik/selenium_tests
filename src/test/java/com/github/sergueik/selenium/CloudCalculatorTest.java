@@ -1,23 +1,18 @@
 package com.github.sergueik.selenium;
 
-import static org.hamcrest.CoreMatchers.containsString;
 // The import org.hamcrest.Matchers.matchesRegex cannot be resolved
 // import static org.hamcrest.Matchers.matchesRegex;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -128,7 +123,7 @@ public class CloudCalculatorTest extends BaseTest {
 						.contains((CharSequence) "What are these instances for"))
 				.collect(Collectors.toList()).get(0);
 		// System.err
-		// .println("Select label source: " +
+		// .println("Input label source: " +
 		// input2Label.getAttribute("outerHTML"));
 		WebElement input2 = nestedIframe.findElement(By.cssSelector(
 				String.format("input[id=\"%s\"]", input2Label.getAttribute("for"))));
@@ -151,84 +146,44 @@ public class CloudCalculatorTest extends BaseTest {
 		WebElement selectValue = select1
 				.findElement(By.cssSelector("md-select-value > span > div"));
 		assertThat(selectValue, notNullValue());
-		highlight(selectValue, 1000, "solid green");
-		selectValue.click();
+		// https://stackoverflow.com/questions/32499174/selenium-click-event-does-not-trigger-angularjs-ng-click
+		System.err.println("Simulate mouse click on element");
+		executeScript("arguments[0].click();", selectValue);
 		highlight(selectValue, 1000, "solid red");
-		actions.moveToElement(selectValue).build().perform();
-		highlight(selectValue, 1000, "solid yellow");
-		actions.moveToElement(selectValue).click().build().perform();
-		highlight(selectValue, 1000, "solid green");
-
-		String simulateClick = getScriptContent("simulateClick.js");
-		System.err.println("Simulate (2) right mouse click on element");
-		executeScript(simulateClick, selectValue, "contextmenu");
-		highlight(selectValue, 1000, "solid red");
-		executeScript(simulateClick, selectValue, "");
-		highlight(selectValue, 1000, "solid yellow");
-		// https://stackoverflow.com/questions/24807702/angularjs-protractor-finding-an-element-on-a-page-using-ng-click-binding
-		executeScript("listingCtrl.resetTimeMode('computeServer');");
+		sleep(10000);
+		// NOTE: even after fixing the driver argument with embedded iframe,
+		// the Actions does not work
+		/*
+		Actions action = new Actions(nestedIframe);
+		action.moveToElement(selectValue).perform();
+		action.moveToElement(selectValue).click().perform();
+		
 		highlight(selectValue, 1000, "solid black");
-
-		WebElement menu1 = select1.findElement(By.xpath(
-				String.format("div[@class=\"md-select-menu-container\"][@id=\"%s\"]",
-						select1.getAttribute("aria-owns"))));
-		assertThat(menu1, notNullValue());
-		System.err.println(
-				"Select menu container source: " + menu1.getAttribute("outerHTML"));
-		executeScript(
-				"var element = arguments[0];var attribute = document.createAttribute('aria-hidden'); attribute.value = false; element.setAttributeNode(attribute); ",
-				menu1);
-		sleep(1000);
-
+		*/
+		select1 = nestedIframe.findElement(By.cssSelector(String
+				.format("md-select[id=\"%s\"]", select1Label.getAttribute("for"))));
+		System.err.println("Select source (options visible): "
+				+ select1.findElement(By.xpath("..")).getAttribute("outerHTML"));
 		/*
-		WebElement option1 = select1.findElement(By.xpath(
-				"div[@class=\"md-select-menu-container\"]//md-option//div[contains(text(), \"Red Hat Enterprise Linux\")]"));
-		assertThat(option1, notNullValue());
-		executeScript(
-				"var element = arguments[0];element.focus();var attribute = document.createAttribute('aria-selected'); attribute.value = true; element.setAttributeNode(attribute); ",
-				value1);
-		// ElementNotInteractable
-		option1.click();
+				WebElement menu1 = select1
+						.findElement(By.xpath("div[@class=\"md-select-menu-container\"]"));
+				assertThat(menu1, notNullValue());
+				System.err.println(
+						"Select menu container source: " + menu1.getAttribute("outerHTML"));
+		
+				WebElement value1 = menu1.findElement(By.xpath(
+						"md-select-menu/md-content/md-option[@selected=\"selected\"]/div"));
+				assertThat(value1, notNullValue());
+				System.err
+						.println("Selected option source: " + value1.getAttribute("outerHTML"));
+		
+				WebElement value2 = menu1.findElement(By.xpath(
+						"md-select-menu/md-content/md-option[@aria-selected=\"false\"][1]"));
+				System.err.println(
+						"Not selected option source: " + value2.getAttribute("outerHTML"));
+				value2.click();
+				sleep(10000);
 				*/
-		System.err.println("Simulate focus on element");
-
-		WebElement value1 = menu1.findElement(By.xpath(
-				"md-select-menu/md-content/md-option[@selected=\"selected\"]/div"));
-		assertThat(value1, notNullValue());
-		System.err
-				.println("Selected option source: " + value1.getAttribute("outerHTML"));
-		WebElement icon1 = select1
-				.findElement(By.cssSelector("md-select-value span.md-select-icon"));
-		assertThat(icon1, notNullValue());
-		icon1.click();
-		// does not work
-		executeScript(
-				"var element = arguments[0];var attribute = document.createAttribute('aria-hidden'); attribute.value = false; element.setAttributeNode(attribute); ",
-				icon1);
-		WebElement value2 = menu1.findElement(By.xpath(
-				"md-select-menu/md-content/md-option[@aria-selected=\"false\"][1]"));
-		System.err.println(
-				"Not selected option source: " + value2.getAttribute("outerHTML"));
-		executeScript(
-				"var element = arguments[0];var attribute = document.createAttribute('aria-hidden'); attribute.value = false; element.setAttributeNode(attribute); ",
-				value2);
-		executeScript(
-				"var element = arguments[0];var attribute = document.createAttribute('selected'); attribute.value = 'selected'; element.setAttributeNode(attribute); ",
-				value2);
-		executeScript(
-				"var element = arguments[0];var attribute = document.createAttribute('selected'); attribute.value = ''; element.setAttributeNode(attribute); ",
-				value1);
-		sleep(1000);
-		// does not work
-		// javascript error: Failed to execute 'elementsFromPoint' on 'Document':
-		// The provided double value is non-finite.
-		// actions.moveToElement(value1).build().perform();
-		// actions.moveToElement(value1).click().build().perform();
-		// does not work
-		sleep(1000);
-		/*
-		 
-		 */
 		iframe.switchTo().defaultContent();
 		driver.switchTo().defaultContent();
 
