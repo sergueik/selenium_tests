@@ -135,14 +135,15 @@ public class CloudCalculatorTest extends BaseTest {
 		WebElement select1Label = selectLabels.stream()
 				.filter(o -> o.getText().contains((CharSequence) "Operating System"))
 				.collect(Collectors.toList()).get(0);
-		// System.err
-		// .println("Select label source: " + label3.getAttribute("outerHTML"));
-		WebElement select1 = nestedIframe.findElement(By.cssSelector(String
-				.format("md-select[id=\"%s\"]", select1Label.getAttribute("for"))));
+		String containerId = select1Label.getAttribute("for");
+		System.err.println(
+				"Select label source: " + select1Label.getAttribute("outerHTML"));
+		WebElement select1 = nestedIframe.findElement(
+				By.cssSelector(String.format("md-select[id=\"%s\"]", containerId)));
 
-		// System.err.println("Select source: " +
-		// select1.getAttribute("outerHTML"));
+		System.err.println("Select source: " + select1.getAttribute("outerHTML"));
 
+		String ownedAreaId = select1.getAttribute("aria-owns");
 		WebElement selectValue = select1
 				.findElement(By.cssSelector("md-select-value > span > div"));
 		assertThat(selectValue, notNullValue());
@@ -150,7 +151,7 @@ public class CloudCalculatorTest extends BaseTest {
 		System.err.println("Simulate mouse click on element");
 		executeScript("arguments[0].click();", selectValue);
 		highlight(selectValue, 1000, "solid red");
-		sleep(10000);
+		sleep(1000);
 		// NOTE: even after fixing the driver argument with embedded iframe,
 		// the Actions does not work
 		/*
@@ -164,6 +165,39 @@ public class CloudCalculatorTest extends BaseTest {
 				.format("md-select[id=\"%s\"]", select1Label.getAttribute("for"))));
 		System.err.println("Select source (options visible): "
 				+ select1.findElement(By.xpath("..")).getAttribute("outerHTML"));
+
+		String findText = "Windows Server 2008r2";
+		String targetId = "select_option_58";
+		WebElement option2 = null;
+		try {
+			option2 = nestedIframe.findElement(By.xpath(String.format(
+					"//*[@id=\"%s\"]//md-select-menu//md-select//md_option[contains(text(), \"%s\")]",
+					ownedAreaId, findText)));
+			// System.err.println(
+			// "Selecting different option: " + option2.getAttribute("outerHTML"));
+		} catch (org.openqa.selenium.NoSuchElementException e) {
+			// ignore
+			System.err.println("Exception (ignord) : " + e.toString());
+		}
+		try {
+			assertThat(option2, notNullValue());
+			targetId = option2.getAttribute("id");
+		} catch (AssertionError e) {
+			// ignore
+		}
+		WebElement option3 = nestedIframe
+				.findElement(By.cssSelector(String.format("#%s", targetId)));
+		assertThat(option3, notNullValue());
+		// https://stackoverflow.com/questions/32499174/selenium-click-event-does-not-trigger-angularjs-ng-click
+		System.err.println("Simulate mouse click on element " + option3.getText()
+				+ " " + option3.getAttribute("id") + " "
+				+ option3.getAttribute("outerHTML"));
+
+		executeScript("arguments[0].click();", option3);
+		sleep(1000);
+
+		// highlight(selectValue, 1000, "solid red");
+
 		/*
 				WebElement menu1 = select1
 						.findElement(By.xpath("div[@class=\"md-select-menu-container\"]"));
