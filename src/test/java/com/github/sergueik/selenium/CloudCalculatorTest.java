@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -28,14 +29,19 @@ import org.testng.annotations.Test;
  * Find Angular-generated input and  select elements by their id using the HTML5 element-to-element
  * relationship attributes, and exercising the ng-click workaround - only one works
  * 
+ * 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
+// see also
+// https://stackoverflow.com/questions/32499174/selenium-click-event-does-not-trigger-angularjs-ng-click
 
 public class CloudCalculatorTest extends BaseTest {
 
 	private static boolean debug = true;
 	private static String baseURL = "https://cloud.google.com/products/calculator";
 
+	private final static String xpathTemplate = "//*[@id='%s']//md-option[@id][div[contains(text(), '%s')]]";
+	private static String xpath;
 	private static WebDriver iframe = null;
 	private static WebDriver nestedIframe = null;
 	private static final String clusterPurpose = "testing";
@@ -55,6 +61,7 @@ public class CloudCalculatorTest extends BaseTest {
 	private static WebElement optionElement = null;
 
 	private static WebElement frameElement = null;
+	private static WebElement checkBoxElement = null;
 	private static WebElement element = null;
 
 	@BeforeClass
@@ -193,14 +200,11 @@ public class CloudCalculatorTest extends BaseTest {
 			System.err.println(String.format("Simulate mouse click on element \"%s\"",
 					selectElement.getText()));
 		}
-		// https://stackoverflow.com/questions/32499174/selenium-click-event-does-not-trigger-angularjs-ng-click
 		// NOTE: the basic click() or Actions do not work
 		// (new Actions(nestedIframe)).moveToElement(selectValue).click().perform();
 		executeScript("arguments[0].click();", selectValue);
 		highlight(selectValue, 1000, "solid red");
 
-		// Find Angular-generated select element by id using HTML5 element
-		// relationship attributes
 		selectElement = nestedIframe.findElement(By.cssSelector(
 				String.format("md-select[id='%s']", selectLabel.getAttribute("for"))));
 		if (debug) {
@@ -209,30 +213,94 @@ public class CloudCalculatorTest extends BaseTest {
 		}
 
 		optionText = "Windows Server 2008r2";
-		String xpath2 = String.format(
-				"//*[@id='%s']//md-option[@id][div[contains(text(), '%s')]]",
-				ownedAreaId, optionText);
+		xpath = String.format(xpathTemplate, ownedAreaId, optionText);
 		if (debug) {
-			System.err.println("Locating DOM using xpath: " + xpath2);
+			System.err.println("Locating DOM using xpath: " + xpath);
 		}
-		WebElement option2 = nestedIframe.findElement(By.xpath(xpath2));
+		optionElement = nestedIframe.findElement(By.xpath(xpath));
 		if (debug) {
-			System.err.println(
-					"Selecting different option: " + option2.getAttribute("outerHTML"));
+			System.err.println("Selecting different option: "
+					+ optionElement.getAttribute("outerHTML"));
 		}
-		assertThat(option2, notNullValue());
-		optionId = option2.getAttribute("id");
-		WebElement option3 = nestedIframe
+		assertThat(optionElement, notNullValue());
+		optionId = optionElement.getAttribute("id");
+		// find again by id
+		optionElement = nestedIframe
 				.findElement(By.cssSelector(String.format("#%s", optionId)));
-		assertThat(option3, notNullValue());
-		// https://stackoverflow.com/questions/32499174/selenium-click-event-does-not-trigger-angularjs-ng-click
+		assertThat(optionElement, notNullValue());
 		if (debug) {
-			System.err.println(String.format(
-					"Simulate mouse click on chosen option \"%s\"", option3.getText()));
+			System.err
+					.println(String.format("Simulate mouse click on chosen option \"%s\"",
+							optionElement.getText()));
 		}
-		executeScript("arguments[0].click();", option3);
+		executeScript("arguments[0].click();", optionElement);
 		sleep(1000);
 
+		selectLabels = nestedIframe
+				.findElements(By.cssSelector("label[for^='select_']"));
+		if (debug) {
+			selectLabels.stream().forEach(
+					e -> System.err.println("Element: " + e.getAttribute("outerHTML")));
+		}
+		selectLabel = selectLabels.stream()
+				// NOTE: case sensitive
+				.filter(o -> o.getText().contains((CharSequence) "Machine type"))
+				.collect(Collectors.toList()).get(0);
+		containerId = selectLabel.getAttribute("for");
+		if (debug) {
+			System.err.println(
+					"Select label source: " + selectLabel.getAttribute("outerHTML"));
+		}
+		selectElement = nestedIframe.findElement(
+				By.cssSelector(String.format("md-select[id='%s']", containerId)));
+
+		if (debug) {
+			// System.err.println("Select source: " +
+			// selectElement.getAttribute("outerHTML"));
+		}
+		ownedAreaId = selectElement.getAttribute("aria-owns");
+		selectValue = selectElement
+				.findElement(By.cssSelector("md-select-value > span > div"));
+		assertThat(selectValue, notNullValue());
+		if (debug) {
+			System.err.println(String.format("Simulate mouse click on element \"%s\"",
+					selectElement.getText()));
+		}
+		// want to switch to "n1-standard-1"
+		executeScript("arguments[0].click();", selectValue);
+		highlight(selectValue, 1000, "solid red");
+
+		selectElement = nestedIframe.findElement(By.cssSelector(
+				String.format("md-select[id='%s']", selectLabel.getAttribute("for"))));
+		if (debug) {
+			System.err.println("Select source (options visible): " + selectElement
+					.findElement(By.xpath("..")).getAttribute("outerHTML"));
+		}
+
+		optionText = "n1-standard-1";
+		xpath = String.format(xpathTemplate, ownedAreaId, optionText);
+		if (debug) {
+			System.err.println("Locating DOM using xpath: " + xpath);
+		}
+		optionElement = nestedIframe.findElement(By.xpath(xpath));
+		if (debug) {
+			System.err.println("Selecting different option: "
+					+ optionElement.getAttribute("outerHTML"));
+		}
+		assertThat(optionElement, notNullValue());
+		// skipped the "id" attribute exercise
+		if (debug) {
+			System.err
+					.println(String.format("Simulate mouse click on chosen option \"%s\"",
+							optionElement.getText()));
+		}
+		executeScript("arguments[0].click();", optionElement);
+
+		checkBoxElement = nestedIframe.findElement(By
+				.cssSelector("md-input-container md-checkbox[aria-label='Add GPUs']"));
+		assertThat(checkBoxElement, notNullValue());
+		checkBoxElement.sendKeys(Keys.SPACE);
+		sleep(1000);
 		iframe.switchTo().defaultContent();
 		driver.switchTo().defaultContent();
 
