@@ -926,8 +926,10 @@ public class BaseTest {
 				/* filter  */ new BaseTest.CustomDirectoryFileFilter("scoped_dir.*"))
 				.stream().forEach(f -> {
 					try {
-						System.err.println("About to remove: " + f.getCanonicalPath());
-						// FileUtils.deleteDirectory(f);
+						if (f.getCanonicalPath().contains((CharSequence) "scoped_dir")) {
+							System.err.println("About to remove: " + f.getCanonicalPath());
+							// FileUtils.deleteDirectory(f);
+						}
 					} catch (IOException e) {
 						System.err.println("Exception (ignored): " + e.toString());
 					}
