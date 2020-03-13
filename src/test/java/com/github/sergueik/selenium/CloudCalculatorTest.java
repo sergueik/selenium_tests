@@ -19,6 +19,8 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -49,7 +51,6 @@ public class CloudCalculatorTest extends BaseTest {
 	private static String frameName = null;
 	private static WebDriver iframe = null;
 	private static WebDriver nestedIframe = null;
-	private static final String clusterPurpose = "testing";
 	private static List<WebElement> iframes = new ArrayList<>();
 	private static Map<String, Object> iframesMap = new HashMap<>();
 	private static List<WebElement> inputLabels = new ArrayList<>();
@@ -203,22 +204,44 @@ public class CloudCalculatorTest extends BaseTest {
 	}
 
 	@Test(enabled = true)
+	public void testElementMethods() {
+
+		frameElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+				By.cssSelector("devsite-iframe iframe[name^='goog_']")));
+		assertThat(frameElement, notNullValue());
+
+		iframe = driver.switchTo().frame(frameElement);
+		frameElement = iframe.findElement(By.cssSelector("iframe#myFrame"));
+		assertThat(frameElement, notNullValue());
+		nestedIframe = iframe.switchTo().frame(frameElement);
+		if (debug) {
+			// System.err.println("Nested frame source:" +
+			// nestedIframe.getPageSource());
+		}
+		enterInput(nestedIframe, "Number of instances", "1");
+		enterInput(nestedIframe, "What are these instances for", "testing");
+		enterSelectOpnion(nestedIframe, "Operating System",
+				"Windows Server 2008r2");
+		enterSelectOpnion(nestedIframe, "Machine type", "n1-standard-1");
+		enterCheckbox(nestedIframe, "Add GPUs", true);
+		iframe.switchTo().defaultContent();
+		driver.switchTo().defaultContent();
+	}
+
+	@Test(enabled = true)
 	public void testElements() {
 
 		frameElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
 				By.cssSelector("devsite-iframe iframe[name^='goog_']")));
 		assertThat(frameElement, notNullValue());
 
-		// get nested iframe element by id? NPE
-		// keep finding first of
-		// element = (driver.switchTo().frame(frameElement))
-		// .findElement(By.cssSelector("iframe#myFrame"));
 		iframe = driver.switchTo().frame(frameElement);
-		element = iframe.findElement(By.cssSelector("iframe:nth-of-type(1)"));
-		assertThat(element, notNullValue());
-		nestedIframe = iframe.switchTo().frame(element);
+		frameElement = iframe.findElement(By.cssSelector("iframe#myFrame"));
+		assertThat(frameElement, notNullValue());
+		nestedIframe = iframe.switchTo().frame(frameElement);
 		if (debug) {
-			// System.err.println("Frame source:" + nestedIframe.getPageSource());
+			// System.err.println("Nested frame source:" +
+			// nestedIframe.getPageSource());
 		}
 		inputLabels = nestedIframe
 				.findElements(By.cssSelector("label[for^='input_']"));
@@ -246,7 +269,7 @@ public class CloudCalculatorTest extends BaseTest {
 		}
 		inputElement = nestedIframe.findElement(By.cssSelector(
 				String.format("input[id='%s']", inputLabel.getAttribute("for"))));
-		inputElement.sendKeys(clusterPurpose);
+		inputElement.sendKeys("testing");
 		sleep(100);
 
 		selectLabels = nestedIframe
@@ -431,4 +454,106 @@ public class CloudCalculatorTest extends BaseTest {
 		return (String) collector.get("id");
 	}
 
+	private void enterSelectOpnion(WebDriver driver, String labelText,
+			String optionText) {
+		List<WebElement> selectLabels = driver
+				.findElements(By.cssSelector("label[for^='select_']"));
+		WebElement selectLabel = selectLabels.stream()
+				.filter(o -> o.getText().contains((CharSequence) labelText))
+				.collect(Collectors.toList()).get(0);
+		String containerId = selectLabel.getAttribute("for");
+		if (debug) {
+			System.err.println(
+					"Select label source: " + selectLabel.getAttribute("outerHTML"));
+		}
+		WebElement selectElement = driver.findElement(
+				By.cssSelector(String.format("md-select[id='%s']", containerId)));
+
+		if (debug) {
+			System.err
+					.println("Select source: " + selectElement.getAttribute("outerHTML"));
+		}
+		String ownedAreaId = selectElement.getAttribute("aria-owns");
+		// let the dropdown show
+		WebElement selectValue = selectElement
+				.findElement(By.cssSelector("md-select-value > span > div"));
+		assertThat(selectValue, notNullValue());
+		if (debug) {
+			System.err.println(String.format("Simulate mouse click on element \"%s\"",
+					selectElement.getText()));
+		}
+		// NOTE: the basic click() or Actions do not work
+		// (new Actions(nestedIframe)).moveToElement(selectValue).click().perform();
+		executeScript("arguments[0].click();", selectValue);
+		highlight(selectValue, 1000, "solid red");
+
+		selectElement = driver.findElement(By.cssSelector(
+				String.format("md-select[id='%s']", selectLabel.getAttribute("for"))));
+		if (debug) {
+			System.err.println("Select source (options visible): " + selectElement
+					.findElement(By.xpath("..")).getAttribute("outerHTML"));
+		}
+		final String xpathTemplate = "//*[@id='%s']//md-option[@id][div[contains(text(), '%s')]]";
+		String xpath = String.format(xpathTemplate, ownedAreaId, optionText);
+		if (debug) {
+			System.err.println("Locating DOM using xpath: " + xpath);
+		}
+		WebElement optionElement = driver.findElement(By.xpath(xpath));
+		if (debug) {
+			System.err.println("Selecting different option: "
+					+ optionElement.getAttribute("outerHTML"));
+		}
+		assertThat(optionElement, notNullValue());
+		String optionId = optionElement.getAttribute("id");
+		// find again by id
+		optionElement = driver
+				.findElement(By.cssSelector(String.format("#%s", optionId)));
+		assertThat(optionElement, notNullValue());
+		if (debug) {
+			System.err
+					.println(String.format("Simulate mouse click on chosen option \"%s\"",
+							optionElement.getText()));
+		}
+		executeScript("arguments[0].click();", optionElement);
+		sleep(1000);
+	}
+
+	private void enterInput(WebDriver driver, String labelText,
+			String inputValue) {
+
+		List<WebElement> inputLabels = driver
+				.findElements(By.cssSelector("label[for^='input_']"));
+		WebElement inputLabel = inputLabels.stream()
+				.filter(o -> o.getText().contains((CharSequence) labelText))
+				.collect(Collectors.toList()).get(0);
+		if (debug) {
+			System.err.println(
+					"Input label source: " + inputLabel.getAttribute("outerHTML"));
+		}
+		WebElement inputElement = driver.findElement(By.cssSelector(
+				String.format("input[id='%s']", inputLabel.getAttribute("for"))));
+		inputElement.sendKeys(inputValue);
+	}
+
+	private void enterCheckbox(WebDriver driver, String labelText,
+			boolean checked) {
+
+		WebElement checkBoxElement = driver.findElement(By.cssSelector(String
+				.format("md-input-container md-checkbox[aria-label='%s']", labelText)));
+		assertThat(checkBoxElement, notNullValue());
+		try {
+			new Actions(driver).moveToElement(checkBoxElement).build().perform();
+		} catch (MoveTargetOutOfBoundsException e) {
+			// NOTE: org.openqa.selenium.interactions.MoveTargetOutOfBoundsException:
+			// move target out of bounds
+			// ignore
+		}
+		// scrolltoElement()
+		if (debug) {
+			System.err.println(
+					"Checkbox source: " + checkBoxElement.getAttribute("outerHTML"));
+		}
+
+		checkBoxElement.sendKeys(Keys.SPACE);
+	}
 }
