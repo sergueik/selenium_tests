@@ -1478,8 +1478,11 @@ public class BaseTest {
 					}
 				});
 	}
+	// based on
+	// https://stackoverflow.com/questions/5806690/is-there-an-iconv-with-translit-equivalent-in-java
+	// and
+	// http://tocrva.blogspot.com/2015/03/java-transliterate-cyrillic-to-latin.html
 
-	// https://github.com/sergueik/selenium_tests/tree/master/src/test/java/com/github/sergueik/selenium/TariffTest.java
 	public static class Translit {
 
 		private static final Charset UTF8 = Charset.forName("UTF-8");
@@ -1492,8 +1495,8 @@ public class BaseTest {
 				'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
 				'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 				'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-				'Y', 'Z', '<', '>', '"', ':', '(', ')', '=', '-', '.', '0', '1', '2',
-				'3', '4', '5', '6', '7', '8', '9' };
+				'Y', 'Z', '<', '>', '"', ':', '&', '$', '(', ')', '=', '-', '.', '0',
+				'1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
 		private static final String[] alphabetTranslit = { " ", "a", "b", "v", "g",
 				"d", "e", "e", "zh", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r",
@@ -1504,8 +1507,8 @@ public class BaseTest {
 				"h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
 				"v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I",
 				"J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
-				"X", "Y", "Z", "<", ">", "\"", ":", "(", ")", "=", "-", ".", "0", "1",
-				"2", "3", "4", "5", "6", "7", "8", "9" };
+				"X", "Y", "Z", "<", ">", "\"", ":", "&", "$", "(", ")", "=", "-", ".",
+				"0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 		public static String toAscii(final String input) {
 			final CharsetEncoder charsetEncoder = UTF8.newEncoder();
@@ -1696,4 +1699,5 @@ public class BaseTest {
 			}
 		};
 	}
+
 }
