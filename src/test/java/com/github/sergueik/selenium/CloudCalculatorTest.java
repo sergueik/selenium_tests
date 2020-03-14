@@ -19,6 +19,8 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -192,13 +194,6 @@ public class CloudCalculatorTest extends BaseTest {
 				By.cssSelector(String.format("iframe[%s='%s']", collector.get("key"),
 						collector.get("value")))));
 		assertThat(frameElement, notNullValue());
-		/*
-		WebElement element = iframe.findElement(
-				By.xpath(String.format("//devsite-iframe//iframe[@%s='%s']",
-						collector.get("key"), collector.get("value"))));
-		assertThat(element, notNullValue());
-						*/
-
 	}
 
 	public String readData(Optional<Map<String, String>> parameters) {
@@ -254,4 +249,106 @@ public class CloudCalculatorTest extends BaseTest {
 		return (String) collector.get("key");
 	}
 
+	private void enterSelectOpnion(WebDriver driver, String labelText,
+			String optionText) {
+		List<WebElement> selectLabels = driver
+				.findElements(By.cssSelector("label[for^='select_']"));
+		WebElement selectLabel = selectLabels.stream()
+				.filter(o -> o.getText().contains((CharSequence) labelText))
+				.collect(Collectors.toList()).get(0);
+		String containerId = selectLabel.getAttribute("for");
+		if (debug) {
+			System.err.println(
+					"Select label source: " + selectLabel.getAttribute("outerHTML"));
+		}
+		WebElement selectElement = driver.findElement(
+				By.cssSelector(String.format("md-select[id='%s']", containerId)));
+
+		if (debug) {
+			System.err
+					.println("Select source: " + selectElement.getAttribute("outerHTML"));
+		}
+		String ownedAreaId = selectElement.getAttribute("aria-owns");
+		// let the dropdown show
+		WebElement selectValue = selectElement
+				.findElement(By.cssSelector("md-select-value > span > div"));
+		assertThat(selectValue, notNullValue());
+		if (debug) {
+			System.err.println(String.format("Simulate mouse click on element \"%s\"",
+					selectElement.getText()));
+		}
+		// NOTE: the basic click() or Actions do not work
+		// (new Actions(nestedIframe)).moveToElement(selectValue).click().perform();
+		executeScript("arguments[0].click();", selectValue);
+		highlight(selectValue, 1000, "solid red");
+
+		selectElement = driver.findElement(By.cssSelector(
+				String.format("md-select[id='%s']", selectLabel.getAttribute("for"))));
+		if (debug) {
+			System.err.println("Select source (options visible): " + selectElement
+					.findElement(By.xpath("..")).getAttribute("outerHTML"));
+		}
+		final String xpathTemplate = "//*[@id='%s']//md-option[@id][div[contains(text(), '%s')]]";
+		String xpath = String.format(xpathTemplate, ownedAreaId, optionText);
+		if (debug) {
+			System.err.println("Locating DOM using xpath: " + xpath);
+		}
+		WebElement optionElement = driver.findElement(By.xpath(xpath));
+		if (debug) {
+			System.err.println("Selecting different option: "
+					+ optionElement.getAttribute("outerHTML"));
+		}
+		assertThat(optionElement, notNullValue());
+		String optionId = optionElement.getAttribute("id");
+		// find again by id
+		optionElement = driver
+				.findElement(By.cssSelector(String.format("#%s", optionId)));
+		assertThat(optionElement, notNullValue());
+		if (debug) {
+			System.err
+					.println(String.format("Simulate mouse click on chosen option \"%s\"",
+							optionElement.getText()));
+		}
+		executeScript("arguments[0].click();", optionElement);
+		sleep(1000);
+	}
+
+	private void enterInput(WebDriver driver, String labelText,
+			String inputValue) {
+
+		List<WebElement> inputLabels = driver
+				.findElements(By.cssSelector("label[for^='input_']"));
+		WebElement inputLabel = inputLabels.stream()
+				.filter(o -> o.getText().contains((CharSequence) labelText))
+				.collect(Collectors.toList()).get(0);
+		if (debug) {
+			System.err.println(
+					"Input label source: " + inputLabel.getAttribute("outerHTML"));
+		}
+		WebElement inputElement = driver.findElement(By.cssSelector(
+				String.format("input[id='%s']", inputLabel.getAttribute("for"))));
+		inputElement.sendKeys(inputValue);
+	}
+
+	private void enterCheckbox(WebDriver driver, String labelText,
+			boolean checked) {
+
+		WebElement checkBoxElement = driver.findElement(By.cssSelector(String
+				.format("md-input-container md-checkbox[aria-label='%s']", labelText)));
+		assertThat(checkBoxElement, notNullValue());
+		try {
+			new Actions(driver).moveToElement(checkBoxElement).build().perform();
+		} catch (MoveTargetOutOfBoundsException e) {
+			// NOTE: org.openqa.selenium.interactions.MoveTargetOutOfBoundsException:
+			// move target out of bounds
+			// ignore
+		}
+		// scrolltoElement()
+		if (debug) {
+			System.err.println(
+					"Checkbox source: " + checkBoxElement.getAttribute("outerHTML"));
+		}
+
+		checkBoxElement.sendKeys(Keys.SPACE);
+	}
 }
