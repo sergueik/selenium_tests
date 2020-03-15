@@ -77,53 +77,50 @@ public class KomusTest extends BaseTest {
 	@SuppressWarnings("deprecation")
 	private void firstEnter(String login, String pass, WebDriver driver) {
 
-		WebElement label = wait.until(ExpectedConditions.visibilityOfElementLocated(
-				By.cssSelector("form#loginForm div.control-group label")));
-		WebElement input = driver.findElement(
-				By.cssSelector(String.format("input#%s", label.getAttribute("for"))));
+		WebElement label = wait.until(ExpectedConditions
+				.visibilityOfElementLocated(By.cssSelector("form#loginForm div.control-group label")));
+		WebElement input = driver.findElement(By.cssSelector(String.format("input#%s", label.getAttribute("for"))));
 		assertThat(input, notNullValue());
 		input.clear();
 		input.sendKeys(login);
 		System.err.println(input.getAttribute("outerHTML"));
 		label = wait
-				.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
-						By.cssSelector("form#loginForm div.control-group label")))
+				.until(ExpectedConditions
+						.visibilityOfAllElementsLocatedBy(By.cssSelector("form#loginForm div.control-group label")))
 				.stream().filter(e -> {
-					System.err.println(
-							String.format("Label class %s:\n%s", e.getAttribute("class"),
-									BaseTest.Translit.toAscii(e.getAttribute("outerHTML"))));
+					System.err.println(String.format("Label class %s:\n%s", e.getAttribute("class"),
+							BaseTest.Translit.toAscii(e.getAttribute("outerHTML"))));
 					// NOTE: problem with codepage Пароль:
-					return (BaseTest.Translit.toAscii(e.getAttribute("outerHTML"))
-							.contains((CharSequence) "Parol:"));
+					return (BaseTest.Translit.toAscii(e.getAttribute("outerHTML")).contains((CharSequence) "Parol:"));
 				}).collect(Collectors.toList()).get(0);
 
 		input = driver.findElement(By.id(label.getAttribute("for")));
 
 		input.clear();
 		input.sendKeys(old_pass);
-		input = driver
-				.findElement(By.cssSelector("form#loginForm button[type=\"submit\"]"));
+		input = driver.findElement(By.cssSelector("form#loginForm button[type=\"submit\"]"));
 		input.click();
 
 		wait.until(new ExpectedCondition<Boolean>() {
 			@Override
 			public Boolean apply(WebDriver d) {
 				Boolean result = false;
-				WebElement element = d
-						.findElement(By.cssSelector("#globalMessages div.b-message__text"));
+				String expectedText = "Vi ne proshli proverku vvedite korrektnie simvoli s kartinki";
+				WebElement element = d.findElement(By.cssSelector("#globalMessages div.b-message__text"));
 
 				String value = (String) BaseTest.Translit.toAscii(element.getText());
-				System.err.println("current value: " + value);
-				if (value.contains((CharSequence) "e-mail")) {
+				System.err.println("Current value: " + value);
+				if (value.contains((CharSequence) expectedText)) {
 					result = true;
 				}
 				return result;
 			}
 		});
-
-		wait.until(ExpectedConditions.textToBePresentInElement(
-				By.cssSelector("#globalMessages div.b-message__text"),
-				"e-mail") /*  Неверный e-mail или пароль. */);
+		wait.until(new LocalizedTextMatches(By.cssSelector("#globalMessages div.b-message__text"),
+				(String) BaseTest.Translit.toAscii("Вы не прошли проверку, введите корректные символы с картинки."
+				/* "Неверный e-mail или пароль" */)));
+		wait.until(ExpectedConditions.textToBePresentInElement(By.cssSelector("#globalMessages div.b-message__text"),
+				"Вы не прошли проверку, введите корректные символы с картинки") /* Неверный e-mail или пароль. */);
 
 	}
 
@@ -154,8 +151,7 @@ public class KomusTest extends BaseTest {
 
 		// Проверка смены пароля
 
-		new WebDriverWait(driver, 15).until(ExpectedConditions
-				.textToBePresentInElement(success_message, message_text));
+		new WebDriverWait(driver, 15).until(ExpectedConditions.textToBePresentInElement(success_message, message_text));
 
 	}
 
@@ -164,8 +160,7 @@ public class KomusTest extends BaseTest {
 
 	}
 
-	private void popupAuthorization(String login2, String pass2,
-			WebDriver driver) {
+	private void popupAuthorization(String login2, String pass2, WebDriver driver) {
 
 		By auth_form = By.name("auth");
 		By start_auth_link = By.cssSelector("div.t24_vhod_link");
@@ -175,18 +170,43 @@ public class KomusTest extends BaseTest {
 
 		Actions actions = new Actions(driver);
 		actions.moveToElement(driver.findElement(start_auth_link)).perform();
-		new WebDriverWait(driver, 15).until(
-				ExpectedConditions.visibilityOfAllElementsLocatedBy(email_input));
-		WebElement login_input = driver.findElement(auth_form)
-				.findElement(email_input);
+		new WebDriverWait(driver, 15).until(ExpectedConditions.visibilityOfAllElementsLocatedBy(email_input));
+		WebElement login_input = driver.findElement(auth_form).findElement(email_input);
 		login_input.clear();
 		login_input.sendKeys(login);
-		WebElement password_input = driver.findElement(auth_form)
-				.findElement(pass_input);
+		WebElement password_input = driver.findElement(auth_form).findElement(pass_input);
 		password_input.clear();
 		password_input.sendKeys(new_pass);
 
 		driver.findElement(auth_form).findElement(submit).click();
+	}
+
+	// based on:
+	// https://www.edureka.co/community/50915/expectedcondition-specific-condition-selenium-possible
+	private static class LocalizedTextMatches implements ExpectedCondition<Boolean> {
+		private String expectedText;
+		private By locator;
+
+		public LocalizedTextMatches(By locator, String data) {
+			this.expectedText = data;
+			this.locator = locator;
+		}
+
+		@Override
+		public Boolean apply(WebDriver driver) {
+			Boolean result = false;
+			WebElement element = driver.findElement(locator);
+			String value = element.getText();
+			System.err.println("Current text: " + value);
+			value = (String) BaseTest.Translit.toAscii(value);
+			System.err.println("Current text (translited): " + value);
+			System.err.println("Expected text: " + expectedText);
+			if (value.contains((CharSequence) expectedText)) {
+				result = true;
+			}
+			return result;
+		}
+
 	}
 
 }
