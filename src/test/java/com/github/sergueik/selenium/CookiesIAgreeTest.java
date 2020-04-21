@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,7 @@ public class CookiesIAgreeTest extends BaseTest {
 	private static String baseURL = "https://link.testproject.io/vr9";
 	private static WebElement element = null;
 	private static List<WebElement> elements = new ArrayList<>();
-	private final static boolean debug = false;
+	private final static boolean debug = true;
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -51,7 +52,7 @@ public class CookiesIAgreeTest extends BaseTest {
 			try {
 				o.sendKeys(Keys.CONTROL + "t"); // no effect ?
 			} catch (ElementNotInteractableException e) {
-				System.err.println("Exception (ignored): " + e.toString());
+				System.err.println("Exception (ignored): " + e.getMessage());
 
 			}
 		});
@@ -68,26 +69,36 @@ public class CookiesIAgreeTest extends BaseTest {
 				.collect(Collectors.toList()).get(0);
 		assertThat(element, notNullValue());
 		element.sendKeys(Keys.CONTROL + "t"); // no effect
+		// https://stackoverflow.com/questions/11776910/xpath-expression-to-remove-whitespace
 		// NOTE: the following xpath locator failing to find anything despite labor
 		// intensive tweaks
-		/*
-		 "//a[contains(@class, 'button')][contains(translate(normalize-space(text()), ' ', ''),'IAGREE')]"
-		 "//a[contains(@class, 'button')][contains(normalize-space(text()),'IAGREE')]"
-		 "//a[contains(@class, 'button')][contains(text(),'IAGREE')]"
-		 */
-		try {
-			element = driver.findElement(By.xpath(
-					"//a[contains(@class, 'button')][contains(translate(normalize-space(text()), ' ', ''),'IAGREE')]"));
-			assertThat(element, notNullValue());
-			//
-			element.sendKeys(Keys.CONTROL + "t"); // no effect
-			highlight(element, 1000);
-			if (debug) {
+		for (String xpath : Arrays.asList(new String[] {
+
+				"//a[contains(@class, 'button')][contains(translate(normalize-space(text()), ' &#9;&#10;&#13', ''),'IAGREE')]",
+				"//a[contains(@class, 'button')][contains(translate(normalize-space(text()), ' ', ''),'IAGREE')]",
+				"//a[contains(@class, 'button')][contains(normalize-space(text()),'I AGREE')]",
+				"//a[contains(@class, 'button')][contains(text(),'I AGREE')]",
+				"//a[contains(@class, 'button')][contains('.','I AGREE')]",
+				"//a[contains(@class, 'button')][contains('.','EE')]",
+				"//a[contains(@class, 'button')][contains('.','ee')]",
+				"//a[contains(@class, 'button')][text() ='I AGREE']",
+				"//*[@id = 'cc-button'][contains(normalize-space(text()),'')]",
+				"//*[contains(@class ,'button')][contains(normalize-space(translate(text()), ' &#9;&#10;&#13', ' '),'Free Sign')]",
+		})) {
+			try {
+				element = driver.findElement(By.xpath(xpath));
+				assertThat(element, notNullValue());
+				//
+				element.sendKeys(Keys.CONTROL + "t"); // no effect
+				highlight(element, 1000);
+				// if (debug) {
 				System.err.println("text: " + element.getText() + "html: "
 						+ element.getAttribute("outerHTML"));
+				// }
+			} catch (NoSuchElementException | ElementNotInteractableException e) {
+				System.err.println("Exception (ignored): " + e.getMessage());
+				// check the *** Element info: {Using=xpath, value=...} part
 			}
-		} catch (NoSuchElementException e) {
-			System.err.println("Exception (ignored): " + e.toString());
 		}
 		// "Learn more" link
 		element = driver
