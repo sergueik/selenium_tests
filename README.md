@@ -51,6 +51,7 @@ password=${env.TEST_PASSWORD}
  * [sskorol/selenium-camp-17](https://github.com/sskorol/selenium-camp-17)
  * [cssSelector advantages review](https://www.pineboat.in/post/css-selectors-selenium-webdriver-find-element-xpath-replaced/)
  * [JQuery to vanilla JavaScript DSL conversion rules](https://gist.github.com/dorokhin/8d47e91676a39c04534ea9633b98dbdb)
+ * Elemental Selenium Tips [repo](https://github.com/tourdedave/elemental-selenium-tips) 
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
