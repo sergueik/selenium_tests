@@ -7,13 +7,17 @@ import static org.hamcrest.Matchers.greaterThan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -25,9 +29,22 @@ public class CookiesIAgreeTest extends BaseTest {
 	private static List<WebElement> elements = new ArrayList<>();
 	private final static boolean debug = true;
 
+	@SuppressWarnings("deprecation")
 	@BeforeMethod
 	public void BeforeMethod() {
 		driver.get(baseURL);
+		// legacy lambda cutom wait condition.
+		// NOTE: wrone match appears to lock the browser
+		Wait<WebDriver> wait = new FluentWait<>(driver)
+				.withTimeout(flexibleWait, TimeUnit.SECONDS)
+				.pollingEvery(pollingInterval, TimeUnit.SECONDS)
+				.ignoring(NoSuchElementException.class);
+		wait.until(driver -> {
+			assert driver != null;
+			System.err.println("current url: " + driver.getCurrentUrl());
+			return driver.getCurrentUrl().matches("https://testproject.io/.*$");
+		});
+
 	}
 
 	@Test(enabled = true)
@@ -53,7 +70,6 @@ public class CookiesIAgreeTest extends BaseTest {
 				o.sendKeys(Keys.CONTROL + "t"); // no effect ?
 			} catch (ElementNotInteractableException e) {
 				System.err.println("Exception (ignored): " + e.getMessage());
-
 			}
 		});
 		element = driver.findElement(By.id("cc-button"));
@@ -69,6 +85,17 @@ public class CookiesIAgreeTest extends BaseTest {
 				.collect(Collectors.toList()).get(0);
 		assertThat(element, notNullValue());
 		element.sendKeys(Keys.CONTROL + "t"); // no effect
+
+		try {
+			WebElement parentElement = driver
+					.findElement(By.xpath("//a[@id = 'cc-button']"))
+					.findElement(By.xpath(".."));
+			element = parentElement.findElement(
+					By.xpath("//*[contains(normalize-space(text()),'I AGREE')]"));
+			assertThat(element, notNullValue());
+		} catch (NoSuchElementException e) {
+
+		}
 		// https://stackoverflow.com/questions/11776910/xpath-expression-to-remove-whitespace
 		// NOTE: the following xpath locator failing to find anything despite labor
 		// intensive tweaks
@@ -83,8 +110,7 @@ public class CookiesIAgreeTest extends BaseTest {
 				"//a[contains(@class, 'button')][contains('.','ee')]",
 				"//a[contains(@class, 'button')][text() ='I AGREE']",
 				"//*[@id = 'cc-button'][contains(normalize-space(text()),'')]",
-				"//*[contains(@class ,'button')][contains(normalize-space(translate(text()), ' &#9;&#10;&#13', ' '),'Free Sign')]",
-		})) {
+				"//*[contains(@class ,'button')][contains(normalize-space(translate(text()), ' &#9;&#10;&#13', ' '),'Free Sign')]", })) {
 			try {
 				element = driver.findElement(By.xpath(xpath));
 				assertThat(element, notNullValue());
