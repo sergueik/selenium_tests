@@ -47,7 +47,104 @@ public class CookiesIAgreeTest extends BaseTest {
 
 	}
 
+	// https://stackoverflow.com/questions/3813294/how-to-get-element-by-innertext
 	@Test(enabled = true)
+	public void selectCookieMessageJavascriptCallTest() {
+	// @formatter:off
+		String script = "var aTags = document.getElementsByTagName(\"a\");\n"
+				+ "var searchText = arguments[0];\n"
+				+ "var found;\n"
+				+ "for (var i = 0; i < aTags.length; i++) {\n"
+				+ "  if (aTags[i].textContent.trim() == searchText) {\n"
+				+ "    found = aTags[i];\n" 
+				+ "    break;\n" 
+				+ "  }\n"
+				+ "}\n"
+				+ "return found;";
+	// @formatter:on
+		element = (WebElement) executeScript(script, "Learn more");
+
+		assertThat(element, notNullValue());
+		if (debug) {
+			System.err.println("Element: " + element.getAttribute("outerHTML"));
+		}
+
+		element = (WebElement) executeScript(script, "I AGREE");
+
+		assertThat(element, notNullValue());
+		if (debug) {
+			System.err.println("Element: " + element.getAttribute("outerHTML"));
+		}
+		// @formatter:off
+		script = "var aTags = document.getElementsByTagName(\"a\");\n"
+				+ "var searchId = arguments[0];\n"
+				+ "var found;\n"
+				+ "for (var i = 0; i < aTags.length; i++) {\n"
+				+ "  if (aTags[i].getAttribute(\"id\") == searchId) {\n"
+				+ "    found = aTags[i];\n" 
+				+ "    break;\n" 
+				+ "  }\n"
+				+ "}\n"
+				// does not work
+				+ "return found.textContent.replace(\" \", \"\")"
+				+ ".replace(String.fromCharCode(32), \"\")"
+				+ ".replace(String.fromCharCode(10), \"\");";
+	// @formatter:on
+
+		String elementText = (String) executeScript(script, "cc-button");
+
+		assertThat(element, notNullValue());
+		if (debug) {
+			System.err
+					.println(String.format("Element textContent: \"%s\"", elementText));
+		}
+		// @formatter:off
+		script = "var aTags = document.getElementsByTagName(\"a\");\n"
+				+ "var searchId = arguments[0];\n"
+				+ "var found;\n"
+				+ "for (var i = 0; i < aTags.length; i++) {\n"
+				+ "  if (aTags[i].getAttribute(\"id\") == searchId) {\n"
+				+ "    found = aTags[i];\n" 
+				+ "    break;\n" 
+				+ "  }\n"
+				+ "}\n"
+				
+				+ "return found.textContent.trim();";
+	// @formatter:on
+
+		elementText = (String) executeScript(script, "cc-button");
+
+		assertThat(element, notNullValue());
+		if (debug) {
+			System.err.println(
+					String.format("Element textContent (trimmed): \"%s\"", elementText));
+		}
+
+		// @formatter:off
+		script = "var aTags = document.getElementsByTagName(\"a\");\n"
+				+ "var searchId = arguments[0];\n"
+				+ "var found;\n"
+				+ "for (var i = 0; i < aTags.length; i++) {\n"
+				+ "  if (aTags[i].getAttribute(\"id\") == searchId) {\n"
+				+ "    found = aTags[i];\n" 
+				+ "    break;\n" 
+				+ "  }\n"
+				+ "}\n"
+				+  "var textContent = found.textContent; var result = [];" 
+				+ "for (cnt = 0;  cnt!= textContent.length ; cnt ++){"
+				+ "result.push(textContent.codePointAt(cnt)); \n"
+				+ "}\n"
+				+ "return result;";
+	// @formatter:on
+
+		List<Integer> result = (List<Integer>) executeScript(script, "cc-button");
+
+		if (debug) {
+			System.err.println("Element textContent (codepoints):" + result);
+		}
+	}
+
+	@Test(enabled = false)
 	public void selectCookieMessageXPathTest() {
 		element = driver.findElement(By.id("cookie-law-info-bar"));
 		assertThat(element, notNullValue());
