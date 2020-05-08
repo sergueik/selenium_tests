@@ -1,44 +1,31 @@
 package com.github.sergueik.selenium;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.testng.ITestResult;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonObject.Member;
-import com.eclipsesource.json.JsonValue;
-
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.testng.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.equalTo;
+
+import java.util.List;
+import java.util.Map;
+
+import org.testng.annotations.Test;
+
+import groovy.json.JsonException;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
 import io.restassured.path.json.exception.JsonPathException;
-import groovy.json.JsonException;
-import com.github.sergueik.selenium.BaseTest;
+import io.restassured.response.Response;
 
-// https://stackoverflow.com/questions/20197783/how-to-use-hamcrest-to-inspect-map-items
+import static io.restassured.RestAssured.given;
+
+// see also:
 // https://www.baeldung.com/rest-assured-tutorial
-// TODO: Ruby style chains https://devqa.io/parse-json-response-rest-assured/
+// https://devqa.io/parse-json-response-rest-assured/
 public class RestAssuredTest {
 	private static final StringBuffer verificationErrors = new StringBuffer();
 	private static final boolean debug = true;
@@ -46,23 +33,24 @@ public class RestAssuredTest {
 	private static String data = "{\n" + "    \"message\": \"The given data was invalid.\",\n" + "    \"errors\": {\n"
 			+ "        \"client.email\": [\n" + "            \"invalid email\"\n" + "        ]\n" + "    }\n" + "}";
 
+	private static Response response;
+
 	@Test(enabled = true)
 	public void test1() {
-		RestAssured.defaultParser = Parser.JSON;
 		baseUrl = "https://jsonplaceholder.typicode.com/users";
-		Response response = RestAssured.get(baseUrl);
+		response = RestAssured.get(baseUrl);
 		Map<String, String> messages = response.jsonPath().getMap("company[0]");
 		assertThat(messages, hasKey("name"));
 		String value = messages.get("name");
 		assertThat(value, notNullValue());
 	}
 
-	@Test(enabled = true)
+	// strongly-typed object serialization-style
+	// NOTE: wraps the response in jsonFlickrFeed(...)
+	@Test(enabled = false)
 	public void test2() {
-		RestAssured.defaultParser = Parser.JSON;
 		baseUrl = "https://www.flickr.com/services/feeds/photos_public.gne?tags=soccer&format=json";
-		// NOTE: wraps the response in jsonFlickrFeed(...)
-		Response response = RestAssured.get(baseUrl);
+		response = RestAssured.get(baseUrl);
 		System.err.println(response.prettyPrint());
 		try {
 			List<Map<String, Object>> messages = response.jsonPath().getList("items");
@@ -76,9 +64,9 @@ public class RestAssuredTest {
 		}
 	}
 
-	// NOTE: http://echo.jsontest.com/ does not produce complex json
+	// strongly-typed object serialization-style
 	// NOTE: local file URI cannot be used for RestAssured testing
-	// connection refused
+	// - will throw connection refused
 	// switch to bundled JsonPath
 	@Test(enabled = true)
 	public void test3() {
@@ -99,4 +87,39 @@ public class RestAssuredTest {
 		assertThat(value, notNullValue());
 	}
 
+	// combination of strongly typed and method-heavy
+	@Test(enabled = true)
+	public void test5() {
+		baseUrl = "https://jsonplaceholder.typicode.com/users";
+		RestAssured.defaultParser = Parser.JSON;
+		Object value = given().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).when().get(baseUrl)
+				.then().contentType(ContentType.JSON).extract().response().jsonPath().getMap("company[0]").get("name");
+		assertThat(value, notNullValue());
+	}
+
+	// Ruby TDD-style or Javascript Jasmine-style method call-heavy
+	// ValidatableResponse chains
+	@Test(enabled = true)
+	public void test6() {
+		baseUrl = "https://jsonplaceholder.typicode.com/users";
+		RestAssured.defaultParser = Parser.JSON;
+		given().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).when().get(baseUrl).then()
+				.contentType(ContentType.JSON).statusCode(200).assertThat().body("id[0]", equalTo(1));
+		given().when().get(baseUrl).then().assertThat().body("company[6].name", equalTo("Johns Group"));
+	}
+
+	// vararg-heavy
+	@Test(enabled = true)
+	public void test7() {
+		baseUrl = "https://jsonplaceholder.typicode.com/users";
+		RestAssured.defaultParser = Parser.JSON;
+		given().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).when().get(baseUrl).then()
+				.assertThat().body("username[0]", equalTo("Bret"), "address[0].city", equalTo("Gwenborough"),
+						"address[0].country", nullValue());
+	}
+
+	// NOTE: http://echo.jsontest.com/ does not produce complex json
+	// and throttling override-prone leading to
+// This application is temporarily over its serving quota.
+	// Please try again later." response
 }
