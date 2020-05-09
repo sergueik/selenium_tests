@@ -20,6 +20,8 @@ import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.json.exception.JsonPathException;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.response.ValidatableResponseOptions;
 
 import static io.restassured.RestAssured.given;
 
@@ -27,12 +29,19 @@ import static io.restassured.RestAssured.given;
 // https://www.baeldung.com/rest-assured-tutorial
 // https://devqa.io/parse-json-response-rest-assured/
 public class RestAssuredTest {
-	private static final StringBuffer verificationErrors = new StringBuffer();
 	private static final boolean debug = true;
 	private static String baseUrl = null;
-	private static String data = "{\n" + "    \"message\": \"The given data was invalid.\",\n" + "    \"errors\": {\n"
-			+ "        \"client.email\": [\n" + "            \"invalid email\"\n" + "        ]\n" + "    }\n" + "}";
+	//@formatter:off
+	private static String data = "{\n"
+			+ "    \"message\": \"The given data was invalid.\",\n" 
+			+ "    \"errors\": {\n"
+			+ "        \"email\": [\n" 
+			+ "            \"invalid email\"\n" 
+			+ "        ]\n" 
+			+ "    }\n" 
+			+ "}";
 
+	//@formatter:on
 	private static Response response;
 
 	@Test(enabled = true)
@@ -73,8 +82,8 @@ public class RestAssuredTest {
 		data = BaseTest.getScriptContent("data.json");
 		JsonPath jsonPath = new JsonPath(data);
 		Map<String, List<String>> messages = jsonPath.getMap("errors");
-		assertThat(messages, hasKey("client.email"));
-		String value = messages.get("client.email").get(0);
+		assertThat(messages, hasKey("email"));
+		String value = messages.get("email").get(0);
 		assertThat(value, notNullValue());
 	}
 
@@ -82,9 +91,13 @@ public class RestAssuredTest {
 	public void test4() {
 		JsonPath jsonPath = new JsonPath(data);
 		Map<String, List<String>> messages = jsonPath.getMap("errors");
-		assertThat(messages, hasKey("client.email"));
-		String value = messages.get("client.email").get(0);
+		assertThat(messages, hasKey("email"));
+		String value = messages.get("email").get(0);
 		assertThat(value, notNullValue());
+		assertThat(jsonPath.get("errors.email"), notNullValue());
+		// System.err.println("Result: " + jsonPath.get("errors.email"));
+		assertThat(jsonPath.get("errors.email[0]"), notNullValue());
+		// System.err.println("Result: " + jsonPath.get("errors.email[0]"));
 	}
 
 	// combination of strongly typed and method-heavy
@@ -92,8 +105,10 @@ public class RestAssuredTest {
 	public void test5() {
 		baseUrl = "https://jsonplaceholder.typicode.com/users";
 		RestAssured.defaultParser = Parser.JSON;
-		Object value = given().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).when().get(baseUrl)
-				.then().contentType(ContentType.JSON).extract().response().jsonPath().getMap("company[0]").get("name");
+		Object value = given()
+				.headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
+				.when().get(baseUrl).then().contentType(ContentType.JSON).extract()
+				.response().jsonPath().getMap("company[0]").get("name");
 		assertThat(value, notNullValue());
 	}
 
@@ -103,9 +118,12 @@ public class RestAssuredTest {
 	public void test6() {
 		baseUrl = "https://jsonplaceholder.typicode.com/users";
 		RestAssured.defaultParser = Parser.JSON;
-		given().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).when().get(baseUrl).then()
-				.contentType(ContentType.JSON).statusCode(200).assertThat().body("id[0]", equalTo(1));
-		given().when().get(baseUrl).then().assertThat().body("company[6].name", equalTo("Johns Group"));
+		given()
+				.headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
+				.when().get(baseUrl).then().contentType(ContentType.JSON)
+				.statusCode(200).assertThat().body("id[0]", equalTo(1));
+		given().when().get(baseUrl).then().assertThat().body("company[6].name",
+				equalTo("Johns Group"));
 	}
 
 	// vararg-heavy
@@ -113,13 +131,15 @@ public class RestAssuredTest {
 	public void test7() {
 		baseUrl = "https://jsonplaceholder.typicode.com/users";
 		RestAssured.defaultParser = Parser.JSON;
-		given().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).when().get(baseUrl).then()
-				.assertThat().body("username[0]", equalTo("Bret"), "address[0].city", equalTo("Gwenborough"),
+		given()
+				.headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
+				.when().get(baseUrl).then().assertThat().body("username[0]",
+						equalTo("Bret"), "address[0].city", equalTo("Gwenborough"),
 						"address[0].country", nullValue());
 	}
 
 	// NOTE: http://echo.jsontest.com/ does not produce complex json
 	// and throttling override-prone leading to
-// This application is temporarily over its serving quota.
+	// This application is temporarily over its serving quota.
 	// Please try again later." response
 }
