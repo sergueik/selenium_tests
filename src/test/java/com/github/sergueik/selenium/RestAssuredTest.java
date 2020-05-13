@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import static io.restassured.RestAssured.given;
 
 // see also:
 // https://www.baeldung.com/rest-assured-tutorial
+// https://www.baeldung.com/java-junit-hamcrest-guide
 // https://devqa.io/parse-json-response-rest-assured/
 public class RestAssuredTest {
 	private static final boolean debug = true;
@@ -36,13 +38,15 @@ public class RestAssuredTest {
 			+ "    \"message\": \"The given data was invalid.\",\n" 
 			+ "    \"errors\": {\n"
 			+ "        \"email\": [\n" 
-			+ "            \"invalid email\"\n" 
+			+ "            \"invalid email\",\n" 
+			+ "            \"another row of data\"\n" 
 			+ "        ]\n" 
 			+ "    }\n" 
 			+ "}";
 
 	//@formatter:on
 	private static Response response;
+	private static String value = null;
 
 	@Test(enabled = true)
 	public void test1() {
@@ -50,7 +54,7 @@ public class RestAssuredTest {
 		response = RestAssured.get(baseUrl);
 		Map<String, String> messages = response.jsonPath().getMap("company[0]");
 		assertThat(messages, hasKey("name"));
-		String value = messages.get("name");
+		value = messages.get("name");
 		assertThat(value, notNullValue());
 	}
 
@@ -65,7 +69,7 @@ public class RestAssuredTest {
 			List<Map<String, Object>> messages = response.jsonPath().getList("items");
 			assertThat(messages.size(), greaterThan(0));
 			assertThat(messages.get(0), hasKey("title"));
-			String value = messages.get(0).get("title").toString();
+			value = messages.get(0).get("title").toString();
 			assertThat(value, notNullValue());
 		} catch (JsonException | JsonPathException e) {
 			System.err.println("Exception(ignored): " + e.toString());
@@ -83,7 +87,8 @@ public class RestAssuredTest {
 		JsonPath jsonPath = new JsonPath(data);
 		Map<String, List<String>> messages = jsonPath.getMap("errors");
 		assertThat(messages, hasKey("email"));
-		String value = messages.get("email").get(0);
+		assertThat(messages.get("email").size(), greaterThan(1));
+		value = messages.get("email").get(0);
 		assertThat(value, notNullValue());
 	}
 
@@ -92,12 +97,20 @@ public class RestAssuredTest {
 		JsonPath jsonPath = new JsonPath(data);
 		Map<String, List<String>> messages = jsonPath.getMap("errors");
 		assertThat(messages, hasKey("email"));
-		String value = messages.get("email").get(0);
+		value = messages.get("email").get(0);
 		assertThat(value, notNullValue());
 		assertThat(jsonPath.get("errors.email"), notNullValue());
 		// System.err.println("Result: " + jsonPath.get("errors.email"));
-		assertThat(jsonPath.get("errors.email[0]"), notNullValue());
-		// System.err.println("Result: " + jsonPath.get("errors.email[0]"));
+		value = jsonPath.get("errors.email[0]");
+		assertThat(value, notNullValue());
+		assertThat(value, containsString("invalid email"));
+		value = jsonPath.get("errors.email[1]");
+		try {
+			assertThat(value, containsString("another row"));
+		} catch (AssertionError e) {
+			System.err.println("Exception (ignored): " + e.toString());
+		}
+		System.err.println("Result: " + value);
 	}
 
 	// combination of strongly typed and method-heavy
@@ -105,11 +118,11 @@ public class RestAssuredTest {
 	public void test5() {
 		baseUrl = "https://jsonplaceholder.typicode.com/users";
 		RestAssured.defaultParser = Parser.JSON;
-		Object value = given()
+		Object valueObject = given()
 				.headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
 				.when().get(baseUrl).then().contentType(ContentType.JSON).extract()
 				.response().jsonPath().getMap("company[0]").get("name");
-		assertThat(value, notNullValue());
+		assertThat(valueObject, notNullValue());
 	}
 
 	// Ruby TDD-style or Javascript Jasmine-style method call-heavy
