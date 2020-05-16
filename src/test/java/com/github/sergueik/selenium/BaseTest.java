@@ -206,6 +206,10 @@ public class BaseTest {
 		this.implicitWait = value;
 	}
 
+	public int getImplicitWait() {
+		return this.implicitWait;
+	}
+
 	public void setPollingInterval(long value) {
 		this.pollingInterval = (int) value;
 	}
@@ -1607,10 +1611,15 @@ public class BaseTest {
 		};
 	}
 
-	// based on: https://github.com/yashaka/NSelene/blob/master/NSeleneTests/Given.cs
+	// based on:
+	// https://github.com/yashaka/NSelene/blob/master/NSeleneTests/Given.cs
 	public void setPage(String html) {
 		executeScript("document.getElementsByTagName('body')[0].innerHTML = \""
 				+ html.replace("\n", "").replace("\r", "").replace("\"", "\\\"") + "\";");
 	}
 
+	public void setPageWithTimeout(String html, int timeout) {
+		executeScript("setTimeout(function(){ " + "document.getElementsByTagName('body')[0].innerHTML = \""
+				+ html.replace("\n", "").replace("\r", "").replace("\"", "\\\"") + "\" } ," + timeout + ");");
+	}
 }
