@@ -2,46 +2,28 @@ package com.github.sergueik.selenium;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
-import org.openqa.selenium.InvalidSelectorException;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 /**
  * Selected test scenarios for Selenium WebDriver
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
- * based on https://stackoverflow.com/questions/27307131/selenium-webdriver-how-do-i-find-all-of-an-elements-attributes
+ * based on https://qna.habr.com/q/773525
+ * def get_title(tengri_url) -> str:
  */
 
 public class SpanActionTest extends BaseTest {
 
-	private static final Logger log = LogManager.getLogger(SpanActionTest.class);
 	private String baseUrl = "https://tengrinews.kz/";
 	private static WebElement element = null;
 	private static String articleUrl = null;
@@ -91,6 +73,7 @@ public class SpanActionTest extends BaseTest {
 		} catch (ElementClickInterceptedException e) {
 			System.err.println("Exception (ignored): " + e.toString());
 		}
+		// Assert
 	}
 
 	@Test(enabled = true, expectedExceptions = ElementClickInterceptedException.class)
@@ -108,6 +91,6 @@ public class SpanActionTest extends BaseTest {
 					.println("Exception (rethrowing and allowing): " + e.toString());
 			throw e;
 		}
-		// Act
+		// Assert
 	}
 }
