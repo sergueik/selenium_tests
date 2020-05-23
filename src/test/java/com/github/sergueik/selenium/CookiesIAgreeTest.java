@@ -247,4 +247,71 @@ public class CookiesIAgreeTest extends BaseTest {
 		sleep(10000);
 
 	}
+
+	@Test(enabled = true)
+	public void selectCookieMessageCssSelectorTest() {
+		element = driver.findElement(By.id("cookie-law-info-bar"));
+		assertThat(element, notNullValue());
+		highlight(element, 100);
+		if (debug) {
+			System.err.println(element.getAttribute("innerHTML"));
+		}
+
+		// "I AGREE" button
+		elements = driver.findElements(By.cssSelector("a.button"));
+		assertThat(elements.size(), greaterThan(0));
+		elements.stream().forEach(o -> {
+			System.err.println(
+					"text: " + o.getText() + "html: " + o.getAttribute("outerHTML"));
+			try {
+				o.sendKeys(Keys.CONTROL + "t"); // no effect ?
+			} catch (ElementNotInteractableException e) {
+				System.err.println("Exception (ignored): " + e.getMessage());
+			}
+		});
+		element = driver.findElement(By.id("cc-button"));
+		assertThat(element, notNullValue());
+		highlight(element, 1000);// no exception but no visual effect
+		if (debug) {
+			System.err.println("text: " + element.getText() + "html: "
+					+ element.getAttribute("outerHTML"));
+		}
+		element = driver.findElements(By.cssSelector("a.button")).stream()
+				.filter(o -> o.getText().trim().compareToIgnoreCase("I AGREE") > -1)
+				.collect(Collectors.toList()).get(0);
+		assertThat(element, notNullValue());
+		element.sendKeys(Keys.CONTROL + "t"); // no effect
+
+		try {
+			element = driver
+					.findElement(By.cssSelector("a.button[innerText = \"I AGREE\"]"));
+			assertThat(element, notNullValue());
+			element.sendKeys(Keys.CONTROL + "t"); // no effect
+		} catch (NoSuchElementException e) {
+			System.err.println("Exception(ignored): " + e.toString());
+		}
+		try {
+			WebElement parentElement = driver
+					.findElement(By.xpath("//a[@id = 'cc-button']"))
+					.findElement(By.xpath(".."));
+			element = parentElement
+					.findElement(By.cssSelector("*:contains(\"I AGREE\")"));
+			assertThat(element, notNullValue());
+		} catch (NoSuchElementException e) {
+			System.err.println("Exception(ignored): " + e.toString());
+
+		}
+		// "Learn more" link
+		try {
+			element = driver
+					.findElement(By.cssSelector("//a[href][innerText =  \"Learn more\"]"));
+			assertThat(element, notNullValue());
+		} catch (NoSuchElementException e) {
+			System.err.println("Exception(ignored): " + e.toString());
+
+		}
+
+		sleep(1000);
+
+	}
 }
