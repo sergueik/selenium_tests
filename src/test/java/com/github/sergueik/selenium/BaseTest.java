@@ -121,6 +121,7 @@ import com.github.sergueik.selenium.DriverWrapper;
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
+@SuppressWarnings("deprecation")
 public class BaseTest {
 
 	public WebDriver driver;
