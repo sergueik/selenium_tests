@@ -52,6 +52,8 @@ password=${env.TEST_PASSWORD}
  * [cssSelector advantages review](https://www.pineboat.in/post/css-selectors-selenium-webdriver-find-element-xpath-replaced/)
  * [JQuery to vanilla JavaScript DSL conversion rules](https://gist.github.com/dorokhin/8d47e91676a39c04534ea9633b98dbdb)
  * Elemental Selenium Tips [repo](https://github.com/tourdedave/elemental-selenium-tips) 
+ * __at.info__ [test automation examples on different tools and technologies](http://atinfo.github.io/at.info-knowledge-base/)  (in Russian and Eglish )
+ * KB of [xpath, locators, css-selectors](https://automated-testing.info/t/sbornik-poleznyh-ssylok-po-razlichnym-lokatoram/5316) (in Russian)
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
