@@ -694,10 +694,7 @@ public class BaseTest {
 				element, attributeName, attributeValue);
 	}
 
-	protected void fastSetText(String selectorOfElement, String text) {
-		fastSetText(selectorOfElement, text, 0);
-	}
-
+	// sets target to "_blank"
 	protected void setTargetAttribute(WebElement element) {
 		String script = getScriptContent("setTargetAttribute.js");
 		try {
@@ -707,7 +704,7 @@ public class BaseTest {
 		}
 	}
 
-	protected void fastSetText(String selector, String text, long interval) {
+	protected void fastSetText(String selector, String text) {
 		String script = getScriptContent("setValueWithSelector.js");
 		try {
 			executeScript(script, selector, text);
@@ -717,10 +714,6 @@ public class BaseTest {
 	}
 
 	protected void fastSetText(WebElement element, String text) {
-		fastSetText(element, text, 0);
-	}
-
-	protected void fastSetText(WebElement element, String text, long interval) {
 		String script = getScriptContent("setValue.js");
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
