@@ -64,11 +64,12 @@ public class PseudoElementPropertyTest extends BaseTest {
 	public void testResultFramePresent() {
 		// Arrange
 		driver.get(baseURL + "/css/tryit.asp?filename=trycss_before");
-		List<WebElement> iframes = driver.findElements(By.cssSelector("div#iframewrapper iframe"));
+		List<WebElement> iframes = driver
+				.findElements(By.cssSelector("div#iframewrapper iframe"));
 		Map<String, Object> iframesMap = new HashMap<>();
 		for (WebElement iframe : iframes) {
-			String key = String.format("id: \'%s\", name: \"%s\"", iframe.getAttribute("id"),
-					iframe.getAttribute("name"));
+			String key = String.format("id: \'%s\", name: \"%s\"",
+					iframe.getAttribute("id"), iframe.getAttribute("name"));
 			System.err.println(String.format("Found iframe %s", key));
 			iframesMap.put(key, iframe);
 		}
@@ -86,7 +87,8 @@ public class PseudoElementPropertyTest extends BaseTest {
 		// Arrange
 		driver.get(baseURL + "/css/tryit.asp?filename=trycss_before");
 		WebElement resultIframe = wait
-				.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe[name='iframeResult']")));
+				.until(ExpectedConditions.visibilityOfElementLocated(
+						By.cssSelector("iframe[name='iframeResult']")));
 		assertThat(resultIframe, notNullValue());
 
 		// Act
@@ -94,14 +96,17 @@ public class PseudoElementPropertyTest extends BaseTest {
 		WebElement element = iframe.findElement(By.xpath("//h1"));
 		// Assert
 
-		System.err.println("Frame page: " + iframe.getPageSource().replaceAll("\\n", " "));
+		System.err.println(
+				"Frame page: " + iframe.getPageSource().replaceAll("\\n", " "));
 		// NOTE: the result found by trial and error o be the ArrayList
 		@SuppressWarnings("unchecked")
 		List<String> result = (List<String>) executeScript(script, element);
-		System.err.println("Pseudo-element styles (all): " + String.join(",", result));
+		System.err
+				.println("Pseudo-element styles (all): " + String.join(",", result));
 
 		System.err.println("Element styles (filtered): ");
-		result.stream().filter(o -> o.matches("(?:top|left|width|height|content)")).forEach(System.err::println);
+		result.stream().filter(o -> o.matches("(?:top|left|width|height|content)"))
+				.forEach(System.err::println);
 
 		driver.switchTo().defaultContent();
 	}
@@ -111,7 +116,8 @@ public class PseudoElementPropertyTest extends BaseTest {
 		// Arrange
 		driver.get(baseURL + "/css/tryit.asp?filename=trycss_before");
 		WebElement resultIframe = wait
-				.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe[name='iframeResult']")));
+				.until(ExpectedConditions.visibilityOfElementLocated(
+						By.cssSelector("iframe[name='iframeResult']")));
 		assertThat(resultIframe, notNullValue());
 		// Act
 		WebDriver iframe = driver.switchTo().frame(resultIframe);
@@ -119,18 +125,23 @@ public class PseudoElementPropertyTest extends BaseTest {
 		// NOTE: the result found by trial and error o be the ArrayList
 
 		final String script = "return window.getComputedStyle(arguments[0],':before').getPropertyValue(arguments[1]);";
-		List<String> propertyKeys = Arrays
-				.asList(new String[] { "top", "left", "height", "width", "box-sizing", "content" });
+		List<String> propertyKeys = Arrays.asList(new String[] { "top", "left",
+				"height", "width", "box-sizing", "content" });
 		// optionally construct the map of properties to examine closely:
-		Map<String, Object> properties = propertyKeys.stream().collect(Collectors.toMap(propertyKey -> propertyKey,
-				propertyKey -> (String) executeScript(script, element, propertyKey)));
+		Map<String, Object> properties = propertyKeys.stream()
+				.collect(Collectors.toMap(propertyKey -> propertyKey,
+						propertyKey -> (String) executeScript(script, element,
+								propertyKey)));
 		// Assert
 		// assertThat(properties.get("content").toString(),
 		// matchesRegex(Pattern.compile("(?:\\d+)")));
-		assertThat(properties.get("content").toString(), containsString("smiley.gif"));
+		assertThat(properties.get("content").toString(),
+				containsString("smiley.gif"));
 		// Logging
-		propertyKeys.stream().map(propertyKey -> String.format("%s=%s", propertyKey,
-				(String) executeScript(script, element, propertyKey))).forEach(System.err::println);
+		propertyKeys.stream()
+				.map(propertyKey -> String.format("%s=%s", propertyKey,
+						(String) executeScript(script, element, propertyKey)))
+				.forEach(System.err::println);
 		driver.switchTo().defaultContent();
 	}
 
@@ -138,19 +149,24 @@ public class PseudoElementPropertyTest extends BaseTest {
 	public void testCertainStyleofFirstLinePseudoElement() {
 		final String pseudoElement = ":first-line";
 		final String script = String.format(
-				"return window.getComputedStyle(arguments[0],':%s').getPropertyValue(arguments[1]);", pseudoElement);
+				"return window.getComputedStyle(arguments[0],':%s').getPropertyValue(arguments[1]);",
+				pseudoElement);
 		// Arrange
 		driver.get(baseURL + "/css/tryit.asp?filename=trycss_firstline");
 		WebElement resultIframe = wait
-				.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe[name='iframeResult']")));
+				.until(ExpectedConditions.visibilityOfElementLocated(
+						By.cssSelector("iframe[name='iframeResult']")));
 		assertThat(resultIframe, notNullValue());
 		// Act
 		WebDriver iframe = driver.switchTo().frame(resultIframe);
 		WebElement element = iframe.findElements(By.tagName("p")).get(0);
-		List<String> propertyKeys = Arrays.asList(new String[] { "color", "content", "font-variant" });
+		List<String> propertyKeys = Arrays
+				.asList(new String[] { "color", "content", "font-variant" });
 		// optionally construct the map of properties to examine closely:
-		Map<String, Object> properties = propertyKeys.stream().collect(Collectors.toMap(propertyKey -> propertyKey,
-				propertyKey -> (String) executeScript(script, element, propertyKey)));
+		Map<String, Object> properties = propertyKeys.stream()
+				.collect(Collectors.toMap(propertyKey -> propertyKey,
+						propertyKey -> (String) executeScript(script, element,
+								propertyKey)));
 		assertThat(properties.get("color"), is("rgb(255, 0, 0)"));
 		System.err.println(properties.get("color"));
 		System.err.println(properties.get("font-variant"));
@@ -164,27 +180,33 @@ public class PseudoElementPropertyTest extends BaseTest {
 		// Arrange
 		driver.get(baseURL + "/css/tryit.asp?filename=trycss_firstline");
 		WebElement resultIframe = wait
-				.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe[name='iframeResult']")));
+				.until(ExpectedConditions.visibilityOfElementLocated(
+						By.cssSelector("iframe[name='iframeResult']")));
 		assertThat(resultIframe, notNullValue());
 		// Act
 		WebDriver iframe = driver.switchTo().frame(resultIframe);
 		WebElement element = iframe.findElements(By.tagName("p")).get(0);
-		System.err.println("Target element HTML: " + element.getAttribute("outerHTML"));
-		System.err.println("Frame page: " + iframe.getPageSource().replaceAll("\\n", " "));
+		System.err
+				.println("Target element HTML: " + element.getAttribute("outerHTML"));
+		System.err.println(
+				"Frame page: " + iframe.getPageSource().replaceAll("\\n", " "));
 		// NOTE: the result found by trial and error o be the ArrayList
 		@SuppressWarnings("unchecked")
 		List<String> result = (List<String>) executeScript(script, element);
-		System.err.println("Pseudo-element styles (all): " + String.join(",", result));
-		final String script2 = "return window.getComputedStyle(arguments[0],':first-line').getPropertyValue(arguments[1]);";
+		System.err
+				.println("Pseudo-element styles (all): " + String.join(",", result));
+		final String script2 = getScriptContent("getAfterContent.js");
 		// optionally construct the map of properties to examine closely:
-		Map<String, Object> properties = result.stream().collect(Collectors.toMap(propertyKey -> propertyKey,
-				propertyKey -> (String) executeScript(script2, element, propertyKey)));
+		Map<String, Object> properties = result.stream()
+				.collect(Collectors.toMap(propertyKey -> propertyKey,
+						propertyKey -> (String) executeScript(script2, element,
+								":first-line", propertyKey)));
 
 		for (Entry<String, Object> propertyEntry : properties.entrySet()) {
 			if (propertyEntry.getValue() != null) {
-				System.err.println(String.format("%s=%s", propertyEntry.getKey(), propertyEntry.getValue().toString()));
+				System.err.println(String.format("%s=%s", propertyEntry.getKey(),
+						propertyEntry.getValue().toString()));
 			}
 		}
 	}
 }
-
