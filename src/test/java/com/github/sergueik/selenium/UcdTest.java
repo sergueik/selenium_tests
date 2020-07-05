@@ -11,10 +11,12 @@ import static org.hamcrest.Matchers.greaterThan;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.Keys;
 
 import org.testng.annotations.BeforeMethod;
@@ -82,16 +84,12 @@ public class UcdTest extends BaseTest {
 		highlight(element);
 
 		assertThat(element.getText(), is(application));
-		// https://192.168.0.64:8443/#application
 
 		String href = element.getAttribute("href").replaceAll("^.*#application/",
 				"");
 		System.err.println("Application: " + element.getText() + " = " + href);
-		sleep(1000);
-		// element.click();
 		actions.moveToElement(element).click().build().perform();
 		wait.until(ExpectedConditions.urlContains(href));
-		sleep(1000);
 		element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.xpath(String.format(
 						"//a[contains(@href, '#environment')][contains(text(), '%s')]",
@@ -104,6 +102,68 @@ public class UcdTest extends BaseTest {
 				.findElement(By.cssSelector("div.request-process"));
 		assertThat(element, notNullValue());
 		element.click();
-		sleep(5000);
+
+		wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
+		WebElement dialogElement = driver
+				.findElement(By.cssSelector("div[role = 'dialog']"));
+		assertThat(dialogElement, notNullValue());
+		highlight(dialogElement);
+		elements = dialogElement.findElements(By.cssSelector(
+				"input.dijitInputInner[id *= 'dijit_form_FilteringSelect']"));
+		assertThat(elements.size(), greaterThan(0));
+		element = elements.get(0);
+		String widgetid = element.getAttribute("id");
+		System.err.println("Choice input id: " + widgetid);
+		element.sendKeys(Keys.DOWN);
+		sleep(1000);
+		element.clear();
+		sleep(1000);
+		element.sendKeys(application);
+		// fastSetText(element, "process two");
+		// TODO: verify alert is not present
+		element.sendKeys(Keys.DOWN);
+		element.sendKeys(Keys.ENTER);
+		sleep(1000);
+		elements = dialogElement
+				.findElements(By.cssSelector("div.linkPointer.inlineBlock"));
+		assertThat(elements.size(), greaterThan(0));
+		elements.stream().forEach(
+				o -> System.err.println("inputs: " + o.getAttribute("outerHTML")));
+		element = elements.stream()
+				.filter(o -> o.getText().matches("Choose Versions"))
+				.collect(Collectors.toList()).get(0);
+		highlight(element);
+
+		element.click();
+
+		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
+				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
+
+		sleep(1000);
+		/*
+				elements = dialogElement.findElements(
+						By.cssSelector(String.format("div[widgetid= '%s']", widgetid)));
+				element = elements.get(0);
+				String widget_owns = element.getAttribute("aria-owns");
+				System.err.println("Choice popup widgetid: "
+						+ element.getAttribute("widgetid") + " owns:" + widget_owns
+						+ " expanded:" + element.getAttribute("aria-expanded"));
+				System.err
+						.println("Choice popup HTML: " + element.getAttribute("outerHTML"));
+				try {
+					// read the popup
+					// dijit_form_FilteringSelect_3_popup
+					elements = dialogElement.findElements(
+							By.cssSelector(String.format("*[id= '%s']", widget_owns)));
+					assertThat(elements.size(), greaterThan(0));
+					element = elements.get(0);
+					System.err.println("Choice popup: " + element.getAttribute("outerHTML"));
+					element.click();
+				} catch (ElementNotInteractableException e) {
+					System.err.println("Exception (ignored): " + e.toString());
+				}
+				sleep(1000);
+				*/
 	}
 }
