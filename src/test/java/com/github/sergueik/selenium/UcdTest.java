@@ -103,6 +103,12 @@ public class UcdTest extends BaseTest {
 		assertThat(element, notNullValue());
 		element.click();
 
+		//
+		// TODO: to see the DOM of the popup run with one of Chrome extensions
+		// View Rendered Source
+		// https://chrome.google.com/webstore/detail/view-rendered-source/ejgngohbdedoabanmclafpkoogegdpob?hl=en
+		// View Generated Source
+		// https://chrome.google.com/webstore/detail/view-generated-source/epmicgdiljcefknmbppapkbaakbgacjm?hl=en
 		wait.until(ExpectedConditions.visibilityOf(
 				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
 		WebElement dialogElement = driver
@@ -117,13 +123,35 @@ public class UcdTest extends BaseTest {
 		System.err.println("Choice input id: " + widgetid);
 		element.sendKeys(Keys.DOWN);
 		sleep(1000);
-		element.clear();
-		sleep(1000);
-		element.sendKeys(application);
-		// fastSetText(element, "process two");
-		// TODO: verify alert is not present
-		element.sendKeys(Keys.DOWN);
-		element.sendKeys(Keys.ENTER);
+
+		// TODO: clear "display:none" attribute
+		// of data enclosing table
+		// table class="dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable
+		// my-profile-menu oneuiHeaderGlobalActionsMenu" role="menu" tabindex="0"
+		// data-dojo-attach-event="onkeypress:_onKeyPress" cellspacing="0"
+		// id="dijit_Menu_1" widgetid="dijit_Menu_1" style="display: none;
+		/*
+				String script = "var selector = arguments[0]; \n"
+						+ "var nodes = window.document.querySelectorAll(selector);"
+						+ "var element = nodes[0];\n" + "element.getAttribute('style', '');";
+				// made table visible - not the node we are looking for
+				js.executeScript(script, "table.dijitMenuPassive");
+			*/
+		WebElement popupElement = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("div.dijitComboBoxMenuPopup"))));
+		assertThat(popupElement, notNullValue());
+		System.err.println("Popup: " + popupElement.getAttribute("innerHTML"));
+		highlight(popupElement);
+		// wait.until(ExpectedConditions.visibilityOf(driver.findElement(
+		// By.cssSelector("div.dijitComboBoxMenuPopup div.dijitMenuItem"))));
+		elements = popupElement.findElements(By.cssSelector("div.dijitMenuItem"));
+		assertThat(elements.size(), greaterThan(0));
+		element = elements.stream()
+				.filter(e -> e.getText().contains("hello App Process"))
+				.collect(Collectors.toList()).get(0);
+		System.err.println("Popup: " + element.getAttribute("innerHTML"));
+		highlight(element);
+		element.click();
 		sleep(1000);
 		elements = dialogElement
 				.findElements(By.cssSelector("div.linkPointer.inlineBlock"));
@@ -141,29 +169,5 @@ public class UcdTest extends BaseTest {
 				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
 
 		sleep(1000);
-		/*
-				elements = dialogElement.findElements(
-						By.cssSelector(String.format("div[widgetid= '%s']", widgetid)));
-				element = elements.get(0);
-				String widget_owns = element.getAttribute("aria-owns");
-				System.err.println("Choice popup widgetid: "
-						+ element.getAttribute("widgetid") + " owns:" + widget_owns
-						+ " expanded:" + element.getAttribute("aria-expanded"));
-				System.err
-						.println("Choice popup HTML: " + element.getAttribute("outerHTML"));
-				try {
-					// read the popup
-					// dijit_form_FilteringSelect_3_popup
-					elements = dialogElement.findElements(
-							By.cssSelector(String.format("*[id= '%s']", widget_owns)));
-					assertThat(elements.size(), greaterThan(0));
-					element = elements.get(0);
-					System.err.println("Choice popup: " + element.getAttribute("outerHTML"));
-					element.click();
-				} catch (ElementNotInteractableException e) {
-					System.err.println("Exception (ignored): " + e.toString());
-				}
-				sleep(1000);
-				*/
 	}
 }
