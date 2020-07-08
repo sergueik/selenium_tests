@@ -18,7 +18,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.Keys;
-
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -40,13 +40,71 @@ public class UcdTest extends BaseTest {
 	private static String href = null;
 
 	@BeforeMethod
-	public void BeforeMethod() {
+	public void beforeMethod() {
 		driver.get(baseURL);
 	}
 
+	@AfterMethod
+	public void afterMethod() {
+		sleep(10000);
+	}
+
+	// this is a multi step test exercised for its side effect on UCD
 	@Test(enabled = true)
 	public void test1() {
-		// this is a multi step "test"
+		userLogin();
+		navigateToLaunchDialog();
+		dialogElement = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
+		assertThat(dialogElement, notNullValue());
+		highlight(dialogElement);
+		elements = dialogElement.findElements(By.cssSelector(
+				"input.dijitInputInner[id *= 'dijit_form_FilteringSelect']"));
+		assertThat(elements.size(), greaterThan(0));
+		element = elements.get(0);
+		String widgetid = element.getAttribute("id");
+		if (debug) {
+			System.err.println("Choice input id: " + widgetid);
+		}
+		element.sendKeys(Keys.DOWN);
+
+		// To find DOM of Javascript-generated popup run Chrome with extension
+		// "View Rendered Source"
+		// https://chrome.google.com/webstore/detail/view-rendered-source/ejgngohbdedoabanmclafpkoogegdpob?hl=en
+		// "View Generated Source"
+		// https://chrome.google.com/webstore/detail/view-generated-source/epmicgdiljcefknmbppapkbaakbgacjm?hl=en
+
+		popupElement = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("div.dijitComboBoxMenuPopup"))));
+		assertThat(popupElement, notNullValue());
+		if (debug) {
+			System.err.println("Popup: " + popupElement.getAttribute("innerHTML"));
+		}
+		highlight(popupElement);
+
+		elements = popupElement.findElements(By.cssSelector("div.dijitMenuItem"));
+		assertThat(elements.size(), greaterThan(0));
+		element = elements.stream().filter(e -> e.getText().contains(processName))
+				.collect(Collectors.toList()).get(0);
+		assertThat(element, notNullValue());
+		System.err.println("Popup: " + element.getAttribute("innerHTML"));
+		highlight(element);
+		element.click();
+		// sleep(1000);
+		element = wait.until(ExpectedConditions.visibilityOf(dialogElement
+				.findElement(By.cssSelector("div.linkPointer.inlineBlock"))));
+		assertThat(element, notNullValue());
+		assertThat(element.getText(), is("Choose Versions"));
+		highlight(element);
+
+		element.click();
+
+		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
+				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
+		// TODO: version selections dialog
+	}
+
+	private void userLogin() {
 		element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.id("usernameField"))));
 		element.sendKeys(username);
@@ -58,6 +116,9 @@ public class UcdTest extends BaseTest {
 		highlight(element);
 		element.click();
 		wait.until(ExpectedConditions.urlContains("dashboard"));
+	}
+
+	private void navigateToLaunchDialog() {
 		// switch to Applications
 		element = wait.until(
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
@@ -110,55 +171,5 @@ public class UcdTest extends BaseTest {
 				.findElement(By.cssSelector("div.request-process"));
 		assertThat(element, notNullValue());
 		element.click();
-
-		dialogElement = wait.until(ExpectedConditions.visibilityOf(
-				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
-		assertThat(dialogElement, notNullValue());
-		highlight(dialogElement);
-		elements = dialogElement.findElements(By.cssSelector(
-				"input.dijitInputInner[id *= 'dijit_form_FilteringSelect']"));
-		assertThat(elements.size(), greaterThan(0));
-		element = elements.get(0);
-		String widgetid = element.getAttribute("id");
-		if (debug) {
-			System.err.println("Choice input id: " + widgetid);
-		}
-		element.sendKeys(Keys.DOWN);
-
-		// To find DOM of Javascript-generated popup run Chrome with extension
-		// "View Rendered Source"
-		// https://chrome.google.com/webstore/detail/view-rendered-source/ejgngohbdedoabanmclafpkoogegdpob?hl=en
-		// "View Generated Source"
-		// https://chrome.google.com/webstore/detail/view-generated-source/epmicgdiljcefknmbppapkbaakbgacjm?hl=en
-
-		popupElement = wait.until(ExpectedConditions.visibilityOf(
-				driver.findElement(By.cssSelector("div.dijitComboBoxMenuPopup"))));
-		assertThat(popupElement, notNullValue());
-		if (debug) {
-			System.err.println("Popup: " + popupElement.getAttribute("innerHTML"));
-		}
-		highlight(popupElement);
-
-		elements = popupElement.findElements(By.cssSelector("div.dijitMenuItem"));
-		assertThat(elements.size(), greaterThan(0));
-		element = elements.stream().filter(e -> e.getText().contains(processName))
-				.collect(Collectors.toList()).get(0);
-		assertThat(element, notNullValue());
-		System.err.println("Popup: " + element.getAttribute("innerHTML"));
-		highlight(element);
-		element.click();
-		// sleep(1000);
-		element = wait.until(ExpectedConditions.visibilityOf(dialogElement
-				.findElement(By.cssSelector("div.linkPointer.inlineBlock"))));
-		assertThat(element, notNullValue());
-		assertThat(element.getText(), is("Choose Versions"));
-		highlight(element);
-
-		element.click();
-
-		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
-				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
-		// TODO: version selections dialog
-		sleep(10000);
 	}
 }
