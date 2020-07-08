@@ -24,17 +24,21 @@ import org.testng.annotations.Test;
 
 public class UcdTest extends BaseTest {
 
+	private final static boolean debug = true;
 	private static String ucdHost = "192.168.0.64";
 	private static String baseURL = String.format("https://%s:8443/", ucdHost);
+
 	private static final String username = "admin";
 	private static final String password = "admin";
-	private static final String application = "hello Application";
+	private static final String applicationName = "hello Application";
+	static final String processName = "hello App Process";
 
 	private static WebElement element = null;
+	private static WebElement dialogElement = null;
+	private static WebElement popupElement = null;
 	private static List<WebElement> elements = new ArrayList<>();
-	private final static boolean debug = true;
+	private static String href = null;
 
-	@SuppressWarnings("deprecation")
 	@BeforeMethod
 	public void BeforeMethod() {
 		driver.get(baseURL);
@@ -54,7 +58,7 @@ public class UcdTest extends BaseTest {
 		highlight(element);
 		element.click();
 		wait.until(ExpectedConditions.urlContains("dashboard"));
-		// switch to Applictions
+		// switch to Applications
 		element = wait.until(
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
 						"a.tab.linkPointer[href = '#main/applications'] span.tabLabel"))));
@@ -72,7 +76,8 @@ public class UcdTest extends BaseTest {
 		assertThat(elements, notNullValue());
 		assertThat(elements.size(), greaterThan(1));
 		element = elements.get(0);
-		fastSetText(element, application);
+		// select Application by name
+		fastSetText(element, applicationName);
 		element.sendKeys(Keys.ENTER);
 		element = wait.until(
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
@@ -83,19 +88,22 @@ public class UcdTest extends BaseTest {
 		element = elements.get(0);
 		highlight(element);
 
-		assertThat(element.getText(), is(application));
+		assertThat(element.getText(), is(applicationName));
 
-		String href = element.getAttribute("href").replaceAll("^.*#application/",
-				"");
-		System.err.println("Application: " + element.getText() + " = " + href);
+		href = element.getAttribute("href").replaceAll("^.*#application/", "");
+		if (debug) {
+			System.err.println("Application: " + element.getText() + " = " + href);
+		}
 		actions.moveToElement(element).click().build().perform();
 		wait.until(ExpectedConditions.urlContains(href));
 		element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.xpath(String.format(
 						"//a[contains(@href, '#environment')][contains(text(), '%s')]",
-						application)))));
+						applicationName)))));
 		assertThat(element, notNullValue());
-		System.err.println("Launcher: " + element.getAttribute("innerHTML"));
+		if (debug) {
+			System.err.println("Launcher: " + element.getAttribute("innerHTML"));
+		}
 		elements = element.findElements(By.xpath("../.."));
 		assertThat(elements.size(), is(1));
 		element = elements.get(0)
@@ -103,16 +111,8 @@ public class UcdTest extends BaseTest {
 		assertThat(element, notNullValue());
 		element.click();
 
-		//
-		// TODO: to see the DOM of the popup run with one of Chrome extensions
-		// View Rendered Source
-		// https://chrome.google.com/webstore/detail/view-rendered-source/ejgngohbdedoabanmclafpkoogegdpob?hl=en
-		// View Generated Source
-		// https://chrome.google.com/webstore/detail/view-generated-source/epmicgdiljcefknmbppapkbaakbgacjm?hl=en
-		wait.until(ExpectedConditions.visibilityOf(
+		dialogElement = wait.until(ExpectedConditions.visibilityOf(
 				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
-		WebElement dialogElement = driver
-				.findElement(By.cssSelector("div[role = 'dialog']"));
 		assertThat(dialogElement, notNullValue());
 		highlight(dialogElement);
 		elements = dialogElement.findElements(By.cssSelector(
@@ -120,54 +120,45 @@ public class UcdTest extends BaseTest {
 		assertThat(elements.size(), greaterThan(0));
 		element = elements.get(0);
 		String widgetid = element.getAttribute("id");
-		System.err.println("Choice input id: " + widgetid);
+		if (debug) {
+			System.err.println("Choice input id: " + widgetid);
+		}
 		element.sendKeys(Keys.DOWN);
-		sleep(1000);
 
-		// TODO: clear "display:none" attribute
-		// of data enclosing table
-		// table class="dijit dijitMenu dijitMenuPassive dijitReset dijitMenuTable
-		// my-profile-menu oneuiHeaderGlobalActionsMenu" role="menu" tabindex="0"
-		// data-dojo-attach-event="onkeypress:_onKeyPress" cellspacing="0"
-		// id="dijit_Menu_1" widgetid="dijit_Menu_1" style="display: none;
-		/*
-				String script = "var selector = arguments[0]; \n"
-						+ "var nodes = window.document.querySelectorAll(selector);"
-						+ "var element = nodes[0];\n" + "element.getAttribute('style', '');";
-				// made table visible - not the node we are looking for
-				js.executeScript(script, "table.dijitMenuPassive");
-			*/
-		WebElement popupElement = wait.until(ExpectedConditions.visibilityOf(
+		// To find DOM of Javascript-generated popup run Chrome with extension
+		// "View Rendered Source"
+		// https://chrome.google.com/webstore/detail/view-rendered-source/ejgngohbdedoabanmclafpkoogegdpob?hl=en
+		// "View Generated Source"
+		// https://chrome.google.com/webstore/detail/view-generated-source/epmicgdiljcefknmbppapkbaakbgacjm?hl=en
+
+		popupElement = wait.until(ExpectedConditions.visibilityOf(
 				driver.findElement(By.cssSelector("div.dijitComboBoxMenuPopup"))));
 		assertThat(popupElement, notNullValue());
-		System.err.println("Popup: " + popupElement.getAttribute("innerHTML"));
+		if (debug) {
+			System.err.println("Popup: " + popupElement.getAttribute("innerHTML"));
+		}
 		highlight(popupElement);
-		// wait.until(ExpectedConditions.visibilityOf(driver.findElement(
-		// By.cssSelector("div.dijitComboBoxMenuPopup div.dijitMenuItem"))));
+
 		elements = popupElement.findElements(By.cssSelector("div.dijitMenuItem"));
 		assertThat(elements.size(), greaterThan(0));
-		element = elements.stream()
-				.filter(e -> e.getText().contains("hello App Process"))
+		element = elements.stream().filter(e -> e.getText().contains(processName))
 				.collect(Collectors.toList()).get(0);
+		assertThat(element, notNullValue());
 		System.err.println("Popup: " + element.getAttribute("innerHTML"));
 		highlight(element);
 		element.click();
-		sleep(1000);
-		elements = dialogElement
-				.findElements(By.cssSelector("div.linkPointer.inlineBlock"));
-		assertThat(elements.size(), greaterThan(0));
-		elements.stream().forEach(
-				o -> System.err.println("inputs: " + o.getAttribute("outerHTML")));
-		element = elements.stream()
-				.filter(o -> o.getText().matches("Choose Versions"))
-				.collect(Collectors.toList()).get(0);
+		// sleep(1000);
+		element = wait.until(ExpectedConditions.visibilityOf(dialogElement
+				.findElement(By.cssSelector("div.linkPointer.inlineBlock"))));
+		assertThat(element, notNullValue());
+		assertThat(element.getText(), is("Choose Versions"));
 		highlight(element);
 
 		element.click();
 
 		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
 				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
-
-		sleep(1000);
+		// TODO: version selections dialog
+		sleep(10000);
 	}
 }
