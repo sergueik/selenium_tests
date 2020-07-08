@@ -104,10 +104,54 @@ public class UcdTest extends BaseTest {
 		// TODO: version selections dialog
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test3() {
 		userLogin();
 		userSignOut();
+	}
+
+	// the code is largely identical to test1 but uses keyboard navigation treick
+	// without discoderng the pipup DOM
+	@Test(enabled = true)
+	public void test2() {
+		userLogin();
+		navigateToLaunchDialog();
+		WebElement dialogElement = driver
+				.findElement(By.cssSelector("div[role = 'dialog']"));
+		assertThat(dialogElement, notNullValue());
+		highlight(dialogElement);
+		elements = dialogElement.findElements(By.cssSelector(
+				"input.dijitInputInner[id *= 'dijit_form_FilteringSelect']"));
+		assertThat(elements.size(), greaterThan(0));
+		element = elements.get(0);
+		String widgetid = element.getAttribute("id");
+		System.err.println("Choice input id: " + widgetid);
+		element.sendKeys(Keys.DOWN);
+		sleep(1000);
+
+		element.clear();
+		sleep(1000);
+		element.sendKeys(applicationName);
+		// fastSetText(element, "process two");
+		// TODO: verify alert is not present
+		element.sendKeys(Keys.DOWN);
+		element.sendKeys(Keys.ENTER);
+
+		elements = dialogElement
+				.findElements(By.cssSelector("div.linkPointer.inlineBlock"));
+		assertThat(elements.size(), greaterThan(0));
+		elements.stream().forEach(
+				o -> System.err.println("inputs: " + o.getAttribute("outerHTML")));
+		element = elements.stream()
+				.filter(o -> o.getText().matches("Choose Versions"))
+				.collect(Collectors.toList()).get(0);
+		highlight(element);
+
+		element.click();
+
+		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
+				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
+
 	}
 
 	private void userSignOut() {
