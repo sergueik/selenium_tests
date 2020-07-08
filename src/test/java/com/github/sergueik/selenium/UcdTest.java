@@ -50,7 +50,7 @@ public class UcdTest extends BaseTest {
 	}
 
 	// this is a multi step test exercised for its side effect on UCD
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test1() {
 		userLogin();
 		navigateToLaunchDialog();
@@ -102,6 +102,39 @@ public class UcdTest extends BaseTest {
 		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
 				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
 		// TODO: version selections dialog
+	}
+
+	@Test(enabled = true)
+	public void test3() {
+		userLogin();
+		userSignOut();
+	}
+
+	private void userSignOut() {
+		// log off
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						String.format("div.idxHeaderPrimary a[title='%s']", username)))));
+		assertThat(element, notNullValue());
+		assertThat(element.getText(), is(username));
+		element.click();
+		element = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("div.dijitPopup.dijitMenuPopup"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		if (debug) {
+			System.err.println("Popup: " + element.getAttribute("innerHTML"));
+		}
+		elements = element.findElements(By.xpath(
+				".//td[@class='dijitReset dijitMenuItemLabel'][contains(text(),'Sign Out')]"));
+		assertThat(elements.size(), greaterThan(0));
+		element = elements.get(0);
+		if (debug) {
+			System.err.println("Sign out: " + element.getText());
+		}
+		highlight(element);
+		element.click();
+		// class="dijitReset dijitMenuItemLabel"
 	}
 
 	private void userLogin() {
