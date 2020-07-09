@@ -31,7 +31,8 @@ public class UcdTest extends BaseTest {
 	private static final String username = "admin";
 	private static final String password = "admin";
 	private static final String applicationName = "hello Application";
-	static final String processName = "hello App Process";
+	private static final String processName = "hello App Process";
+	private static final String groupName = "helloWorld Tutorial";
 
 	private static WebElement element = null;
 	private static WebElement dialogElement = null;
@@ -51,7 +52,7 @@ public class UcdTest extends BaseTest {
 	}
 
 	// this is a multi step test exercised for its side effect on UCD
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test1() {
 		userLogin();
 		navigateToLaunchDialog();
@@ -108,15 +109,9 @@ public class UcdTest extends BaseTest {
 		userSignOut();
 	}
 
-	@Test(enabled = true)
-	public void test3() {
-		userLogin();
-		userSignOut();
-	}
-
 	// the code is largely identical to test1 but uses keyboard navigation treick
 	// without discoderng the pipup DOM
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test2() {
 		userLogin();
 		navigateToLaunchDialog();
@@ -170,38 +165,18 @@ public class UcdTest extends BaseTest {
 		userSignOut();
 	}
 
-	private void closeDialog(String selector) {
-		dialogElement = driver.findElement(By.cssSelector(selector));
-		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
-		assertThat(element, notNullValue());
-		element.click();
-
+	@Test(enabled = false)
+	public void test3() {
+		userLogin();
+		userSignOut();
 	}
 
-	private void userSignOut() {
-		// log off
-		element = wait.until(
-				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
-						String.format("div.idxHeaderPrimary a[title='%s']", username)))));
-		assertThat(element, notNullValue());
-		assertThat(element.getText(), is(username));
-		element.click();
-		element = wait.until(ExpectedConditions.visibilityOf(
-				driver.findElement(By.cssSelector("div.dijitPopup.dijitMenuPopup"))));
-		assertThat(element, notNullValue());
-		highlight(element);
-		if (debug) {
-			System.err.println("Popup: " + element.getAttribute("innerHTML"));
-		}
-		elements = element.findElements(By.xpath(
-				".//td[@class='dijitReset dijitMenuItemLabel'][contains(text(),'Sign Out')]"));
-		assertThat(elements.size(), greaterThan(0));
-		element = elements.get(0);
-		if (debug) {
-			System.err.println("Sign out: " + element.getText());
-		}
-		highlight(element);
-		element.click();
+	@Test(enabled = true)
+	public void test4() {
+		userLogin();
+		navigateToResourceTree();
+		sleep(10000);
+		userSignOut();
 	}
 
 	private void userLogin() {
@@ -216,6 +191,75 @@ public class UcdTest extends BaseTest {
 		highlight(element);
 		element.click();
 		wait.until(ExpectedConditions.urlContains("dashboard"));
+	}
+
+	private void userSignOut() {
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						String.format("div.idxHeaderPrimary a[title='%s']", username)))));
+		assertThat(element, notNullValue());
+		assertThat(element.getText(), is(username));
+		element.click();
+		element = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("div.dijitPopup.dijitMenuPopup"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		if (debug) {
+			System.err.println("Popup: " + element.getAttribute("innerHTML"));
+		}
+		elements = element.findElements(By.xpath(
+				".//td[contains(@class, 'dijitMenuItemLabel')][contains(text(),'Sign Out')]"));
+		assertThat(elements.size(), greaterThan(0));
+		element = elements.get(0);
+		highlight(element);
+		element.click();
+	}
+
+	private void navigateToResourceTree() {
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"a.tab.linkPointer[href = '#main/resources'] span.tabLabel"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		element.click();
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
+		assertThat(element, notNullValue());
+		System.err.println(
+				"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		elements = element.findElements(By.cssSelector(
+				"tr.noPrint.tableFilterRow input[class *= 'dijitInputInner']"));
+		assertThat(elements, notNullValue());
+		assertThat(elements.size(), greaterThan(1));
+		element = elements.get(0);
+		// select group by name
+		fastSetText(element, groupName);
+		highlight(element);
+		element.sendKeys(Keys.ENTER);
+		sleep(1000);
+		// TODO: improve the selector
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		// if (debug) {
+		// System.err.println(element.getAttribute("innerHTML"));
+		// }
+		elements = element.findElements(By.cssSelector(
+				"tbody.treeTable-body > tr:nth-of-type(1) > td:nth-of-type(3) div.inlineBlock a[href *= '#resource']"));
+		assertThat(elements.size(), is(1));
+		element = elements.get(0);
+		highlight(element);
+		assertThat(element.getText(), is(groupName));
+		// System.err.println(element.getAttribute("innerHTML"));
+		element.click();
+		element = wait.until(ExpectedConditions.visibilityOf(driver.findElement(
+				By.cssSelector("div.masterContainer div.containerLabel"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		assertThat(element.getText(), is("Subresources"));
 	}
 
 	private void navigateToLaunchDialog() {
@@ -273,4 +317,13 @@ public class UcdTest extends BaseTest {
 		assertThat(element, notNullValue());
 		element.click();
 	}
+
+	private void closeDialog(String selector) {
+		dialogElement = driver.findElement(By.cssSelector(selector));
+		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
+		assertThat(element, notNullValue());
+		element.click();
+
+	}
+
 }
