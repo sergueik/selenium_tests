@@ -161,12 +161,14 @@ public class BaseTest {
 	private List<String> chromeExtensions = new ArrayList<>();
 	protected static String osName = getOSName();
 
-	private String extensionDir = String.format("%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
+	private String extensionDir = String.format(
+			"%s\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions",
 			getPropertyEnv("USERPROFILE", "C:\\Users\\Serguei"));
 
 	private static String browser = getPropertyEnv("webdriver.driver", "chrome");
 	// use -P profile to override
-	private static final boolean headless = Boolean.parseBoolean(getPropertyEnv("HEADLESS", "false"));
+	private static final boolean headless = Boolean
+			.parseBoolean(getPropertyEnv("HEADLESS", "false"));
 
 	/*
 	 * public String getExtensionDir() { return extensionDir; }
@@ -182,8 +184,10 @@ public class BaseTest {
 
 	private static final Map<String, String> browserDrivers = new HashMap<>();
 	static {
-		browserDrivers.put("chrome", osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
-		browserDrivers.put("firefox", osName.equals("windows") ? "geckodriver.exe" : "driver");
+		browserDrivers.put("chrome",
+				osName.equals("windows") ? "chromedriver.exe" : "chromedriver");
+		browserDrivers.put("firefox",
+				osName.equals("windows") ? "geckodriver.exe" : "driver");
 		browserDrivers.put("edge", "MicrosoftWebDriver.exe");
 	}
 
@@ -250,7 +254,8 @@ public class BaseTest {
 	private void loadChromeExtensionsBase64Encoded(ChromeOptions chromeOptions) {
 		List<String> chromeExtensionsBase64Encoded = new ArrayList<>();
 		for (String extensionName : this.chromeExtensions) {
-			String extensionFilePath = this.extensionDir + "\\" + extensionName + ".crx";
+			String extensionFilePath = this.extensionDir + "\\" + extensionName
+					+ ".crx";
 			// err.println("About to load extension " + extensionFilePath);
 			File extensionFile = new File(extensionFilePath);
 
@@ -259,7 +264,8 @@ public class BaseTest {
 			// http://www.java2s.com/Code/Java/File-Input-Output/Base64encodedecodedatausingtheBase64encodingscheme.htm
 			if (extensionFile.exists() && !extensionFile.isDirectory()) {
 				try {
-					FileInputStream extensionFileInputStream = new FileInputStream(extensionFile);
+					FileInputStream extensionFileInputStream = new FileInputStream(
+							extensionFile);
 					byte extensionData[] = new byte[(int) extensionFile.length()];
 					extensionFileInputStream.read(extensionData);
 
@@ -275,11 +281,13 @@ public class BaseTest {
 					} catch (NoSuchAlgorithmException e) {
 						e.printStackTrace();
 					}
-					err.println(String.format("Chrome extension successfully encoded and added from %s: hash: %s",
+					err.println(String.format(
+							"Chrome extension successfully encoded and added from %s: hash: %s",
 							extensionFilePath.replaceFirst("^.*[\\/]", ""),
 							new String(Base64.encodeBase64(chromeExtensionHash))));
 				} catch (FileNotFoundException e) {
-					err.println("Chrome extension not found: " + extensionFilePath + " " + e);
+					err.println(
+							"Chrome extension not found: " + extensionFilePath + " " + e);
 				} catch (IOException e) {
 					err.println("Problem with reading Chrome extension: " + e);
 				}
@@ -316,9 +324,11 @@ public class BaseTest {
 		err.println("Launching " + browser);
 		if (browser.equals("chrome")) {
 			System.setProperty("webdriver.chrome.driver",
-					osName.equals("windows") ? (new File("c:/java/selenium/chromedriver.exe")).getAbsolutePath()
-							: Paths.get(System.getProperty("user.home")).resolve("Downloads").resolve("chromedriver")
-									.toAbsolutePath().toString());
+					osName.equals("windows")
+							? (new File("c:/java/selenium/chromedriver.exe"))
+									.getAbsolutePath()
+							: Paths.get(System.getProperty("user.home")).resolve("Downloads")
+									.resolve("chromedriver").toAbsolutePath().toString());
 
 			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 			// https://peter.sh/experiments/chromium-command-line-switches/
@@ -326,7 +336,8 @@ public class BaseTest {
 
 			Map<String, Object> chromePrefs = new HashMap<>();
 			chromePrefs.put("profile.default_content_settings.popups", 0);
-			String downloadFilepath = System.getProperty("user.dir") + System.getProperty("file.separator") + "target"
+			String downloadFilepath = System.getProperty("user.dir")
+					+ System.getProperty("file.separator") + "target"
 					+ System.getProperty("file.separator");
 			chromePrefs.put("download.prompt_for_download", "false");
 			chromePrefs.put("download.directory_upgrade", "true");
@@ -351,12 +362,14 @@ public class BaseTest {
 			chromeOptions.setExperimentalOption("prefs", chromePrefs);
 			// "disable-infobars" option replacement
 			// to suppress "Chrome is being controlled by automated test software"
-			chromeOptions.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+			chromeOptions.setExperimentalOption("excludeSwitches",
+					Collections.singletonList("enable-automation"));
 			chromeOptions.setExperimentalOption("useAutomationExtension", false);
 			if (osName.equals("windows")) {
 				// TODO: jni
 				if (System.getProperty("os.arch").contains("64")) {
-					String[] paths = new String[] { "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+					String[] paths = new String[] {
+							"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
 							"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" };
 					// check file existence
 					for (String path : paths) {
@@ -367,18 +380,21 @@ public class BaseTest {
 						}
 					}
 				} else {
-					chromeOptions.setBinary("c:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
+					chromeOptions.setBinary(
+							"c:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 				}
 			}
 			// see also: https://developers.google.com/recaptcha/docs/faq
 			// https://peter.sh/experiments/chromium-command-line-switches/
 			for (String optionAgrument : (new String[] {
 					"--user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0",
-					"--allow-running-insecure-content", "--allow-insecure-localhost", "--enable-local-file-accesses",
-					"--disable-notifications", "--disable-save-password-bubble",
+					"--allow-running-insecure-content", "--allow-insecure-localhost",
+					"--enable-local-file-accesses", "--disable-notifications",
+					"--disable-save-password-bubble",
 					/* "start-maximized" , */
-					"--disable-default-app", "disable-infobars", "--no-sandbox ", "--browser.download.folderList=2",
-					"--disable-web-security", "--disable-translate", "--disable-popup-blocking",
+					"--disable-default-app", "disable-infobars", "--no-sandbox ",
+					"--browser.download.folderList=2", "--disable-web-security",
+					"--disable-translate", "--disable-popup-blocking",
 					"--ignore-certificate-errors", "--no-proxy-server",
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
 					// "--start-fullscreen",
@@ -393,7 +409,8 @@ public class BaseTest {
 
 			// options for headless
 			if (headless) {
-				for (String optionAgrument : (new String[] { "headless", "window-size=1200x800" })) {
+				for (String optionAgrument : (new String[] { "headless",
+						"window-size=1200x800" })) {
 					chromeOptions.addArguments(optionAgrument);
 				}
 			}
@@ -402,8 +419,10 @@ public class BaseTest {
 			loadChromeExtensionsBase64Encoded(chromeOptions);
 
 			// http://learn-automation.com/handle-untrusted-certificate-selenium/
-			capabilities.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
-			capabilities.setCapability(org.openqa.selenium.chrome.ChromeOptions.CAPABILITY, chromeOptions);
+			capabilities
+					.setBrowserName(DesiredCapabilities.chrome().getBrowserName());
+			capabilities.setCapability(
+					org.openqa.selenium.chrome.ChromeOptions.CAPABILITY, chromeOptions);
 			capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
 			// https://stackoverflow.com/questions/48851036/how-to-configure-log-level-for-selenium
 			// https://stackoverflow.com/questions/28572783/no-log4j2-configuration-file-found-using-default-configuration-logging-only-er
@@ -434,15 +453,17 @@ public class BaseTest {
 
 			// https://developer.mozilla.org/en-US/Firefox/Headless_mode
 			// 3.5.3 and later
-			System.setProperty("webdriver.gecko.driver",
-					osName.equals("windows") ? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
-							: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME")) */
-							Paths.get(System.getProperty("user.home")).resolve("Downloads").resolve("geckodriver")
-									.toAbsolutePath().toString());
-			System.setProperty("webdriver.firefox.bin",
-					osName.equals("windows")
-							? new File("c:/Program Files (x86)/Mozilla Firefox/firefox.exe").getAbsolutePath()
-							: "/usr/bin/firefox");
+			System.setProperty("webdriver.gecko.driver", osName.equals("windows")
+					? new File("c:/java/selenium/geckodriver.exe").getAbsolutePath()
+					: /* String.format("%s/Downloads/geckodriver", System.getenv("HOME")) */
+					Paths.get(System.getProperty("user.home")).resolve("Downloads")
+							.resolve("geckodriver").toAbsolutePath().toString());
+			System
+					.setProperty("webdriver.firefox.bin",
+							osName.equals("windows") ? new File(
+									"c:/Program Files (x86)/Mozilla Firefox/firefox.exe")
+											.getAbsolutePath()
+									: "/usr/bin/firefox");
 			// https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
 			DesiredCapabilities capabilities = DesiredCapabilities.firefox();
 			// use legacy FirefoxDriver
@@ -457,7 +478,8 @@ public class BaseTest {
 			// http://kb.mozillazine.org/Network.cookie.cookieBehavior
 			// profile.setPreference("network.cookie.cookieBehavior", 2);
 			// no cookies are allowed
-			profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream,text/csv");
+			profile.setPreference("browser.helperApps.neverAsk.saveToDisk",
+					"application/octet-stream,text/csv");
 			profile.setPreference("browser.helperApps.neverAsk.openFile",
 					"text/csv,application/x-msexcel,application/excel,application/x-excel,application/vnd.ms-excel,image/png,image/jpeg,text/html,text/plain,application/msword,application/xml");
 			// TODO: cannot find symbol: method
@@ -486,7 +508,8 @@ public class BaseTest {
 			// NOTE: the next setting appears to have no effect.
 			// does one really need os-specific definition?
 			// like /dev/null for Linux vs. nul for Windows
-			System.setProperty("webdriver.firefox.logfile", osName.equals("windows") ? "nul" : "/dev/null");
+			System.setProperty("webdriver.firefox.logfile",
+					osName.equals("windows") ? "nul" : "/dev/null");
 
 			// no longer supported as of Selenium 3.8.x
 			// profile.setEnableNativeEvents(false);
@@ -504,12 +527,14 @@ public class BaseTest {
 				// driver.setLogLevel(FirefoxDriverLogLevel.ERROR);
 			} catch (WebDriverException e) {
 				e.printStackTrace();
-				throw new RuntimeException("Cannot initialize Firefox driver: " + e.toString());
+				throw new RuntimeException(
+						"Cannot initialize Firefox driver: " + e.toString());
 			}
 		}
 		actions = new Actions(driver);
 
-		driver.manage().timeouts().setScriptTimeout(scriptTimeout, TimeUnit.SECONDS);
+		driver.manage().timeouts().setScriptTimeout(scriptTimeout,
+				TimeUnit.SECONDS);
 		// Declare a wait time
 		wait = new WebDriverWait(driver, flexibleWait);
 
@@ -595,8 +620,9 @@ public class BaseTest {
 		highlight(element, highlightInterval, "solid yellow");
 	}
 
-	public void highlight(WebElement element, long highlightInterval, String color) {
-		err.println("Color: " + color);
+	public void highlight(WebElement element, long highlightInterval,
+			String color) {
+		// err.println("Color: " + color);
 		if (wait == null) {
 			wait = new WebDriverWait(driver, flexibleWait);
 		}
@@ -608,7 +634,8 @@ public class BaseTest {
 
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
-			executeScript(String.format("arguments[0].style.border='3px %s'", color), element);
+			executeScript(String.format("arguments[0].style.border='3px %s'", color),
+					element);
 			Thread.sleep(highlightInterval);
 			executeScript("arguments[0].style.border=''", element);
 		} catch (InterruptedException e) {
@@ -647,7 +674,8 @@ public class BaseTest {
 		executeScript("var element = arguments[0];" + "element.style.display = 'block';", element);
 		// @formatter:on
 
-		System.err.println("Modified the subject element contents: " + element.getAttribute("outerHTML"));
+		System.err.println("Modified the subject element contents: "
+				+ element.getAttribute("outerHTML"));
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
 		} catch (TimeoutException e) {
@@ -658,17 +686,19 @@ public class BaseTest {
 	// based on: discussion of using webdriver versus container element in waits
 	// (in Russian)
 	// http://software-testing.ru/forum/index.php?/topic/37820-tcelesoobraznost-webdriverwait/
-	public void waitVisibilityInside(final WebElement container, final By by, final int timeout) {
+	public void waitVisibilityInside(final WebElement container, final By by,
+			final int timeout) {
 		@SuppressWarnings("unused")
 		boolean status = false;
 		try {
-			status = (new WebDriverWait(driver, timeout)).until(new ExpectedCondition<Boolean>() {
-				@Override
-				public Boolean apply(WebDriver d) {
-					List<WebElement> t = container.findElements(by);
-					return (t == null || t.size() == 0);
-				}
-			});
+			status = (new WebDriverWait(driver, timeout))
+					.until(new ExpectedCondition<Boolean>() {
+						@Override
+						public Boolean apply(WebDriver d) {
+							List<WebElement> t = container.findElements(by);
+							return (t == null || t.size() == 0);
+						}
+					});
 		} catch (Exception e) {
 			err.println("Exception: " + e.toString());
 			status = true;
@@ -682,13 +712,15 @@ public class BaseTest {
 	public void highlight(By locator, String color) throws InterruptedException {
 		log.info("Highlighting element {}", locator);
 		WebElement element = driver.findElement(locator);
-		executeScript(String.format("arguments[0].style.border='3px %s'", color), element);
+		executeScript(String.format("arguments[0].style.border='3px %s'", color),
+				element);
 		Thread.sleep(highlightInterval);
 		executeScript("arguments[0].style.border=''", element);
 	}
 
 	// based on https://groups.google.com/forum/#!topic/selenium-users/3J27G1GxCa8
-	public void setAttribute(WebElement element, String attributeName, String attributeValue) {
+	public void setAttribute(WebElement element, String attributeName,
+			String attributeValue) {
 		executeScript(
 				"var element = arguments[0]; var attributeName = arguments[1]; var attributeValue = arguments[2]; element.setAttribute(attributeName, attributeValue)",
 				element, attributeName, attributeValue);
@@ -742,8 +774,11 @@ public class BaseTest {
 
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
-			executeScript(String.format("%s\nhighlight_create(arguments[0],arguments[1],arguments[2],arguments[3]);",
-					highlightScript), elementRect.y, elementRect.x, elementRect.width, elementRect.height);
+			executeScript(
+					String.format(
+							"%s\nhighlight_create(arguments[0],arguments[1],arguments[2],arguments[3]);",
+							highlightScript),
+					elementRect.y, elementRect.x, elementRect.width, elementRect.height);
 			Thread.sleep(highlightInterval);
 			executeScript(String.format("%s\nhighlight_remove();", highlightScript));
 		} catch (InterruptedException e) {
@@ -755,12 +790,15 @@ public class BaseTest {
 	// hover
 	// https://stackoverflow.com/questions/11038638/simulate-hover-in-jquery
 	public void jqueryHover(String cssSelector) {
-		executeScript("var selector = arguments[0]; $(selector).mouseenter().mouseleave();", cssSelector);
+		executeScript(
+				"var selector = arguments[0]; $(selector).mouseenter().mouseleave();",
+				cssSelector);
 	}
 
 	protected static String getScriptContent(String scriptName) {
 		try {
-			final InputStream stream = BaseTest.class.getClassLoader().getResourceAsStream(scriptName);
+			final InputStream stream = BaseTest.class.getClassLoader()
+					.getResourceAsStream(scriptName);
 			final byte[] bytes = new byte[stream.available()];
 			stream.read(bytes);
 			return new String(bytes, "UTF-8");
@@ -778,7 +816,8 @@ public class BaseTest {
 	}
 
 	public void changeColor(String color, WebElement element) {
-		executeScript("arguments[0].style.backgroundColor = '" + color + "'", element);
+		executeScript("arguments[0].style.backgroundColor = '" + color + "'",
+				element);
 		try {
 			Thread.sleep(20);
 		} catch (InterruptedException e) {
@@ -788,7 +827,8 @@ public class BaseTest {
 	// http://www.javawithus.com/tutorial/using-ellipsis-to-accept-variable-number-of-arguments
 	public Object executeScript(String script, Object... arguments) {
 		if (driver instanceof JavascriptExecutor) {
-			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class.cast(driver);
+			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class
+					.cast(driver);
 			/*
 			 *
 			 * // currently unsafe err.println(arguments.length + " arguments received.");
@@ -839,7 +879,8 @@ public class BaseTest {
 	}
 
 	// private static final String dirNamePattern = "scoped_dir.*";
-	private static class CustomDirectoryFileFilter extends AbstractFileFilter implements Serializable {
+	private static class CustomDirectoryFileFilter extends AbstractFileFilter
+			implements Serializable {
 		private String dirNamePattern = null;
 
 		public void setDirNamePattern(String data) {
@@ -855,9 +896,11 @@ public class BaseTest {
 
 		@Override
 		public boolean accept(final File file) {
-			boolean status = file.isDirectory() && file.getName().matches(dirNamePattern);
+			boolean status = file.isDirectory()
+					&& file.getName().matches(dirNamePattern);
 			if (status) {
-				System.err.println(String.format("Matching item: \"%s\"", file.getName()));
+				System.err
+						.println(String.format("Matching item: \"%s\"", file.getName()));
 			}
 			return status;
 		}
@@ -874,9 +917,11 @@ public class BaseTest {
 		// AbstractFileFilter filter = new CustomDirectoryFileFilter();
 		CustomDirectoryFileFilter filter = new CustomDirectoryFileFilter();
 		filter.setDirNamePattern("scoped_dir.*");
-		FileUtils.listFilesAndDirs(new File(System.getProperty("java.io.tmpdir")),
-				(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE),
-				/* filter */ new BaseTest.CustomDirectoryFileFilter("scoped_dir.*")).stream().forEach(f -> {
+		FileUtils
+				.listFilesAndDirs(new File(System.getProperty("java.io.tmpdir")),
+						(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE),
+						/* filter */ new BaseTest.CustomDirectoryFileFilter("scoped_dir.*"))
+				.stream().forEach(f -> {
 					try {
 						if (f.getCanonicalPath().contains((CharSequence) "scoped_dir")) {
 							System.err.println("About to remove: " + f.getCanonicalPath());
@@ -887,9 +932,12 @@ public class BaseTest {
 					}
 				});
 
-		FileUtils.listFilesAndDirs(new File(System.getProperty("java.io.tmpdir")),
-				(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE), (IOFileFilter) DirectoryFileFilter.DIRECTORY)
-				.stream().filter(f -> f.getName().matches("scoped_dir.*")).forEach(f -> {
+		FileUtils
+				.listFilesAndDirs(new File(System.getProperty("java.io.tmpdir")),
+						(IOFileFilter) new NotFileFilter(TrueFileFilter.INSTANCE),
+						(IOFileFilter) DirectoryFileFilter.DIRECTORY)
+				.stream().filter(f -> f.getName().matches("scoped_dir.*"))
+				.forEach(f -> {
 					try {
 						System.err.println("Removing: " + f.getCanonicalPath());
 						FileUtils.deleteDirectory(f);
@@ -922,10 +970,11 @@ public class BaseTest {
 		String user = getPropertyEnv("User", "vagrant");
 		int port = Integer.parseInt(getPropertyEnv("Port", "2222"));
 		String command = String.format("killall %s", processName.trim());
-		SSHUser sshUser = new SSHUser.Builder().forUser(user).withSshFolder(new File(sshFolder))
+		SSHUser sshUser = new SSHUser.Builder().forUser(user)
+				.withSshFolder(new File(sshFolder))
 				.usingPrivateKey(new File(identityFile)).build();
-		SshKnowHow ssh = new ExecutionBuilder().connectTo(hostName).onPort(port).includeHostKeyChecks(false)
-				.usingUserInfo(sshUser).build();
+		SshKnowHow ssh = new ExecutionBuilder().connectTo(hostName).onPort(port)
+				.includeHostKeyChecks(false).usingUserInfo(sshUser).build();
 
 		ExecResults execResults = ssh.executeCommand(command);
 		err.println(execResults.getOutput().toString());
@@ -954,9 +1003,8 @@ public class BaseTest {
 		 * ).processid 4736 9496 9536 9120 1996 8876 10188 (get-process -id 4736 )
 		 * .processname 'chrome' #>
 		 */
-		String command = String.format(
-				(osName.toLowerCase().startsWith("windows")) ? "taskkill.exe /T /F /IM %s" : "killall %s",
-				processName.trim());
+		String command = String.format((osName.toLowerCase().startsWith("windows"))
+				? "taskkill.exe /T /F /IM %s" : "killall %s", processName.trim());
 		// /T Terminates the specified process and any child processes which were
 		// started by it
 		try {
@@ -964,9 +1012,11 @@ public class BaseTest {
 			Process process = runtime.exec(command);
 			// process.redirectErrorStream( true);
 
-			BufferedReader stdoutBufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			BufferedReader stdoutBufferedReader = new BufferedReader(
+					new InputStreamReader(process.getInputStream()));
 
-			BufferedReader stderrBufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+			BufferedReader stderrBufferedReader = new BufferedReader(
+					new InputStreamReader(process.getErrorStream()));
 			String line = null;
 
 			StringBuffer processOutput = new StringBuffer();
@@ -998,22 +1048,26 @@ public class BaseTest {
 	}
 
 	public String getResourcePath(String resourceFileName) {
-		return String.format("%s/src/main/resources/%s", System.getProperty("user.dir"), resourceFileName);
+		return String.format("%s/src/main/resources/%s",
+				System.getProperty("user.dir"), resourceFileName);
 	}
 
 	// based on:
 	// https://github.com/lopukhDA/Angular-tests-on-c-sharp-and-protractor/blob/master/NUnit.Tests1/WebDriver.cs
-	public Boolean checkElementAttribute(WebElement element, String value, Optional<String> attributeOpt) {
+	public Boolean checkElementAttribute(WebElement element, String value,
+			Optional<String> attributeOpt) {
 		String attribute = attributeOpt.isPresent() ? attributeOpt.get() : "class";
 		return (element.getAttribute(attribute).contains(value)) ? true : false;
 	}
 
-	public Boolean checkElementAttribute(WebElement element, String value, String... attributes) {
+	public Boolean checkElementAttribute(WebElement element, String value,
+			String... attributes) {
 		String attribute = attributes.length > 0 ? attributes[0] : "class";
 		return (element.getAttribute(attribute).contains(value)) ? true : false;
 	}
 
-	protected boolean areElementsPresent(WebElement parentWebElement, By byLocator) {
+	protected boolean areElementsPresent(WebElement parentWebElement,
+			By byLocator) {
 		return parentWebElement.findElements(byLocator).size() == 1;
 		// usage:
 		// assertTrue(areElementsPresent(driver.findElements(By.cssSelector("li[class*=
@@ -1054,7 +1108,8 @@ public class BaseTest {
 	}
 
 	protected String cssSelectorOfElement(WebElement element) {
-		return (String) executeScript(getScriptContent("cssSelectorOfElement.js"), element);
+		return (String) executeScript(getScriptContent("cssSelectorOfElement.js"),
+				element);
 	}
 
 	protected boolean detectFullScreen() {
@@ -1062,18 +1117,22 @@ public class BaseTest {
 	}
 
 	protected String styleOfElement(WebElement element, Object... arguments) {
-		return (String) executeScript(getScriptContent("getStyle.js"), element, arguments);
+		return (String) executeScript(getScriptContent("getStyle.js"), element,
+				arguments);
 	}
 
 	protected String cssSelectorOfElementAlternative(WebElement element) {
-		return (String) executeScript(getScriptContent("cssSelectorOfElementAlternative.js"), element);
+		return (String) executeScript(
+				getScriptContent("cssSelectorOfElementAlternative.js"), element);
 	}
 
 	protected String xpathOfElement(WebElement element) {
-		return (String) executeScript(getScriptContent("xpathOfElement.js"), new Object[] { element });
+		return (String) executeScript(getScriptContent("xpathOfElement.js"),
+				new Object[] { element });
 	}
 
-	protected RemoteWebElement findByCssSelectorAndInnerText(String elementLocator, String elementText) {
+	protected RemoteWebElement findByCssSelectorAndInnerText(
+			String elementLocator, String elementText) {
 		return findByCssSelectorAndInnerText(elementLocator, elementText, false);
 	}
 
@@ -1091,13 +1150,16 @@ public class BaseTest {
 	// basically to scan the DOM, unless a nonempty elementLocator is provided
 	// then returns the last element in the array of matching elements -
 	// presumably the innermost matching element
-	protected RemoteWebElement findByCssSelectorAndInnerText(String elementLocator, String elementText, boolean debug) {
-		return (RemoteWebElement) executeScript(getScriptContent("findByCssSelectorAndInnerText.js"), elementLocator,
+	protected RemoteWebElement findByCssSelectorAndInnerText(
+			String elementLocator, String elementText, boolean debug) {
+		return (RemoteWebElement) executeScript(
+				getScriptContent("findByCssSelectorAndInnerText.js"), elementLocator,
 				elementText, debug);
 	}
 
 	protected String getSelectionText(boolean debug) {
-		return (String) executeScript(getScriptContent("getSelectionText.js"), debug);
+		return (String) executeScript(getScriptContent("getSelectionText.js"),
+				debug);
 	}
 
 	protected String getSelectionText() {
@@ -1148,8 +1210,10 @@ public class BaseTest {
 		String name = "Window_" + instanceCount++;
 		executeScript("var anchorTag = document.createElement('a'); "
 				+ "anchorTag.appendChild(document.createTextNode('nwh'));"
-				+ "anchorTag.setAttribute('id', arguments[0]);" + "anchorTag.setAttribute('href', arguments[1]);"
-				+ "anchorTag.setAttribute('target', '_blank');" + "anchorTag.setAttribute('style', 'display:block;');"
+				+ "anchorTag.setAttribute('id', arguments[0]);"
+				+ "anchorTag.setAttribute('href', arguments[1]);"
+				+ "anchorTag.setAttribute('target', '_blank');"
+				+ "anchorTag.setAttribute('style', 'display:block;');"
 				+ "var firstElement = document.getElementsByTagName('body')[0].getElementsByTagName('*')[0];"
 				+ "firstElement.parentElement.appendChild(anchorTag);", name, url);
 		// common error with this approach: Element is not clickable at point
@@ -1198,7 +1262,8 @@ public class BaseTest {
 			// referenced in
 			// https://stackoverflow.com/questions/6215779/scroll-if-element-is-not-visible
 			//
-			String result = (String) executeScript(getScriptContent("scrollIntoViewIfOutOfView.js"), element, debug,
+			String result = (String) executeScript(
+					getScriptContent("scrollIntoViewIfOutOfView.js"), element, debug,
 					force);
 
 			if (debug) {
@@ -1243,7 +1308,8 @@ public class BaseTest {
 	protected String xPathToCSS(String xpath) {
 		String result = null;
 		try {
-			result = (String) executeScript(getScriptContent("cssify.js"), new Object[] { xpath });
+			result = (String) executeScript(getScriptContent("cssify.js"),
+					new Object[] { xpath });
 		} catch (WebDriverException e) {
 		}
 		return result;
@@ -1293,20 +1359,22 @@ public class BaseTest {
 							start = i;
 							while (i < length && isAttrLetter(css.charAt(i)))
 								i++;
-							attributes
-									.add(convertToClass(i == length ? css.substring(start) : css.substring(start, i)));
+							attributes.add(convertToClass(i == length ? css.substring(start)
+									: css.substring(start, i)));
 							break;
 						case '#':
 							i++;
 							start = i;
 							while (i < length && isAttrLetter(css.charAt(i)))
 								i++;
-							attributes.add(convertToId(i == length ? css.substring(start) : css.substring(start, i)));
+							attributes.add(convertToId(i == length ? css.substring(start)
+									: css.substring(start, i)));
 							break;
 						case '[':
 							i++;
 							String attribute = "@";
-							while (i < length && (!Arrays.asList('=', ']').contains(css.charAt(i)))) {
+							while (i < length
+									&& (!Arrays.asList('=', ']').contains(css.charAt(i)))) {
 								attribute += css.charAt(i);
 								i++;
 							}
@@ -1328,8 +1396,9 @@ public class BaseTest {
 							i++;
 							break;
 						default:
-							throw new RuntimeException(String
-									.format("Can't process Css. Unexpected symbol %s in attributes", css.charAt(i)));
+							throw new RuntimeException(String.format(
+									"Can't process Css. Unexpected symbol %s in attributes",
+									css.charAt(i)));
 						}
 					}
 					if (result.charAt(result.length() - 1) == '/')
@@ -1337,7 +1406,8 @@ public class BaseTest {
 					result += "[" + String.join(" and ", attributes) + "]";
 					continue;
 				}
-				throw new RuntimeException(String.format("Can't process Css. Unexpected symbol '%s'", symbol));
+				throw new RuntimeException(
+						String.format("Can't process Css. Unexpected symbol '%s'", symbol));
 			}
 			return result;
 		}
@@ -1355,8 +1425,9 @@ public class BaseTest {
 		}
 
 		private static boolean isAttrLetter(char symbol) {
-			return symbol >= 'a' && symbol <= 'z' || symbol >= 'A' && symbol <= 'Z' || symbol >= '0' && symbol <= '9'
-					|| symbol == '-' || symbol == '_' || symbol == '.' || symbol == ':';
+			return symbol >= 'a' && symbol <= 'z' || symbol >= 'A' && symbol <= 'Z'
+					|| symbol >= '0' && symbol <= '9' || symbol == '-' || symbol == '_'
+					|| symbol == '.' || symbol == ':';
 		}
 
 		private static boolean isTagLetter(char symbol) {
@@ -1379,26 +1450,27 @@ public class BaseTest {
 	// for the pre-2.20.0 versions of Selenium Webdriver before
 	// ExpectedConditions alertIsPresent becomes available
 	public Alert getAlert(final long time) {
-		return new WebDriverWait(driver, time, 200).until(new ExpectedCondition<Alert>() {
-			@Override
-			public Alert apply(WebDriver d) {
-				Alert alert = null;
-				try {
-					err.println("getAlert evaluating alert");
-					alert = d.switchTo().alert();
-					if (alert != null) {
-						err.println("getAlert detected alert");
-						return alert;
-					} else {
-						err.println("getAlert see no alert");
-						return null;
+		return new WebDriverWait(driver, time, 200)
+				.until(new ExpectedCondition<Alert>() {
+					@Override
+					public Alert apply(WebDriver d) {
+						Alert alert = null;
+						try {
+							err.println("getAlert evaluating alert");
+							alert = d.switchTo().alert();
+							if (alert != null) {
+								err.println("getAlert detected alert");
+								return alert;
+							} else {
+								err.println("getAlert see no alert");
+								return null;
+							}
+						} catch (NoAlertPresentException e) {
+							err.println("getAlert see no alert");
+							return null;
+						}
 					}
-				} catch (NoAlertPresentException e) {
-					err.println("getAlert see no alert");
-					return null;
-				}
-			}
-		});
+				});
 	}
 	// based on
 	// https://stackoverflow.com/questions/5806690/is-there-an-iconv-with-translit-equivalent-in-java
@@ -1408,27 +1480,34 @@ public class BaseTest {
 	public static class Translit {
 
 		private static final Charset UTF8 = Charset.forName("UTF-8");
-		private static final char[] alphabetCyrillic = { ' ', 'а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й',
-				'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю',
-				'я', 'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т',
-				'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Б', 'Э', 'Ю', 'Я', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-				'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C',
-				'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-				'Y', 'Z', '<', '>', '"', ':', '&', '$', '(', ')', '=', '-', '.', '0', '1', '2', '3', '4', '5', '6', '7',
-				'8', '9' };
+		private static final char[] alphabetCyrillic = { ' ', 'а', 'б', 'в', 'г',
+				'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р',
+				'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю',
+				'я', 'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л',
+				'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ',
+				'Ъ', 'Ы', 'Б', 'Э', 'Ю', 'Я', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+				'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+				'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+				'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+				'Y', 'Z', '<', '>', '"', ':', '&', '$', '(', ')', '=', '-', '.', '0',
+				'1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
-		private static final String[] alphabetTranslit = { " ", "a", "b", "v", "g", "d", "e", "e", "zh", "z", "i", "y",
-				"k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "h", "ts", "ch", "sh", "sch", "", "i", "", "e",
-				"ju", "ja", "A", "B", "V", "G", "D", "E", "E", "Zh", "Z", "I", "Y", "K", "L", "M", "N", "O", "P", "R",
-				"S", "T", "U", "F", "H", "Ts", "Ch", "Sh", "Sch", "", "I", "", "E", "Ju", "Ja", "a", "b", "c", "d", "e",
-				"f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-				"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
-				"V", "W", "X", "Y", "Z", "<", ">", "\"", ":", "&", "$", "(", ")", "=", "-", ".", "0", "1", "2", "3",
-				"4", "5", "6", "7", "8", "9" };
+		private static final String[] alphabetTranslit = { " ", "a", "b", "v", "g",
+				"d", "e", "e", "zh", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r",
+				"s", "t", "u", "f", "h", "ts", "ch", "sh", "sch", "", "i", "", "e",
+				"ju", "ja", "A", "B", "V", "G", "D", "E", "E", "Zh", "Z", "I", "Y", "K",
+				"L", "M", "N", "O", "P", "R", "S", "T", "U", "F", "H", "Ts", "Ch", "Sh",
+				"Sch", "", "I", "", "E", "Ju", "Ja", "a", "b", "c", "d", "e", "f", "g",
+				"h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
+				"v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I",
+				"J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+				"X", "Y", "Z", "<", ">", "\"", ":", "&", "$", "(", ")", "=", "-", ".",
+				"0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 		public static String toAscii(final String input) {
 			final CharsetEncoder charsetEncoder = UTF8.newEncoder();
-			final char[] decomposed = Normalizer.normalize(input, Normalizer.Form.NFKD).toCharArray();
+			final char[] decomposed = Normalizer
+					.normalize(input, Normalizer.Form.NFKD).toCharArray();
 			final StringBuilder sb = new StringBuilder(decomposed.length);
 
 			// NOTE: evaluating the character charcount is unnecessary with Cyrillic
@@ -1436,7 +1515,8 @@ public class BaseTest {
 				final int codePoint = Character.codePointAt(decomposed, i);
 				final int charCount = Character.charCount(codePoint);
 
-				if (charsetEncoder.canEncode(CharBuffer.wrap(decomposed, i, charCount))) {
+				if (charsetEncoder
+						.canEncode(CharBuffer.wrap(decomposed, i, charCount))) {
 					sb.append(decomposed, i, charCount);
 				}
 
@@ -1456,6 +1536,11 @@ public class BaseTest {
 		}
 	}
 
+	public static String getEnv(String envKey, String defaultValue) {
+		String result = System.getenv(envKey);
+		return (result == null || result.isEmpty()) ? defaultValue : result;
+	}
+
 	public static String resolveEnvVars(String input) {
 		if (null == input) {
 			return null;
@@ -1466,7 +1551,8 @@ public class BaseTest {
 		while (m.find()) {
 			String envVarName = null == m.group(1) ? m.group(2) : m.group(1);
 			String envVarValue = System.getenv(envVarName);
-			m.appendReplacement(sb, null == envVarValue ? "" : envVarValue.replace("\\", "\\\\"));
+			m.appendReplacement(sb,
+					null == envVarValue ? "" : envVarValue.replace("\\", "\\\\"));
 		}
 		m.appendTail(sb);
 		return sb.toString();
@@ -1480,7 +1566,8 @@ public class BaseTest {
 	// e.g. Page title: https://mail.google.com/mail/u/0/#inbox
 	private ExpectedCondition<Boolean> pageTitleEndsWith(final String search) {
 		// return java 8 lambda
-		return d -> d.getTitle().toLowerCase().matches("(?:" + search.toLowerCase() + ")$");
+		return d -> d.getTitle().toLowerCase()
+				.matches("(?:" + search.toLowerCase() + ")$");
 	}
 
 	// see also:
@@ -1520,9 +1607,12 @@ public class BaseTest {
 		openEmptyPlaceholderPage();
 		String pageBody = getScriptContent(pageName);
 		if (debug) {
-			System.err.println("Writing into body element: " + prepareBodyHTML(pageBody));
+			System.err
+					.println("Writing into body element: " + prepareBodyHTML(pageBody));
 		}
-		executeScript("document.getElementsByTagName('body')[0].innerHTML = arguments[0];", prepareBodyHTML(pageBody));
+		executeScript(
+				"document.getElementsByTagName('body')[0].innerHTML = arguments[0];",
+				prepareBodyHTML(pageBody));
 
 	}
 
@@ -1531,7 +1621,8 @@ public class BaseTest {
 		openEmptyPlaceholderPage();
 		String pageBody = getScriptContent(pageName);
 		if (debug) {
-			err.println("Writing into body element: " + prepareBodyHTML(pageBody) + " with a timeout " + timeout);
+			err.println("Writing into body element: " + prepareBodyHTML(pageBody)
+					+ " with a timeout " + timeout);
 		}
 		executeScript(
 				"setTimeout(function(){ document.getElementsByTagName('body')[0].innerHTML = arguments[0];  }, arguments[1]);",
@@ -1542,7 +1633,8 @@ public class BaseTest {
 	// https://github.com/fudax/selenium_recorder/blob/master/src/main/java/com/star/bot/apis/WebDriverBotApis.java
 	public boolean clickByJavaScript(WebElement element) {
 		wait.until(ExpectedConditions.visibilityOf(element));
-		String result = (String) executeScript("return arguments[0].click();", element);
+		String result = (String) executeScript("return arguments[0].click();",
+				element);
 		if (debug) {
 			// e.g. clickByJavaScript result: Press a button!
 			err.println("clickByJavaScript result: " + result);
@@ -1577,8 +1669,9 @@ public class BaseTest {
 		wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
 		WebElement element = driver.findElement(locator);
 		// https://github.com/SeleniumHQ/selenium/issues/6741
-		actions.click(element).pause(delay).keyDown(Keys.CONTROL).sendKeys("a").keyUp(Keys.CONTROL).pause(delay)
-				.sendKeys(Keys.BACK_SPACE).pause(delay).sendKeys(value).perform();
+		actions.click(element).pause(delay).keyDown(Keys.CONTROL).sendKeys("a")
+				.keyUp(Keys.CONTROL).pause(delay).sendKeys(Keys.BACK_SPACE).pause(delay)
+				.sendKeys(value).perform();
 	}
 
 	// based on: https://xpinjection.com/articles/waits-and-timeouts-in-webdriver/
@@ -1600,7 +1693,8 @@ public class BaseTest {
 		Predicate<WebDriver> hasExpectedValueOfAtribute = new Predicate<WebDriver>() {
 			@Override
 			public boolean test(WebDriver webDriver) {
-				return webDriver.findElement(locator).getAttribute(attributeName).contains(attributeValue);
+				return webDriver.findElement(locator).getAttribute(attributeName)
+						.contains(attributeValue);
 			}
 		};
 	}
@@ -1609,11 +1703,14 @@ public class BaseTest {
 	// https://github.com/yashaka/NSelene/blob/master/NSeleneTests/Given.cs
 	public void setPage(String html) {
 		executeScript("document.getElementsByTagName('body')[0].innerHTML = \""
-				+ html.replace("\n", "").replace("\r", "").replace("\"", "\\\"") + "\";");
+				+ html.replace("\n", "").replace("\r", "").replace("\"", "\\\"")
+				+ "\";");
 	}
 
 	public void setPageWithTimeout(String html, int timeout) {
-		executeScript("setTimeout(function(){ " + "document.getElementsByTagName('body')[0].innerHTML = \""
-				+ html.replace("\n", "").replace("\r", "").replace("\"", "\\\"") + "\" } ," + timeout + ");");
+		executeScript("setTimeout(function(){ "
+				+ "document.getElementsByTagName('body')[0].innerHTML = \""
+				+ html.replace("\n", "").replace("\r", "").replace("\"", "\\\"")
+				+ "\" } ," + timeout + ");");
 	}
 }

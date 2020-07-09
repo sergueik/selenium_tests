@@ -17,29 +17,38 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.ElementNotInteractableException;
+
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Keys;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+/* 
+ automation of UCD server web interface
+ see also: https://www.ibm.com/support/knowledgecenter/SS4GSP_7.0.5/com.ibm.udeploy.tutorial.doc/topics/quickstart_abstract.html
+ */
 public class UcdTest extends BaseTest {
 
-	private final static boolean debug = true;
-	private static String ucdHost = "192.168.0.64";
-	private static String baseURL = String.format("https://%s:8443/", ucdHost);
+	private final boolean debug = (System.getenv("DEBUG") != null
+			&& System.getenv("DEBUG") != "");
+	private static String ucdServerIp = getEnv("UCD_SERVER_IP", "192.168.0.64"); // 172.17.0.2
+	private static String baseURL = String.format("https://%s:8443/",
+			ucdServerIp);
 
 	private static final String username = "admin";
 	private static final String password = "admin";
 	private static final String applicationName = "hello Application";
 	private static final String processName = "hello App Process";
 	private static final String groupName = "helloWorld Tutorial";
+	private static final String componentName = "helloWorld";
 
 	private static WebElement element = null;
 	private static WebElement dialogElement = null;
 	private static WebElement popupElement = null;
 	private static List<WebElement> elements = new ArrayList<>();
 	private static String href = null;
-	private static final int pauseTimeout = 5000;
+	private static final int pauseTimeout = 3000;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -49,11 +58,25 @@ public class UcdTest extends BaseTest {
 	@AfterMethod
 	public void afterMethod() {
 		sleep(pauseTimeout);
+		driver.get("about:blank");
 	}
 
-	// this is a multi step test exercised for its side effect on UCD
 	@Test(enabled = false)
 	public void test1() {
+		userLogin();
+		userSignOut();
+	}
+
+	@Test(enabled = false)
+	public void test2() {
+		userLogin();
+		navigateToResourceTree();
+		userSignOut();
+	}
+
+	// this is a multi-step test exercised for its side effect on UCD
+	@Test(enabled = false)
+	public void test3() {
 		userLogin();
 		navigateToLaunchDialog();
 		dialogElement = wait.until(ExpectedConditions.visibilityOf(
@@ -112,7 +135,7 @@ public class UcdTest extends BaseTest {
 	// the code is largely identical to test1 but uses keyboard navigation treick
 	// without discoderng the pipup DOM
 	@Test(enabled = false)
-	public void test2() {
+	public void test4() {
 		userLogin();
 		navigateToLaunchDialog();
 		dialogElement = driver.findElement(By.cssSelector("div[role = 'dialog']"));
@@ -154,34 +177,34 @@ public class UcdTest extends BaseTest {
 		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
 		assertThat(element, notNullValue());
 		element.click();
-		// closeDialog("div.version-selection-dialog[role = 'dialog']");
+		/* closeDialog("div.version-selection-dialog[role = 'dialog']"); */
 
 		dialogElement = driver.findElement(By.cssSelector("div[role = 'dialog']"));
 		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
 		assertThat(element, notNullValue());
 		element.click();
 
-		// closeDialog("div[role = 'dialog']");
-		userSignOut();
-	}
-
-	@Test(enabled = false)
-	public void test3() {
-		userLogin();
+		/* closeDialog("div[role = 'dialog']"); */
 		userSignOut();
 	}
 
 	@Test(enabled = true)
-	public void test4() {
+	public void test5() {
 		userLogin();
-		navigateToResourceTree();
-		sleep(10000);
+		navigateToComponent();
 		userSignOut();
 	}
 
 	private void userLogin() {
-		element = wait.until(ExpectedConditions
-				.visibilityOf(driver.findElement(By.id("usernameField"))));
+		try {
+			element = wait.until(ExpectedConditions
+					.visibilityOf(driver.findElement(By.id("usernameField"))));
+		} catch (NoSuchElementException e) {
+			// no such element: Unable to locate element: {"method":"css
+			// selector","selector":"#usernameField"}) {
+			element = driver.findElement(By.cssSelector(
+					"form[action = '/tasks/LoginTasks/login' ] input[name = 'username']"));
+		}
 		element.sendKeys(username);
 		element = driver
 				.findElement(By.cssSelector("form input[name = 'password']"));
@@ -226,8 +249,10 @@ public class UcdTest extends BaseTest {
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
 						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
 		assertThat(element, notNullValue());
-		System.err.println(
-				"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		if (debug) {
+			System.err.println(
+					"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		}
 		elements = element.findElements(By.cssSelector(
 				"tr.noPrint.tableFilterRow input[class *= 'dijitInputInner']"));
 		assertThat(elements, notNullValue());
@@ -253,13 +278,63 @@ public class UcdTest extends BaseTest {
 		element = elements.get(0);
 		highlight(element);
 		assertThat(element.getText(), is(groupName));
+		// if (debug) {
 		// System.err.println(element.getAttribute("innerHTML"));
+		// }
 		element.click();
 		element = wait.until(ExpectedConditions.visibilityOf(driver.findElement(
 				By.cssSelector("div.masterContainer div.containerLabel"))));
 		assertThat(element, notNullValue());
 		highlight(element);
 		assertThat(element.getText(), is("Subresources"));
+	}
+
+	private void navigateToComponent() {
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"a.tab.linkPointer[href = '#main/components'] span.tabLabel"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		element.click();
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
+		assertThat(element, notNullValue());
+		System.err.println(
+				"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		elements = element.findElements(By.cssSelector(
+				"tr.noPrint.tableFilterRow input[class *= 'dijitInputInner']"));
+		assertThat(elements, notNullValue());
+		assertThat(elements.size(), greaterThan(1));
+		element = elements.get(0);
+		// select group by name
+		fastSetText(element, componentName);
+		highlight(element);
+		element.sendKeys(Keys.ENTER);
+		sleep(1000);
+		// TODO: simplify the overly detailed selector
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		if (debug) {
+			// TODO: engage
+			System.err.println(element.getAttribute("innerHTML"));
+		}
+		elements = element.findElements(
+				By.cssSelector("div.inlineBlock > a[href ^= '#component']"));
+		assertThat(elements.size(), is(1));
+		element = elements.get(0);
+		highlight(element);
+		assertThat(element.getText(), is(componentName));
+		// System.err.println(element.getAttribute("innerHTML"));
+		element.click();
+		element = wait.until(ExpectedConditions.visibilityOf(driver.findElement(
+				By.cssSelector("div.masterContainer div.containerLabel"))));
+		assertThat(element, notNullValue());
+		highlight(element);
+		assertThat(element.getText(), is("Inventory For Component"));
 	}
 
 	private void navigateToLaunchDialog() {
@@ -274,8 +349,10 @@ public class UcdTest extends BaseTest {
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
 						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
 		assertThat(element, notNullValue());
-		System.err.println(
-				"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		if (debug) {
+			System.err.println(
+					"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		}
 		elements = element.findElements(By.cssSelector(
 				"tr.noPrint.tableFilterRow input[class *= 'dijitInputInner']"));
 		assertThat(elements, notNullValue());
