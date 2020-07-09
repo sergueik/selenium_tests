@@ -17,7 +17,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.ElementNotInteractableException;
-
+import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Keys;
 import org.testng.annotations.AfterMethod;
@@ -289,6 +289,8 @@ public class UcdTest extends BaseTest {
 		assertThat(element.getText(), is("Subresources"));
 	}
 
+	// expects the exact component name to be passed via global componentName
+	// member
 	private void navigateToComponent() {
 		element = wait.until(
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
@@ -300,14 +302,16 @@ public class UcdTest extends BaseTest {
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
 						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
 		assertThat(element, notNullValue());
-		System.err.println(
-				"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		if (debug) {
+			System.err.println(
+					"table: " + element.getAttribute("innerHTML").substring(0, 100));
+		}
 		elements = element.findElements(By.cssSelector(
 				"tr.noPrint.tableFilterRow input[class *= 'dijitInputInner']"));
 		assertThat(elements, notNullValue());
 		assertThat(elements.size(), greaterThan(1));
 		element = elements.get(0);
-		// select group by name
+		// filter component by name
 		fastSetText(element, componentName);
 		highlight(element);
 		element.sendKeys(Keys.ENTER);
@@ -319,12 +323,38 @@ public class UcdTest extends BaseTest {
 		assertThat(element, notNullValue());
 		highlight(element);
 		if (debug) {
-			// TODO: engage
+			// TODO: engage jsoup ?
 			System.err.println(element.getAttribute("innerHTML"));
 		}
 		elements = element.findElements(
 				By.cssSelector("div.inlineBlock > a[href ^= '#component']"));
 		assertThat(elements.size(), is(1));
+		element = elements.get(0);
+		WebElement parentElement = element;
+		boolean found = false;
+		while (!found) {
+			try {
+				parentElement = element.findElement(By.xpath(".."));
+				if (parentElement.getTagName().toLowerCase().indexOf("tr") == 0) {
+					found = true;
+					break;
+				} else {
+					element = parentElement;
+				}
+			} catch (InvalidSelectorException e) {
+				break;
+			}
+		}
+		if (debug) {
+			System.err.println(String.format("Parent element: \"%s\" %b",
+					parentElement.getTagName().toLowerCase(), found));
+		}
+		//
+		element = parentElement
+				.findElement(By.cssSelector("input[type='checkbox']"));
+		assertThat(element, notNullValue());
+		highlight(element);
+		element.sendKeys(Keys.SPACE);
 		element = elements.get(0);
 		highlight(element);
 		assertThat(element.getText(), is(componentName));
