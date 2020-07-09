@@ -38,6 +38,7 @@ public class UcdTest extends BaseTest {
 	private static WebElement popupElement = null;
 	private static List<WebElement> elements = new ArrayList<>();
 	private static String href = null;
+	private static final int pauseTimeout = 5000;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -46,11 +47,11 @@ public class UcdTest extends BaseTest {
 
 	@AfterMethod
 	public void afterMethod() {
-		sleep(10000);
+		sleep(pauseTimeout);
 	}
 
 	// this is a multi step test exercised for its side effect on UCD
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void test1() {
 		userLogin();
 		navigateToLaunchDialog();
@@ -102,9 +103,12 @@ public class UcdTest extends BaseTest {
 		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
 				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
 		// TODO: version selections dialog
+		closeDialog("div.version-selection-dialog[role = 'dialog']");
+		closeDialog("div[role = 'dialog']");
+		userSignOut();
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void test3() {
 		userLogin();
 		userSignOut();
@@ -116,16 +120,16 @@ public class UcdTest extends BaseTest {
 	public void test2() {
 		userLogin();
 		navigateToLaunchDialog();
-		WebElement dialogElement = driver
-				.findElement(By.cssSelector("div[role = 'dialog']"));
+		dialogElement = driver.findElement(By.cssSelector("div[role = 'dialog']"));
 		assertThat(dialogElement, notNullValue());
 		highlight(dialogElement);
-		elements = dialogElement.findElements(By.cssSelector(
+		element = dialogElement.findElement(By.cssSelector(
 				"input.dijitInputInner[id *= 'dijit_form_FilteringSelect']"));
-		assertThat(elements.size(), greaterThan(0));
-		element = elements.get(0);
+		assertThat(element, notNullValue());
 		String widgetid = element.getAttribute("id");
-		System.err.println("Choice input id: " + widgetid);
+		if (debug) {
+			System.err.println("Choice input id: " + widgetid);
+		}
 		element.sendKeys(Keys.DOWN);
 		sleep(1000);
 
@@ -149,8 +153,28 @@ public class UcdTest extends BaseTest {
 
 		element.click();
 
-		wait.until(ExpectedConditions.visibilityOf(driver.findElement(
-				By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
+		dialogElement = wait
+				.until(ExpectedConditions.visibilityOf(driver.findElement(
+						By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
+		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
+		assertThat(element, notNullValue());
+		element.click();
+		// closeDialog("div.version-selection-dialog[role = 'dialog']");
+
+		dialogElement = driver.findElement(By.cssSelector("div[role = 'dialog']"));
+		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
+		assertThat(element, notNullValue());
+		element.click();
+
+		// closeDialog("div[role = 'dialog']");
+		userSignOut();
+	}
+
+	private void closeDialog(String selector) {
+		dialogElement = driver.findElement(By.cssSelector(selector));
+		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
+		assertThat(element, notNullValue());
+		element.click();
 
 	}
 
@@ -178,7 +202,6 @@ public class UcdTest extends BaseTest {
 		}
 		highlight(element);
 		element.click();
-		// class="dijitReset dijitMenuItemLabel"
 	}
 
 	private void userLogin() {
@@ -217,6 +240,7 @@ public class UcdTest extends BaseTest {
 		// select Application by name
 		fastSetText(element, applicationName);
 		element.sendKeys(Keys.ENTER);
+		sleep(1000);
 		element = wait.until(
 				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
 						"*[id *= 'uniqName_'] > div.selectableTable.webextTable.treeTable > table"))));
