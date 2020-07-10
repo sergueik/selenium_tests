@@ -42,7 +42,18 @@ public class UcdTest extends BaseTest {
 	private static final String processName = "hello App Process";
 	private static final String groupName = "helloWorld Tutorial";
 	private static final String componentName = "helloWorld";
-
+	private static final String versionName = "1.0";
+	/*
+	 <div class="dijitPopup dijitComboBoxMenuPopup" role="region" aria-label="dijit_form_FilteringSelect_7_popup" id="widget_dijit_form_FilteringSelect_7_dropdown" dijitpopupparent="dijit_form_FilteringSelect_7" style="visibility: visible; top: 328px; z-index: 1000; right: auto; left: 416.273px;">
+	<div class="dijitReset dijitMenu dijitComboBoxMenu" data-dojo-attach-point="containerNode" style="overflow: visible; top: 0px; width: 301px; visibility: visible;" role="listbox" id="dijit_form_FilteringSelect_7_popup" widgetid="dijit_form_FilteringSelect_7_popup" aria-labelledby="dijit_form_FilteringSelect_7">
+	  <div class="dijitMenuItem dijitMenuPreviousButton" data-dojo-attach-point="previousButton" role="option" id="dijit_form_FilteringSelect_7_popup_prev" style="display: none;">Previous choices</div>
+			<div class="dijitReset dijitMenuItem" role="option" item="0" id="dijit_form_FilteringSelect_7_popup0">
+	    <div class="dijit dijitReset dijitInline dijitCheckBox" role="presentation" widgetid="dijit_form_CheckBox_10">
+	      <input type="checkbox" role="checkbox" aria-checked="false" class="dijitReset dijitCheckBoxInput" data-dojo-attach-point="focusNode" data-dojo-attach-event="onclick:_onClick" value="on" tabindex="0" id="dijit_form_CheckBox_10" style="user-select: none;">
+	    </div>1.0
+	  </div>
+	
+	 */
 	private static WebElement element = null;
 	private static WebElement dialogElement = null;
 	private static WebElement popupElement = null;
@@ -134,7 +145,7 @@ public class UcdTest extends BaseTest {
 
 	// the code is largely identical to test1 but uses keyboard navigation treick
 	// without discoderng the pipup DOM
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void test4() {
 		userLogin();
 		navigateToLaunchDialog();
@@ -162,14 +173,53 @@ public class UcdTest extends BaseTest {
 		elements = dialogElement
 				.findElements(By.cssSelector("div.linkPointer.inlineBlock"));
 		assertThat(elements.size(), greaterThan(0));
-		elements.stream().forEach(
-				o -> System.err.println("inputs: " + o.getAttribute("outerHTML")));
+		if (debug) {
+			elements.stream().forEach(
+					o -> System.err.println("Link: " + o.getAttribute("outerHTML")));
+		}
 		element = elements.stream()
 				.filter(o -> o.getText().matches("Choose Versions"))
 				.collect(Collectors.toList()).get(0);
+		System.err
+				.println("Choose Versions link: " + element.getAttribute("innerHTML"));
 		highlight(element);
 
 		element.click();
+
+		dialogElement = wait
+				.until(ExpectedConditions.visibilityOf(driver.findElement(
+						By.cssSelector("div.version-selection-dialog[role = 'dialog']"))));
+
+		element = dialogElement
+				.findElement(By.cssSelector("input.dijitReset.dijitInputInner"));
+		assertThat(element, notNullValue());
+		element.sendKeys(componentName);
+		element.sendKeys(Keys.ENTER);
+		element = dialogElement.findElement(By.xpath(
+				".//a[contains(@class, 'linkPointer')][contains(text(),'Add...')]"));
+		assertThat(element, notNullValue());
+		System.err
+				.println("Add Version link: " + element.getAttribute("innerHTML"));
+		element.click();
+
+		dialogElement = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector("div.versionSelect"))));
+		assertThat(dialogElement, notNullValue());
+		System.err
+				.println("Version input: " + dialogElement.getAttribute("outerHTML"));
+
+		highlight(dialogElement);
+
+		element = dialogElement
+				.findElement(By.cssSelector("input.versionSelectTextBox"));
+		assertThat(element, notNullValue());
+		highlight(element);
+		element.sendKeys(versionName);
+		element.sendKeys(Keys.DOWN);
+
+		// element.sendKeys(Keys.SPACE);
+
+		sleep(10000);
 
 		dialogElement = wait
 				.until(ExpectedConditions.visibilityOf(driver.findElement(
@@ -179,7 +229,8 @@ public class UcdTest extends BaseTest {
 		element.click();
 		/* closeDialog("div.version-selection-dialog[role = 'dialog']"); */
 
-		dialogElement = driver.findElement(By.cssSelector("div[role = 'dialog']"));
+		dialogElement = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
 		element = dialogElement.findElement(By.cssSelector("span.closeDialogIcon"));
 		assertThat(element, notNullValue());
 		element.click();
@@ -328,7 +379,7 @@ public class UcdTest extends BaseTest {
 		}
 		elements = element.findElements(
 				By.cssSelector("div.inlineBlock > a[href ^= '#component']"));
-		assertThat(elements.size(), is(1));
+		assertThat(elements.size(), greaterThan(0));
 		element = elements.get(0);
 		WebElement parentElement = element;
 		boolean found = false;
