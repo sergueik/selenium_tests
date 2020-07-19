@@ -40,7 +40,7 @@ public class UcdTest extends BaseTest {
 	private static final String password = "admin";
 	private static final String applicationName = "hello Application";
 	private static final String processName = "hello App Process";
-	private static final String groupName = "helloWorld Tutorial";
+	private static final String groupName = "resource_group";
 	private static final String componentName = "helloWorld";
 	private static final String versionName = "1.0";
 
@@ -50,6 +50,7 @@ public class UcdTest extends BaseTest {
 	private static List<WebElement> elements = new ArrayList<>();
 	private static String href = null;
 	private static final int pauseTimeout = 3000;
+	private static String urlFragment;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -62,13 +63,13 @@ public class UcdTest extends BaseTest {
 		driver.get("about:blank");
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void test1() {
 		userLogin();
 		userSignOut();
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void test2() {
 		userLogin();
 		navigateToResourceTree();
@@ -80,6 +81,28 @@ public class UcdTest extends BaseTest {
 	public void test3() {
 		userLogin();
 		navigateToLaunchDialog();
+		launchProcess2();
+		userSignOut();
+	}
+
+	// the code is largely identical to test1 but uses keyboard navigation treick
+	// without discoderng the pipup DOM
+	@Test(enabled = false)
+	public void test4() {
+		userLogin();
+		navigateToLaunchDialog();
+		launchProcess();
+		userSignOut();
+	}
+
+	@Test(enabled = false)
+	public void test5() {
+		userLogin();
+		navigateToComponent();
+		userSignOut();
+	}
+
+	private void launchProcess() {
 		dialogElement = wait.until(ExpectedConditions.visibilityOf(
 				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
 		assertThat(dialogElement, notNullValue());
@@ -130,15 +153,9 @@ public class UcdTest extends BaseTest {
 		// TODO: version selections dialog
 		closeDialog("div.version-selection-dialog[role = 'dialog']");
 		closeDialog("div[role = 'dialog']");
-		userSignOut();
 	}
 
-	// the code is largely identical to test1 but uses keyboard navigation treick
-	// without discoderng the pipup DOM
-	@Test(enabled = true)
-	public void test4() {
-		userLogin();
-		navigateToLaunchDialog();
+	private void launchProcess2() {
 		dialogElement = driver.findElement(By.cssSelector("div[role = 'dialog']"));
 		assertThat(dialogElement, notNullValue());
 		highlight(dialogElement);
@@ -229,7 +246,7 @@ public class UcdTest extends BaseTest {
 				.findElement(By.cssSelector("input.versionSelectTextBox"));
 		assertThat(element, notNullValue());
 		element.clear();
-		element.sendKeys(versionName);
+		// element.sendKeys(versionName);
 		sleep(1000);
 		element.sendKeys(Keys.ENTER);
 		dialogElement.click();
@@ -238,14 +255,6 @@ public class UcdTest extends BaseTest {
 		closeDialog("div.version-selection-dialog[role = 'dialog']");
 
 		closeDialog("div[role = 'dialog']");
-		userSignOut();
-	}
-
-	@Test(enabled = true)
-	public void test5() {
-		userLogin();
-		navigateToComponent();
-		userSignOut();
 	}
 
 	private void userLogin() {
@@ -266,7 +275,9 @@ public class UcdTest extends BaseTest {
 				.findElement(By.cssSelector("form span[widgetid = 'submitButton']"));
 		highlight(element);
 		element.click();
-		wait.until(ExpectedConditions.urlContains("dashboard"));
+		urlFragment = "dashboard";
+		urlFragment = "welcome";
+		wait.until(ExpectedConditions.urlContains(urlFragment));
 	}
 
 	private void userSignOut() {
