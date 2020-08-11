@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.IsNot.not;
 
 import static org.testng.Assert.assertTrue;
 
@@ -103,7 +104,7 @@ public class FindingTextObjectTest extends BaseTest {
 		String resultText = element.getText();
 		// Assert
 		assertThat(resultTextOnly, equalTo("\n\nText without the Number\n"));
-		assertThat(resultText, containsString("1"));
+		assertThat(resultText, containsString("1 Text"));
 		System.err.println(
 				String.format("getTextOnly(...,true) finds %s", resultTextOnly));
 		System.err.println(String.format("getText() finds %s", resultText));
@@ -113,7 +114,7 @@ public class FindingTextObjectTest extends BaseTest {
 		resultText = element.getText();
 		// Assert
 		assertThat(resultTextOnly, equalTo("Text without the Number"));
-		// assertThat(resultText, containsString("1"));
+		assertThat(resultText, not(containsString("1")));
 		System.err.println(String.format("getTextOnly() finds %s", resultTextOnly));
 		System.err.println(String.format("getText() finds %s", resultText));
 	}
