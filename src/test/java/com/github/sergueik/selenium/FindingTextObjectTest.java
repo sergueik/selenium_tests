@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+
 import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
@@ -36,7 +37,8 @@ import org.testng.annotations.Test;
 
 public class FindingTextObjectTest extends BaseTest {
 
-	private static final Logger log = LogManager.getLogger(FindingTextObjectTest.class);
+	private static final Logger log = LogManager
+			.getLogger(FindingTextObjectTest.class);
 	private String text = "A2300";
 
 	@BeforeClass
@@ -50,6 +52,10 @@ public class FindingTextObjectTest extends BaseTest {
 		driver.navigate().to(getPageContent("text_resource.htm"));
 	}
 
+	/* 
+	@Test(enabled = true,expectedExceptions = {
+			org.openqa.selenium.InvalidSelectorException.class }  )
+			*/
 	@Test(enabled = true)
 	// inspired by:
 	// https://software-testing.ru/forum/index.php?/topic/38819-poluchit-tekst-vnutri-span/
@@ -76,7 +82,8 @@ public class FindingTextObjectTest extends BaseTest {
 			assertThat(textElement, notNullValue());
 			System.err.println(String.format("%s finds %s", selector, textElement));
 		} catch (org.openqa.selenium.InvalidSelectorException e) {
-			// invalid selector: The result of the xpath expression "//span/text()" is:
+			// invalid selector: The result of the xpath expression "//span/text()"
+			// is:
 			// [object Text].
 			// It should be an element.
 			System.err.println("Exception (ignored): " + e.toString());
@@ -86,15 +93,29 @@ public class FindingTextObjectTest extends BaseTest {
 		selector = "//span";
 		WebElement element = driver.findElement(By.xpath(selector));
 		assertThat(element, notNullValue());
-		
+
 		System.err.println(String.format("getText finds %s", getText(element)));
 
-		// NOTE: getTextOnly is destructive. After it run the getText will also find the text only
-		String result = getTextOnly(element);
+		// NOTE: getTextOnly with an extra argument isn't destructive.
+		// After it run the getText will also find
+		// the text only
+		String resultTextOnly = getTextOnly(element, true);
+		String resultText = element.getText();
 		// Assert
-		assertThat(result, equalTo("\"Text without the Number\""));
-		System.err.println(String.format("getTextOnly finds %s",
-				getTextOnly(element)));
+		assertThat(resultTextOnly, equalTo("\n\nText without the Number\n"));
+		assertThat(resultText, containsString("1"));
+		System.err.println(
+				String.format("getTextOnly(...,true) finds %s", resultTextOnly));
+		System.err.println(String.format("getText() finds %s", resultText));
+		// NOTE: getTextOnly is destructive. After it run the getText will also find
+		// the text only
+		resultTextOnly = getTextOnly(element);
+		resultText = element.getText();
+		// Assert
+		assertThat(resultTextOnly, equalTo("Text without the Number"));
+		// assertThat(resultText, containsString("1"));
+		System.err.println(String.format("getTextOnly() finds %s", resultTextOnly));
+		System.err.println(String.format("getText() finds %s", resultText));
 	}
 
 	// NOTE: some selectors intentionally invalid -
@@ -105,11 +126,13 @@ public class FindingTextObjectTest extends BaseTest {
 		// Arrange
 		List<WebElement> elements = new ArrayList<>();
 
-		List<String> selectors = new ArrayList<>(Arrays.asList(new String[] { "following-sibling::text()",
-				"following-sibling", "following-sibling::*", "following-sibling::node()" }));
+		List<String> selectors = new ArrayList<>(Arrays
+				.asList(new String[] { "following-sibling::text()", "following-sibling",
+						"following-sibling::*", "following-sibling::node()" }));
 
-		elements = driver.findElements(
-				By.xpath(String.format("//table[@class='questionKeyHeader']//td/a[contains(text(), '%s')]", text)));
+		elements = driver.findElements(By.xpath(String.format(
+				"//table[@class='questionKeyHeader']//td/a[contains(text(), '%s')]",
+				text)));
 		assertTrue(elements.size() > 0);
 		WebElement element = elements.get(0);
 		highlight(element);
@@ -119,7 +142,8 @@ public class FindingTextObjectTest extends BaseTest {
 				WebElement textElement = element.findElement(By.xpath(selector));
 				// Assert
 				assertThat(textElement, notNullValue());
-				System.err.println(String.format("%s finds %s", selector, textElement.getAttribute("outerHTML")));
+				System.err.println(String.format("%s finds %s", selector,
+						textElement.getAttribute("outerHTML")));
 				// flash(textElement);
 			} catch (InvalidSelectorException e) {
 				// org.openqa.selenium.InvalidSelectorError:
@@ -127,14 +151,14 @@ public class FindingTextObjectTest extends BaseTest {
 				// "following-sibling::text()"
 				// is: [object Text].
 				// It should be an element.
-				System.err.println(
-						String.format("%s leads to the exception: %s...", selector, e.toString().substring(0, 200)));
+				System.err.println(String.format("%s leads to the exception: %s...",
+						selector, e.toString().substring(0, 200)));
 			} catch (NoSuchElementException e) {
 				// org.openqa.selenium.NoSuchElementException:
 				// Unable to locate element:
 				// {"method":"xpath","selector":"following-sibling"}
-				System.err.println(
-						String.format("%s leads to the exception: %s...", selector, e.toString().substring(0, 200)));
+				System.err.println(String.format("%s leads to the exception: %s...",
+						selector, e.toString().substring(0, 200)));
 			}
 			sleep(100);
 		}
@@ -149,8 +173,9 @@ public class FindingTextObjectTest extends BaseTest {
 	@Test(enabled = true)
 	public void findingViaDOMMethodCallTest() {
 		// Arrange
-		WebElement element = driver.findElement(
-				By.xpath(String.format("//table[@class='questionKeyHeader']//td/a[contains(text(), '%s')]", text)));
+		WebElement element = driver.findElement(By.xpath(String.format(
+				"//table[@class='questionKeyHeader']//td/a[contains(text(), '%s')]",
+				text)));
 		highlight(element);
 		// Act
 		String script = "var element = arguments[0]; return element.nextSibling.textContent.trim()";
@@ -164,11 +189,19 @@ public class FindingTextObjectTest extends BaseTest {
 	}
 
 	protected String getTextOnly(WebElement element) {
-		return (String) executeScript(getScriptContent("getTextOnly.js"), new Object[] { element });
+		return getTextOnly(element, false);
+	}
+
+	protected String getTextOnly(WebElement element, boolean preserveData) {
+		return (String) executeScript(
+				getScriptContent(
+						preserveData ? "getTextOnlyNonDestructive.js" : "getTextOnly.js"),
+				new Object[] { element });
 	}
 
 	protected String getText(WebElement element) {
-		return (String) executeScript(getScriptContent("getText.js"), new Object[] { element });
+		return (String) executeScript(getScriptContent("getText.js"),
+				new Object[] { element });
 	}
 
 }
