@@ -236,10 +236,42 @@ public class BaseTest {
 
 	// https://intoli.com/blog/firefox-extensions-with-selenium/
 	// without .crx extension
+
 	public void addChromeExtension(String value) {
 		this.chromeExtensions.add(value);
 	}
 
+	// see also: extension to automatically set the credentials
+	// https://stackoverflow.com/questions/42114940/how-to-handle-authentication-popup-in-chrome-with-selenium-webdriver-using-java
+	// https://gist.github.com/florentbr/25246cd9337cebc07e2bbb0b9bf0de46
+	// https://gist.github.com/jxpx777/2720920
+	/*
+	 background.js
+	 var username = "my-username";
+	var password = "my-password";
+	var retry = 3;
+	
+	chrome.webRequest.onAuthRequired.addListener(
+	function handler(details) {    
+	  if (--retry < 0)
+	    return {cancel: true};
+	  return {authCredentials: {username: username, password: password}};
+	},
+	{urls: ["<all_urls>"]},
+	['blocking']
+	); 
+	
+	manifest.json
+	{
+	"manifest_version": 2,
+	"name": "Authentication for ...",
+	"version": "1.0.0",
+	"permissions": ["<all_urls>", "webRequest", "webRequestBlocking"],
+	"background": {
+	  "scripts": ["background.js"]
+	}
+	}
+	 */
 	// https://intoli.com/blog/chrome-extensions-with-selenium/
 	// https://stackoverflow.com/questions/35858679/adding-extension-to-selenium2webdriver-chrome-driver
 	// https://productforums.google.com/forum/#!topic/chrome/g02KlhK12fU
