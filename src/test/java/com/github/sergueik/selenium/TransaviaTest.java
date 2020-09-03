@@ -46,6 +46,7 @@ public class TransaviaTest extends BaseTest {
 	private final String osName = super.getOSName();
 	private Map<String, String> browserDrivers = new HashMap<>();
 	private Map<String, String> browserDriverSystemProperties = new HashMap<>();
+	private DriverWrapper driverWrapper = new DriverWrapper();
 
 	@BeforeClass
 	@Override
@@ -103,7 +104,7 @@ public class TransaviaTest extends BaseTest {
 			}
 			DriverWrapper.add(remote ? "remote" : "firefox", capabilities);
 		}
-		driver = DriverWrapper.current();
+		driver = driverWrapper.current();
 
 	}
 

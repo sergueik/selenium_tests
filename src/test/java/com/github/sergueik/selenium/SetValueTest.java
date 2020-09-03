@@ -84,7 +84,7 @@ public class SetValueTest extends BaseTest {
 				.visibilityOf(driver.findElement(By.cssSelector(selector))));
 		assertThat(element, notNullValue());
 		assertThat(element.getText(), is(""));
-		String value = text.substring(0, 100);
+		String value = text.substring(10, 100);
 		super.fastSetText(element, value);
 		element = driver.findElement(By.cssSelector(selector));
 		assertThat(element.getAttribute("value"), is(value));

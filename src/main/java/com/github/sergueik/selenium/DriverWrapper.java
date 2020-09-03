@@ -27,9 +27,11 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
 public class DriverWrapper extends RemoteWebDriver {
 
 	private static String hubUrl = null;
-	private static Boolean debug = false;
+	// see also: https://www.baeldung.com/java-threadlocal
+	private ThreadLocal<Boolean> debug = new ThreadLocal();
 
-	private DriverWrapper() {
+	// need to turn to public to use ThreaLocal vars
+	public DriverWrapper() {
 	}
 
 	private DriverWrapper(String hubUrl) {
@@ -40,8 +42,8 @@ public class DriverWrapper extends RemoteWebDriver {
 		DriverWrapper.hubUrl = value;
 	}
 
-	public static void setDebug(Boolean value) {
-		DriverWrapper.debug = value;
+	public void setDebug(Boolean value) {
+		debug.set(value);
 	}
 
 	private static ConcurrentHashMap<String, RemoteWebDriver> driverInventory = new ConcurrentHashMap<String, RemoteWebDriver>();
@@ -86,8 +88,8 @@ public class DriverWrapper extends RemoteWebDriver {
 		}
 	}
 
-	public static RemoteWebDriver current() {
-		if (debug) {
+	public RemoteWebDriver current() {
+		if (debug.get()) {
 			System.err.println("Looking inventory by key: " + getThreadName() + "\n" + " => "
 					+ driverInventory.get(getThreadName()).getClass() + " "
 					+ driverInventory.get(getThreadName()).hashCode());
