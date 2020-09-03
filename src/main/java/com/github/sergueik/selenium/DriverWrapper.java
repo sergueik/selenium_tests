@@ -28,7 +28,8 @@ public class DriverWrapper extends RemoteWebDriver {
 
 	private static String hubUrl = null;
 	// see also: https://www.baeldung.com/java-threadlocal
-	private ThreadLocal<Boolean> debug = new ThreadLocal();
+	private ThreadLocal<Boolean> debug = ThreadLocal.withInitial(() -> false);
+	// new ThreadLocal<>();
 
 	// need to turn to public to use ThreaLocal vars
 	public DriverWrapper() {
@@ -47,14 +48,20 @@ public class DriverWrapper extends RemoteWebDriver {
 	}
 
 	private static ConcurrentHashMap<String, RemoteWebDriver> driverInventory = new ConcurrentHashMap<String, RemoteWebDriver>();
+	private ThreadLocal<RemoteWebDriver> currentDriver = new ThreadLocal<RemoteWebDriver>();
 
 	public static List<String> getDriverInventoryDump() {
 		return driverInventory.entrySet().stream().map(_entry -> String.format("%s => %s %d", _entry.getKey(),
 				_entry.getValue().getClass(), _entry.getValue().hashCode())).collect(Collectors.toList());
 	}
 
+	public void initialize(String browser, Capabilities capabilities) {
+		RemoteWebDriver driver = createDriver(browser, capabilities);
+		currentDriver.set(driver);
+	}
+
 	@SuppressWarnings("deprecation")
-	public static void add(String browser, Capabilities capabilities) {
+	public static RemoteWebDriver createDriver(String browser, Capabilities capabilities) {
 		RemoteWebDriver driver = null;
 		if (browser.trim().equalsIgnoreCase("remote")) {
 			try {
@@ -66,7 +73,6 @@ public class DriverWrapper extends RemoteWebDriver {
 				// throw new RuntimeException(e.getCause());
 				throw new RuntimeException(e);
 			}
-			driverInventory.put(getThreadName(), driver);
 		} else {
 			if (browser == "firefox") {
 				driver = new FirefoxDriver(capabilities);
@@ -84,8 +90,13 @@ public class DriverWrapper extends RemoteWebDriver {
 					throw new RuntimeException(e.toString());
 				}
 			}
-			driverInventory.put(getThreadName(), driver);
 		}
+		return driver;
+	}
+
+	public static void add(String browser, Capabilities capabilities) {
+		RemoteWebDriver driver = createDriver(browser, capabilities);
+		driverInventory.put(getThreadName(), driver);
 	}
 
 	public RemoteWebDriver current() {
