@@ -1151,6 +1151,20 @@ public class BaseTest {
 		return driver.findElement(By.tagName("body")).getText();
 	}
 
+	protected String getTextOnly(WebElement element) {
+		return getTextOnly(element, false);
+	}
+
+	protected String getTextOnly(WebElement element, boolean preserveData) {
+		return (String) executeScript(
+				getScriptContent(preserveData ? "getTextOnlyNonDestructive.js" : "getTextOnly.js"),
+				new Object[] { element });
+	}
+
+	protected String getText(WebElement element) {
+		return (String) executeScript(getScriptContent("getText.js"), new Object[] { element });
+	}
+
 	private static int instanceCount = 0;
 
 	// based on
