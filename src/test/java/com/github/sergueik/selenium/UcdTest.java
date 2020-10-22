@@ -112,6 +112,14 @@ public class UcdTest extends BaseTest {
 		userSignOut();
 	}
 
+	@Test(enabled = true)
+	public void test7() {
+		userLogin();
+		navigateToComponent();
+		navigateToComponentVersionIportHistory();
+		userSignOut();
+	}
+
 	private void launchProcess() {
 		dialogElement = wait.until(ExpectedConditions.visibilityOf(
 				driver.findElement(By.cssSelector("div[role = 'dialog']"))));
@@ -406,7 +414,39 @@ public class UcdTest extends BaseTest {
 		element.click();
 	}
 
-	// <div class="dijitDialog dijitDialogFocused dijitFocused"
+	private void navigateToComponentVersionIportHistory() {
+		String url = driver.getCurrentUrl();
+		if (debug) {
+			// capture the id
+			//
+			System.err.println("Current url to capture the id: " + url);
+		}
+		String compinentUUID = "1754e2f7-2349-1777-786d-c9e8b15643b6";
+		element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(String.format(
+						"a.tab.linkPointer[href = '#component/%s/configuration'] span.tabLabel",
+						compinentUUID)))));
+		assertThat(element, notNullValue());
+		assertThat(element.getText(), is("Configuration"));
+		highlight(element);
+		if (debug) {
+			System.err.println("Click on tab label: " + element.getText());
+		}
+		element.click();
+
+		String panelCeeSelector = "div.twoPaneContainer div.twoPaneList";
+		element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(panelCeeSelector))));
+		assertThat(element, notNullValue());
+		element = driver
+				.findElements(By.cssSelector(
+						"div.twoPaneContainer div.twoPaneList div.twoPaneEntry"))
+				.stream().filter(o -> o.getText().equals("Version Import History"))
+				.findFirst().get();
+		assertThat(element, notNullValue());
+		highlight(element);
+	}
+
 	// expects the exact component name to be passed via global componentName
 	// member
 	private void navigateToComponent() {
