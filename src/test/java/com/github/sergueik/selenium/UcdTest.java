@@ -39,9 +39,11 @@ public class UcdTest extends BaseTest {
 	private static final String username = "admin";
 	private static final String password = "admin";
 	private static final String applicationName = "hello Application";
+	private static final String environmentName = "test";
+
 	private static final String processName = "hello App Process";
 	private static final String groupName = "resource_group";
-	private static final String componentName = "helloWorld";
+	private static final String componentName = "hello Component";
 	private static final String versionName = "1.0";
 
 	private static WebElement element = null;
@@ -63,13 +65,13 @@ public class UcdTest extends BaseTest {
 		driver.get("about:blank");
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test1() {
 		userLogin();
 		userSignOut();
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test2() {
 		userLogin();
 		navigateToResourceTree();
@@ -99,6 +101,14 @@ public class UcdTest extends BaseTest {
 	public void test5() {
 		userLogin();
 		navigateToComponent();
+		userSignOut();
+	}
+
+	@Test(enabled = true)
+	public void test6() {
+		userLogin();
+		navigateToComponent();
+		launchVersionImport();
 		userSignOut();
 	}
 
@@ -353,6 +363,50 @@ public class UcdTest extends BaseTest {
 		assertThat(element.getText(), is("Subresources"));
 	}
 
+	// Navigate to versions tab and cliek Import button
+	private void launchVersionImport() {
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"a.tab.linkPointer[href ^= '#component'][href $= '/versions'] span.tabLabel"))));
+		assertThat(element, notNullValue());
+		assertThat(element.getText(), is("Versions"));
+		highlight(element);
+		if (debug) {
+			System.err.println("Click on tab label: " + element.getText());
+		}
+		element.click();
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(
+						"div.versions div.listTopButtons span[role = 'presentation'] span[id^='dijit_form_Button']"))));
+		assertThat(element, notNullValue());
+		assertThat(element.getText(), is("Import New Versions"));
+		highlight(element);
+		element.click();
+		sleep(1000);
+		String dialogCssSelector = "div[class*='dijitDialogFocused']";
+		// inputs
+		element = wait.until(ExpectedConditions.visibilityOf(driver
+				.findElement(By.cssSelector(String.format("%s %s", dialogCssSelector,
+						"input[class*='dijitInputInner'][name='versionOrTag'][type='text']")))));
+		assertThat(element, notNullValue());
+		element.sendKeys("tag_name");
+		element = wait.until(ExpectedConditions.visibilityOf(driver
+				.findElement(By.cssSelector(String.format("%s %s", dialogCssSelector,
+						"input[class*='dijitInputInner'][name='versionName'][type='text']")))));
+		assertThat(element, notNullValue());
+		element.sendKeys("version_name");
+
+		// close element
+		element = wait.until(
+				ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(String
+						.format("%s %s", dialogCssSelector, "span.closeDialogIcon")))));
+		assertThat(element, notNullValue());
+		assertThat(element.getAttribute("title"), is("Cancel"));
+		highlight(element);
+		element.click();
+	}
+
+	// <div class="dijitDialog dijitDialogFocused dijitFocused"
 	// expects the exact component name to be passed via global componentName
 	// member
 	private void navigateToComponent() {
@@ -452,6 +506,10 @@ public class UcdTest extends BaseTest {
 		assertThat(elements, notNullValue());
 		assertThat(elements.size(), greaterThan(1));
 		element = elements.get(0);
+		if (debug) {
+			System.err
+					.println("Application link: " + element.getAttribute("outerHTML"));
+		}
 		// select Application by name
 		fastSetText(element, applicationName);
 		element.sendKeys(Keys.ENTER);
@@ -469,18 +527,20 @@ public class UcdTest extends BaseTest {
 
 		href = element.getAttribute("href").replaceAll("^.*#application/", "");
 		if (debug) {
-			System.err.println("Application: " + element.getText() + " = " + href);
+			System.err.println(
+					"Click the application link: " + element.getText() + " = " + href);
 		}
 		actions.moveToElement(element).click().build().perform();
 		wait.until(ExpectedConditions.urlContains(href));
 		element = wait.until(ExpectedConditions
 				.visibilityOf(driver.findElement(By.xpath(String.format(
 						"//a[contains(@href, '#environment')][contains(text(), '%s')]",
-						applicationName)))));
+						/* applicationName */ environmentName)))));
 		assertThat(element, notNullValue());
 		if (debug) {
 			System.err.println("Launcher: " + element.getAttribute("innerHTML"));
 		}
+		// title="test - (test environment)"
 		elements = element.findElements(By.xpath("../.."));
 		assertThat(elements.size(), is(1));
 		element = elements.get(0)
