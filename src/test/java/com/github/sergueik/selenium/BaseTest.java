@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,6 +60,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.UnsupportedCommandException;
@@ -1671,4 +1673,109 @@ public class BaseTest {
 		executeScript("setTimeout(function(){ " + "document.getElementsByTagName('body')[0].innerHTML = \""
 				+ html.replace("\n", "").replace("\r", "").replace("\"", "\\\"") + "\" } ," + timeout + ");");
 	}
+
+	// wraps the core Selenium find methods with a wait
+	private WebElement findElement(String strategy, String argument) {
+		WebElement element = null;
+		Hashtable<String, Boolean> supportedSelectorStrategies = new Hashtable<>();
+		supportedSelectorStrategies.put("id", true);
+		supportedSelectorStrategies.put("css_selector", true);
+		supportedSelectorStrategies.put("xpath", true);
+		supportedSelectorStrategies.put("partial_link_text", false);
+		supportedSelectorStrategies.put("link_text", true);
+		supportedSelectorStrategies.put("classname", false);
+
+		if (strategy == null || !supportedSelectorStrategies.containsKey(strategy)
+				|| !supportedSelectorStrategies.get(strategy)) {
+			return null;
+		}
+		if (strategy == "id") {
+			try {
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(argument)));
+			} catch (RuntimeException timeoutException) {
+				return null;
+			}
+			element = driver.findElement(By.id(argument));
+		}
+		if (strategy == "classname") {
+
+			try {
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(argument)));
+			} catch (RuntimeException timeoutException) {
+				return null;
+			}
+			element = driver.findElement(By.className(argument));
+		}
+		if (strategy == "link_text") {
+			try {
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(argument)));
+			} catch (RuntimeException timeoutException) {
+				return null;
+			}
+			element = driver.findElement(By.linkText(argument));
+		}
+		if (strategy == "css_selector") {
+			try {
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(argument)));
+			} catch (RuntimeException timeoutException) {
+				return null;
+			}
+			element = driver.findElement(By.cssSelector(argument));
+		}
+		if (strategy == "xpath") {
+
+			try {
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(argument)));
+			} catch (RuntimeException timeoutException) {
+				return null;
+			}
+			element = driver.findElement(By.xpath(argument));
+		}
+		return element;
+	}
+
+	private List<WebElement> findElements(String strategy, String argument, WebElement parent) {
+		SearchContext finder;
+		String parent_css_selector = null;
+		String parent_xpath = null;
+
+		List<WebElement> elements = null;
+		Hashtable<String, Boolean> supportedSelectorStrategies = new Hashtable<>();
+		supportedSelectorStrategies.put("css_selector", true);
+		supportedSelectorStrategies.put("xpath", true);
+
+		if (strategy == null || !supportedSelectorStrategies.containsKey(strategy)
+				|| !supportedSelectorStrategies.get(strategy)) {
+			return null;
+		}
+		if (parent != null) {
+			parent_css_selector = cssSelectorOfElement(parent);
+			parent_xpath = xpathOfElement(parent);
+			finder = parent;
+		} else {
+			finder = driver;
+		}
+
+		if (strategy == "css_selector") {
+			String extended_css_selector = String.format("%s  %s", parent_css_selector, argument);
+			try {
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(extended_css_selector)));
+			} catch (RuntimeException timeoutException) {
+				return null;
+			}
+			elements = finder.findElements(By.cssSelector(argument));
+		}
+		if (strategy == "xpath") {
+			String extended_xpath = String.format("%s/%s", parent_xpath, argument);
+
+			try {
+				wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(extended_xpath)));
+			} catch (RuntimeException timeoutException) {
+				return null;
+			}
+			elements = finder.findElements(By.xpath(argument));
+		}
+		return elements;
+	}
+
 }
