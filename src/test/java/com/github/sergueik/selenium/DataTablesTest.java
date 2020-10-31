@@ -17,6 +17,7 @@ import org.testng.annotations.Test;
 
 /**
  * Selected test scenarios for Selenium WebDriver
+ * 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
@@ -42,30 +43,28 @@ public class DataTablesTest extends BaseTest {
 
 	//
 	@Test(enabled = true)
-	public void testf1() {
+	public void test1() {
 		// Arrange
 		driver.get("https://datatables.net/examples/api/form.html");
 		String table_id = "example";
 
 		WebElement table_element;
 		try {
-			table_element = wait.until(
-					ExpectedConditions.visibilityOfElementLocated(By.id(table_id)));
+			table_element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(table_id)));
 		} catch (RuntimeException timeoutException) {
 			return;
 		}
 		String text_input_css_selector = "input[id='row-5-age']";
-		WebElement text_input_element = table_element
-				.findElement(By.cssSelector(text_input_css_selector));
+		WebElement text_input_element = table_element.findElement(By.cssSelector(text_input_css_selector));
 		actions.moveToElement(text_input_element).build().perform();
 		String cell_text = "Software Developer";
 		text_input_element.clear();
 		// https://selenium.googlecode.com/svn/trunk/docs/api/java/org/openqa/selenium/Keys.html
-		text_input_element.sendKeys(Keys.chord(Keys.BACK_SPACE, Keys.BACK_SPACE,
-				Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE));
+		text_input_element.sendKeys(Keys.chord(Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE,
+				Keys.BACK_SPACE, Keys.BACK_SPACE));
 		sleep(3000);
-		text_input_element.sendKeys(Keys.chord("20", org.openqa.selenium.Keys.TAB,
-				cell_text, org.openqa.selenium.Keys.ENTER));
+		text_input_element
+				.sendKeys(Keys.chord("20", org.openqa.selenium.Keys.TAB, cell_text, org.openqa.selenium.Keys.ENTER));
 		sleep(3000);
 	}
 
@@ -82,30 +81,39 @@ public class DataTablesTest extends BaseTest {
 		WebElement table_element;
 
 		try {
-			wait.until(
-					ExpectedConditions.visibilityOfElementLocated(By.id(table_id)));
+			wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(table_id)));
 		} catch (RuntimeException timeoutException) {
-			return;
-		}
-		// http://stackoverflow.com/questions/6198947/how-to-get-text-from-each-cell-of-an-html-table
-		String script = "var table_row_locator = 'div#example_wrapper table#example tbody tr';\n"
-				+ "var rows = document.querySelectorAll(table_row_locator);\n"
-				+ "var result = [];\n"
-				+ "for (row_cnt = 0; row_cnt != rows.length; row_cnt++) {\n"
-				+ "var row = rows[row_cnt];\n" + "if (row instanceof Element) {\n"
-				+ "var cols = row.querySelectorAll('td');\n"
-				+ "var check_col_num = 1;\n" + "var data_col_num = 0;\n"
-				+ "if (cols[check_col_num].innerHTML.match(/^Software.*/ig)) {\n"
-				+ "result.push(cols[data_col_num].innerHTML);\n" + "}\n" + "}\n" + "}\n"
-				+ "return result.join();\n";
+			System.err.println("Exception in wait by id: " + table_id);
 
-		System.out.println(
-				String.format("Script: '%s'\nResult: '%s'", script, storeEval(script)));
+			return;
+			// NOTE: quits the test
+		}
+		table_element = driver.findElement((By.id(table_id)));
+		System.err.println("Found table: " + table_element.getTagName());
+
+		// http://stackoverflow.com/questions/6198947/how-to-get-text-from-each-cell-of-an-html-table
+		//@formatter:off
+		String script = "var table_row_locator = 'div#example_wrapper table#example tbody tr';\n"
+				+ "var rows = document.querySelectorAll(table_row_locator);\n" 
+				+ "var result = [];\n"
+				+ "for (row_cnt = 0; row_cnt != rows.length; row_cnt++) {\n" 
+				+ "var row = rows[row_cnt];\n"
+				+ "if (row instanceof Element) {\n" 
+				+ "var cols = row.querySelectorAll('td');\n"
+				+ "var check_col_num = 1;\n" 
+				+ "var data_col_num = 0;\n"
+				+ "if (cols[check_col_num].innerHTML.match(/^Software.*/ig)) {\n"
+				+ "result.push(cols[data_col_num].innerHTML);\n" 
+				+ "}\n" 
+				+ "}\n" 
+				+ "}\n" 
+				+ "return result.join();\n";
+		//@formatter:on
+		System.err.println(String.format("Script: '%s'\nResult: '%s'", script, storeEval(script)));
 
 		// NOTE: Works in IDE, does not work with WebDriver
 		script = String.format("(function() { %s })();", script);
-		System.out.println(
-				String.format("Script: '%s'\nResult: '%s'", script, storeEval(script)));
+		System.out.println(String.format("Script: '%s'\nResult: '%s'", script, storeEval(script)));
 
 		table_element = driver.findElement(By.id(table_id));
 		// NOTE: no leading slash in XPath
@@ -133,8 +141,8 @@ public class DataTablesTest extends BaseTest {
 					// Hover over cell
 					actions.moveToElement(cell).build().perform();
 					highlight(cell);
-					System.out.println(String.format("row # %d, col # %d text='%s'",
-							row_num, cell_num, cell.getText()));
+					System.out
+							.println(String.format("row # %d, col # %d text='%s'", row_num, cell_num, cell.getText()));
 					cell_num++;
 				}
 				row_num++;
