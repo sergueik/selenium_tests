@@ -42,7 +42,7 @@ public class UcdTest extends BaseTest {
 
 	private static final String processName = "hello App Process";
 	private static final String groupName = "resource_group";
-	private static final String componentName = "hello Component";
+	private static final String componentName = "component_1";
 	private static final String versionName = "1.0";
 
 	private static WebElement element = null;
@@ -124,12 +124,19 @@ public class UcdTest extends BaseTest {
 	}
 
 	// snapshot
+	// NOTE: need environment(s) to be created to succeed
 	@Test(enabled = true)
 	public void test8() {
 		userLogin();
-		// navigateToApplication();
 		navigateToSnapshot();
-		// NOTE: need environment(s) to be created to succeed
+		userSignOut();
+	}
+
+	// snapshot
+	@Test(enabled = true)
+	public void test9() {
+		userLogin();
+		viewComponentVersions();
 		userSignOut();
 	}
 
@@ -483,8 +490,7 @@ public class UcdTest extends BaseTest {
 		sleep(1000);
 	}
 
-	// expects the exact snapshot name to be passed via global snapshotName
-	// member
+	// expects the exact snapshot name in snapshotName class property
 	private void navigateToSnapshot() {
 		// switch to Applications
 		navigateToApplication();
@@ -499,13 +505,13 @@ public class UcdTest extends BaseTest {
 		elements = element.findElements(By.cssSelector("span.tabLabel"));
 
 		assertThat(elements, notNullValue());
-		element2 = elements.get(0);
-		highlight(element2);
-		assertThat(element2.getText(), is("Snapshots"));
+		element = elements.get(0);
+		highlight(element);
+		assertThat(element.getText(), is("Snapshots"));
 		if (debug)
-			System.err.println("Click the snapshots link: " + element2.getText() + " = " + href);
+			System.err.println("Click the snapshots link: " + element.getText() + " = " + href);
 
-		element2.click();
+		element.click();
 		// actions.moveToElement(element).click().build().perform();
 		wait.until(ExpectedConditions.urlContains(href));
 
@@ -544,12 +550,38 @@ public class UcdTest extends BaseTest {
 		highlight(element);
 		element.click();
 		wait.until(ExpectedConditions.urlContains(href));
+		sleep(1000);
+
+	}
+
+	private void viewComponentVersions() {
+		// switch to Snapshots
+
+		navigateToSnapshot();
+		element = wait.until(ExpectedConditions.visibilityOf(
+				driver.findElement(By.cssSelector("a.tab.linkPointer[href ^= '#snapshot/'][href $= 'versions']"))));
+
+		assertThat(element, notNullValue());
+		highlight(element);
+		// NOTE: captures do not work here
+		href = element.getAttribute("href").replaceAll("^.*#snapshot/", "#snapshot/");
+
+		elements = element.findElements(By.cssSelector("span.tabLabel"));
+		//
+		assertThat(elements, notNullValue());
+		element = elements.get(0);
+		highlight(element);
+		assertThat(element.getText(), is("Component Versions"));
+		if (debug)
+			System.err.println("Click the snapshots link: " + element.getText() + " = " + href);
+
+		element.click();
+		wait.until(ExpectedConditions.urlContains(href));
 		sleep(10000);
 
 	}
 
-	// expects the exact component name to be passed via global componentName
-	// member
+	// expects the exact component name in componentName class property
 	private void navigateToComponent() {
 		element = wait.until(ExpectedConditions.visibilityOf(
 				driver.findElement(By.cssSelector("a.tab.linkPointer[href = '#main/components'] span.tabLabel"))));
