@@ -80,6 +80,7 @@ public class EscapeXPathTest extends BaseTest {
 						String.format("//*[contains(text(), %s)]", escapeXPath2(text))));
 				assertTrue(elements.size() > 0);
 				highlight(elements.get(0));
+				System.err.println(elements.get(0).getAttribute("outerHTML"));
 				elements.clear();
 				/*	elements = driver.findElements(By.xpath(
 								String.format("//*[contains(text(), %s)]", escapeXPath3(text))));
@@ -130,9 +131,36 @@ public class EscapeXPathTest extends BaseTest {
 
 	@Test(enabled = true)
 	public void test3() {
+		List<WebElement> elements = new ArrayList<>();
 
 		for (String text : texts) {
-			System.err.println(String.format("test3: %s", text));
+			System.err.println(String.format("test3: searching %s", text));
+
+			try {
+				elements = driver.findElements(
+						By.cssSelector(String.format("span:contains('%s')", text)));
+				assertTrue(elements.size() > 0);
+				highlight(elements.get(0));
+				System.err.println(elements.get(0).getAttribute("outerHTML"));
+				sleep(500);
+			} catch (InvalidSelectorException e) {
+				// ignore
+				// InvalidSelectorError:
+				// Unable to locate an element with the xpath expression
+				// //*[contains(text(), '""Burj"" ''Khalifa'')] because of the following
+				// error:
+				// SyntaxError: The expression is not a legal expression.
+				System.err
+						.println("Test3 Ignored InvalidSelectorException: " + e.toString());
+			}
+		}
+	}
+
+	@Test(enabled = true)
+	public void test4() {
+
+		for (String text : texts) {
+			System.err.println(String.format("test4: %s", text));
 
 			Predicate<WebElement> textCheck = o -> {
 				String t = o.getText();
@@ -147,6 +175,27 @@ public class EscapeXPathTest extends BaseTest {
 			highlight(element.get());
 			sleep(500);
 		}
+	}
+
+	@Test(enabled = true)
+	public void test5() {
+
+		String text = "Burj Khalifa";
+		System.err.println(String.format("test5: %s", text));
+
+		Predicate<WebElement> textCheck = o -> {
+			String t = o.getText();
+			// System.err.println("in stream filter (3): Text = " + t);
+			return (Boolean) (t.contains(text));
+		};
+		Optional<WebElement> element = driver
+				.findElements(By.cssSelector("th span")).stream().filter(textCheck)
+				.findFirst();
+
+		assertTrue(element.isPresent());
+		highlight(element.get(), true);
+		System.err.println(element.get().getAttribute("outerHTML"));
+		sleep(500);
 	}
 
 	// https://sqa.stackexchange.com/questions/362/a-way-to-match-on-text-using-css-locators
