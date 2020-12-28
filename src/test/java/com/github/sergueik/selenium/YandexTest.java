@@ -107,6 +107,13 @@ public class YandexTest extends BaseTest {
 		browserDrivers.put("firefox",
 				osName.equals("windows") ? "geckodriver.exe" : "geckodriver");
 		browserDrivers.put("edge", "MicrosoftWebDriver.exe");
+		// https://github.com/yandex/YandexDriver/releases
+		// https://www.linuxbabe.com/browser/yandex-browser-debian-ubuntu-fedora-opensuse-arch
+		// see also: 
+		// https://automated-testing.info/t/ne-poluchaetsya-startanut-yandeks-brauzer-iz-selenide/23044/11
+		browserDrivers.put("yandex",
+				osName.equals("windows") ? "yandexdriver.exe" : "yandexdriver");
+		// 
 		HashMap<String, String> propertiesMap = PropertiesParser
 				.getProperties(String.format("%s/%s/%s", System.getProperty("user.dir"),
 						propertyFilePath, propertiesFileName));
