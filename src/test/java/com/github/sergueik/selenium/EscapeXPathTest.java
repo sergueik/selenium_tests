@@ -46,6 +46,7 @@ public class EscapeXPathTest extends BaseTest {
 	@SuppressWarnings("unused")
 	private static Pattern pattern;
 	private static Matcher matcher;
+	private static final boolean debug = false;
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -103,8 +104,9 @@ public class EscapeXPathTest extends BaseTest {
 
 	// origin:
 	// https://saucelabs.com/resources/articles/selenium-tips-css-selectors
-	// NOTE: all failing
-	@Test(enabled = true)
+	// NOTE:
+	// that feature is deprecated and not supported any longer by the W3C Standard
+	@Test(enabled = false)
 	public void test2() {
 		List<WebElement> elements = new ArrayList<>();
 
@@ -119,17 +121,12 @@ public class EscapeXPathTest extends BaseTest {
 				sleep(500);
 			} catch (InvalidSelectorException e) {
 				// ignore
-				// InvalidSelectorError:
-				// Unable to locate an element with the xpath expression
-				// //*[contains(text(), '""Burj"" ''Khalifa'')] because of the following
-				// error:
-				// SyntaxError: The expression is not a legal expression.
-				System.err.println("Test2 Ignored: " + e.toString());
+				System.err.println("test2 exception (ignored): " + e.toString());
 			}
 		}
 	}
 
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test3() {
 		List<WebElement> elements = new ArrayList<>();
 
@@ -145,13 +142,7 @@ public class EscapeXPathTest extends BaseTest {
 				sleep(500);
 			} catch (InvalidSelectorException e) {
 				// ignore
-				// InvalidSelectorError:
-				// Unable to locate an element with the xpath expression
-				// //*[contains(text(), '""Burj"" ''Khalifa'')] because of the following
-				// error:
-				// SyntaxError: The expression is not a legal expression.
-				System.err
-						.println("Test3 Ignored InvalidSelectorException: " + e.toString());
+				System.err.println("test3 exception (ignored): " + e.toString());
 			}
 		}
 	}
@@ -183,13 +174,15 @@ public class EscapeXPathTest extends BaseTest {
 		String text = "Burj Khalifa";
 		System.err.println(String.format("test5: %s", text));
 
-		Predicate<WebElement> textCheck = o -> {
+		Predicate<WebElement> containsText = o -> {
 			String t = o.getText();
-			// System.err.println("in stream filter (3): Text = " + t);
+			if (debug) {
+				System.err.println("in stream filter (3): Text = " + t);
+			}
 			return (Boolean) (t.contains(text));
 		};
 		Optional<WebElement> element = driver
-				.findElements(By.cssSelector("th span")).stream().filter(textCheck)
+				.findElements(By.cssSelector("th span")).stream().filter(containsText)
 				.findFirst();
 
 		assertTrue(element.isPresent());
