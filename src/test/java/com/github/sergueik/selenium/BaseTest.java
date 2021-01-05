@@ -382,9 +382,12 @@ public class BaseTest {
 			chromeOptions.setExperimentalOption("prefs", chromePrefs);
 			// "disable-infobars" option replacement
 			// to suppress "Chrome is being controlled by automated test software"
+			// https://chromedriver.chromium.org/capabilities
 			chromeOptions.setExperimentalOption("excludeSwitches",
-					Collections.singletonList("enable-automation"));
-			chromeOptions.setExperimentalOption("useAutomationExtension", false);
+					new ArrayList<String>(Arrays
+							.asList(new String[] { "enable-automation", "enable-logging" })));
+			// NOTE: Deprecated chrome option is ignored: useAutomationExtension
+			// chromeOptions.setExperimentalOption("useAutomationExtension", false);
 			if (osName.equals("windows")) {
 				// TODO: jni
 				if (System.getProperty("os.arch").contains("64")) {
@@ -406,15 +409,19 @@ public class BaseTest {
 			}
 			// see also: https://developers.google.com/recaptcha/docs/faq
 			// https://peter.sh/experiments/chromium-command-line-switches/
+			// see also:
+			// https://ivanderevianko.com/2020/04/disable-logging-in-selenium-chromedriver
 			for (String optionAgrument : (new String[] {
 					"--user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0",
 					"--allow-running-insecure-content", "--allow-insecure-localhost",
 					"--enable-local-file-accesses", "--disable-notifications",
-					"--disable-save-password-bubble",
+					"--disable-gpu", "--disable-save-password-bubble",
 					/* "start-maximized" , */
 					"--disable-default-app", "disable-infobars", "--no-sandbox ",
 					"--browser.download.folderList=2", "--disable-web-security",
 					"--disable-translate", "--disable-popup-blocking",
+					"--disable-in-process-stack-traces", "--disable-logging",
+					"--disable-dev-shm-usage", "--log-level=3", "--output=/dev/null",
 					"--ignore-certificate-errors", "--no-proxy-server",
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
 					// "--start-fullscreen",
