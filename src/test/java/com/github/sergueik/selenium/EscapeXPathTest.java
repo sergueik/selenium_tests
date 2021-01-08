@@ -76,11 +76,13 @@ public class EscapeXPathTest extends BaseTest {
 						String.format("//*[contains(text(), %s)]", escapeXPath(text))));
 				assertTrue(elements.size() > 0);
 				highlight(elements.get(0));
+				flash(elements.get(0));
 				elements.clear();
 				elements = driver.findElements(By.xpath(
 						String.format("//*[contains(text(), %s)]", escapeXPath2(text))));
 				assertTrue(elements.size() > 0);
 				highlight(elements.get(0));
+				flash2(elements.get(0));
 				System.err.println(elements.get(0).getAttribute("outerHTML"));
 				elements.clear();
 				/*	elements = driver.findElements(By.xpath(

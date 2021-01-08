@@ -883,21 +883,30 @@ public class BaseTest {
 		}
 	}
 
+	// origin:
+	// https://github.com/shoaibhannure/Highlight-WebElement-using-JavaScriptExecutor-using-Java-Selenium/blob/master/src/main/java/com/shoaib/selenium/HighlightElementByJsExecutor.java
+	// see also:
+	// https://github.com/rtorres90/webelement_highlighter/blob/master/webelement_highlighter/__init__.py
+	// for a heavily threaded implementation
 	public void flash(WebElement element) {
-		String bgcolor = element.getCssValue("backgroundColor");
+		final String origBackgroundColor = element.getCssValue("backgroundColor");
+		final String script = "arguments[0].style.backgroundColor =  arguments[1];";
 		for (int i = 0; i < 3; i++) {
-			changeColor("rgb(000,0)", element);
-			changeColor(bgcolor, element);
+			executeScript(script, element, "rgb(0,200,0)");
+			sleep(20);
+			executeScript(script, element, origBackgroundColor);
 		}
 	}
 
-	public void changeColor(String color, WebElement element) {
-		executeScript("arguments[0].style.backgroundColor = '" + color + "'",
-				element);
-		try {
-			Thread.sleep(20);
-		} catch (InterruptedException e) {
-		}
+	// based on:
+	// https://github.com/p0deje/webdriver-highlighter/blob/master/lib/webdriver-highlighter.rb
+	public void flash2(WebElement element) {
+		final String origCcssText = element.getCssValue("cssText");
+		final String script1 = "arguments[0].style.cssText += '; background: magenta; outline: 1px solid magenta'";
+		executeScript(script1, element);
+		final String script2 = "var element = arguments[0], cssText = arguments[1], done = arguments[2];"
+				+ "setTimeout(function() { element.style.cssText = cssText;   done();  },100);";
+		executeAsyncScript(script2, element, origCcssText);
 	}
 
 	// http://www.javawithus.com/tutorial/using-ellipsis-to-accept-variable-number-of-arguments
@@ -919,6 +928,15 @@ public class BaseTest {
 			return javascriptExecutor.executeScript(script, arguments);
 		} else {
 			throw new RuntimeException("Script execution failed.");
+		}
+	}
+
+	private Object executeAsyncScript(String script, Object... args) {
+		if (driver instanceof JavascriptExecutor) {
+			JavascriptExecutor javascriptExecutor = (JavascriptExecutor) driver;
+			return javascriptExecutor.executeAsyncScript(script, args);
+		} else {
+			throw new RuntimeException("cannot execute script.");
 		}
 	}
 
