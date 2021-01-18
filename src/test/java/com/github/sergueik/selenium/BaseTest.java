@@ -69,6 +69,9 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.CapabilityType;
+
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -411,21 +414,39 @@ public class BaseTest {
 			// https://peter.sh/experiments/chromium-command-line-switches/
 			// see also:
 			// https://ivanderevianko.com/2020/04/disable-logging-in-selenium-chromedriver
+			// https://antoinevastel.com/bot%20detection/2017/08/05/detect-chrome-headless.html
+			// @formatter:off
 			for (String optionAgrument : (new String[] {
-					"--user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0",
-					"--allow-running-insecure-content", "--allow-insecure-localhost",
-					"--enable-local-file-accesses", "--disable-notifications",
-					"--disable-gpu", "--disable-save-password-bubble",
-					/* "start-maximized" , */
-					"--disable-default-app", "disable-infobars", "--no-sandbox ",
-					"--browser.download.folderList=2", "--disable-web-security",
-					"--disable-translate", "--disable-popup-blocking",
-					"--disable-in-process-stack-traces", "--disable-logging",
-					"--disable-dev-shm-usage", "--log-level=3", "--output=/dev/null",
-					"--ignore-certificate-errors", "--no-proxy-server",
+					"--allow-insecure-localhost",
+					"--allow-running-insecure-content",
+					"--browser.download.folderList=2",
 					"--browser.helperApps.neverAsk.saveToDisk=image/jpg,text/csv,text/xml,application/xml,application/vnd.ms-excel,application/x-excel,application/x-msexcel,application/excel,application/pdf",
+					"--disable-blink-features=AutomationControlled",
+					"--disable-default-app",
+					"--disable-dev-shm-usage",
+					"--disable-extensions",
+					"--disable-gpu",
+					"--disable-infobars",
+					"--disable-in-process-stack-traces",
+					"--disable-logging",
+					"--disable-notifications",
+					"--disable-popup-blocking",
+					"--disable-save-password-bubble",
+					"--disable-translate",
+					"--disable-web-security",
+					"--enable-local-file-accesses",
+					"--ignore-certificate-errors",
+					"--ignore-certificate-errors",
+					"--ignore-ssl-errors=true",
+					"--log-level=3",
+					"--no-proxy-server",
+					"--no-sandbox",
+					"--output=/dev/null",
+					"--ssl-protocol=any",
 					// "--start-fullscreen",
-					String.format("--browser.download.dir=%s", downloadFilepath)
+					// "--start-maximized" ,
+					"--user-agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20120101 Firefox/33.0",
+					// String.format("--browser.download.dir=%s", downloadFilepath)
 					/*
 					 * "--user-data-dir=/path/to/your/custom/profile",
 					 * "--profile-directory=name_of_custom_profile_directory",
@@ -433,7 +454,7 @@ public class BaseTest {
 			})) {
 				chromeOptions.addArguments(optionAgrument);
 			}
-
+			// @formatter:on	
 			// options for headless
 			if (headless) {
 				for (String optionAgrument : (new String[] { "headless",
@@ -441,7 +462,7 @@ public class BaseTest {
 					chromeOptions.addArguments(optionAgrument);
 				}
 			}
-
+			// TODO:
 			System.err.println("Loading base64 encoded chrome extensions");
 			loadChromeExtensionsBase64Encoded(chromeOptions);
 
@@ -900,6 +921,8 @@ public class BaseTest {
 
 	// based on:
 	// https://github.com/p0deje/webdriver-highlighter/blob/master/lib/webdriver-highlighter.rb
+	// see also:
+	// https://github.com/mcherryleigh/webdriver-marker/blob/master/index.js
 	public void flash2(WebElement element) {
 		final String origCcssText = element.getCssValue("cssText");
 		final String script1 = "arguments[0].style.cssText += '; background: magenta; outline: 1px solid magenta'";
