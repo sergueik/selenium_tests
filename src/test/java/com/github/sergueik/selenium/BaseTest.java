@@ -1,5 +1,7 @@
 package com.github.sergueik.selenium;
-
+/**
+ * Copyright 2017-2021 Serguei Kouzmine
+ */
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -691,7 +693,9 @@ public class BaseTest {
 			String current_value = (String) executeScript(String.format(
 					"const element = arguments[0]; current_value = element.style.border; element.style.border='3px %s' ; return current_value;",
 					color), element);
-			System.err.println("Current value :" + current_value);
+			// TODO: pass argument
+			if (debug)
+				System.err.println("Current value :" + current_value);
 			Thread.sleep(highlightInterval);
 			executeScript("arguments[0].style.border=arguments[1]", element,
 					current_value);
