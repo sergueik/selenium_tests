@@ -45,14 +45,33 @@ get_data = function(options = {}) {
     var totalCost = 0;
     var t = performance.timing;
     var content = [];
-    // visualization
+    // visualization code removed 
 
     phases.forEach(function(v) {
         var start = t[v.start],
             end = t[v.end];
         totalCost += (v.value = (start == 0 ? 0 : (end - start)));
     });
+    if (options['ladder']) {
+        phases.sort(function(a, b) {
+            return b.value - a.value;
+        })
 
+        phases.forEach(function(v, i) {
+            v.width = (100 * v.value / totalCost).toFixed(3);
+        })
+
+        phases.sort(function(a, b) {
+            return a.index - b.index;
+        })
+
+        var content = [];
+        var left = 0;
+        phases.forEach(function(v) {
+            v.left = left;
+            left += +v.width;
+        })
+    }
     return JSON.stringify(phases);
 }
 return get_data(arguments[0], arguments[1]);
