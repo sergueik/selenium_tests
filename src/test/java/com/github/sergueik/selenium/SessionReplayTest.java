@@ -49,6 +49,10 @@ public class SessionReplayTest extends BaseTest {
 	private static Map<String, Object> params = new HashMap<>();
 	private static Map<String, Object> data = new HashMap<>();
 	private static String result = null;
+	private static WebElement element = null;
+	private static Gson gson = new GsonBuilder()
+			.registerTypeAdapter(SessionEvent.class, new SessionEventSerializer())
+			.setPrettyPrinting().create();
 
 	@SuppressWarnings("unused")
 	private static Pattern pattern;
@@ -79,11 +83,16 @@ public class SessionReplayTest extends BaseTest {
 		// result = (String) executeScript("return document.currentScript.src;");
 		// System.err.println("Result: " + result);
 
-		WebElement element = driver
-				.findElement(By.cssSelector("#js-link-box-en > strong"));
+		element = driver.findElement(By.cssSelector("#js-link-box-en > strong"));
 		sleep(1000);
 		actions.moveToElement(element).contextClick().build().perform();
 		sleep(1000);
+
+		// NOTE: browser crashing with Error code: Out of Memory
+		// when DOM change monitoring is turned on and user types input string
+		// element = driver.findElement(By.id("searchInput"));
+		// element.sendKeys("search string");
+		// sleep(1000);
 		element = driver.findElement(By.id("session-replay_events"));
 		assertThat(element, notNullValue());
 		result = element.getAttribute("innerHTML");
@@ -94,8 +103,7 @@ public class SessionReplayTest extends BaseTest {
 	public void test2() {
 		driver.navigate().to(baseURL);
 		executeScript(getScriptContent("session-replay-embed.js"), new Object[] {});
-		WebElement element = driver
-				.findElement(By.cssSelector("#js-link-box-en > strong"));
+		element = driver.findElement(By.cssSelector("#js-link-box-en > strong"));
 		actions.moveToElement(element).contextClick().build().perform();
 		sleep(1000);
 		result = (String) executeScript(
@@ -113,23 +121,28 @@ public class SessionReplayTest extends BaseTest {
 		params.put("setting", data);
 
 		executeScript(getScriptContent("session-replay-embed.js"), params);
-		WebElement element = driver
-				.findElement(By.cssSelector("#js-link-box-en > strong"));
+		element = driver.findElement(By.cssSelector("#js-link-box-en > strong"));
 		actions.moveToElement(element).contextClick().build().perform();
 		sleep(1000);
-		// NOTE:attempt to carry assertion on their end is risky of not getting any
-		// data at all
+		element = driver.findElement(By.id("searchInput"));
+		element.clear();
+		element.sendKeys("search string");
+		sleep(1000);
+		// NOTE: attempt to carry JSON assertion on the browser end
+		// is risky of not getting anydata at all
 		// org.openqa.selenium.JavascriptException:
 		// javascript error: Unexpected number in JSON at position 208544
 		result = (String) executeScript(
 				"return JSON.stringify(JSON.parse(document.getElementById('session-replay_events').innerHTML));");
 
-		Gson gson = new GsonBuilder()
-				.registerTypeAdapter(SessionEvent.class, new SessionEventSerializer())
-				.setPrettyPrinting().create();
 		SessionEvent[] data = gson.fromJson(result, SessionEvent[].class);
 		Arrays.asList(data).stream().filter(o -> !o.event.equals("init")).limit(10)
 				.map(o -> gson.toJson(o)).forEach(System.err::println);
+		System.err.println("User input: ");
+		Arrays.asList(data).stream().filter(o -> o.event.equals("keydown"))
+				.limit(100).map(o -> new Character((char) o.getKeyCode()).toString())
+				.forEach(System.err::print);
+		System.err.println("");
 
 	}
 
