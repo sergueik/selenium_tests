@@ -46,6 +46,9 @@ public class SessionReplayTest extends BaseTest {
 	private static final Logger log = LogManager
 			.getLogger(SessionReplayTest.class);
 	private static final String baseURL = "https://www.wikipedia.org/";
+	private static Map<String, Object> params = new HashMap<>();
+	private static Map<String, Object> data = new HashMap<>();
+	private static String result = null;
 
 	@SuppressWarnings("unused")
 	private static Pattern pattern;
@@ -67,10 +70,15 @@ public class SessionReplayTest extends BaseTest {
 
 	}
 
-	@Test
+	@Test(enabled = true)
 	public void test1() {
 		driver.navigate().to(baseURL);
 		executeScript(getScriptContent("session-replay-embed.js"), new Object[] {});
+
+		// https://developer.mozilla.org/en-US/docs/Web/API/Document/currentScript
+		// result = (String) executeScript("return document.currentScript.src;");
+		// System.err.println("Result: " + result);
+
 		WebElement element = driver
 				.findElement(By.cssSelector("#js-link-box-en > strong"));
 		sleep(1000);
@@ -78,11 +86,11 @@ public class SessionReplayTest extends BaseTest {
 		sleep(1000);
 		element = driver.findElement(By.id("session-replay_events"));
 		assertThat(element, notNullValue());
-		String result = element.getAttribute("innerHTML");
-		System.err.println("Raw result: " + result);
+		result = element.getAttribute("innerHTML");
+		System.err.println("Raw result: " + result.substring(0, 200) + "...");
 	}
 
-	@Test
+	@Test(enabled = true)
 	public void test2() {
 		driver.navigate().to(baseURL);
 		executeScript(getScriptContent("session-replay-embed.js"), new Object[] {});
@@ -90,21 +98,30 @@ public class SessionReplayTest extends BaseTest {
 				.findElement(By.cssSelector("#js-link-box-en > strong"));
 		actions.moveToElement(element).contextClick().build().perform();
 		sleep(1000);
-		String result = (String) executeScript(
+		result = (String) executeScript(
 				"return document.getElementById('session-replay_events').innerHTML;");
-		System.err.println("Raw result: " + result);
+		System.err.println("Raw result: " + result.substring(0, 800) + "...");
 	}
 
-	@Test
+	@Test(enabled = true)
 	public void test3() {
 		driver.navigate().to(baseURL);
-		executeScript(getScriptContent("session-replay-embed.js"), new Object[] {});
+		params = new HashMap<>();
+		data = new HashMap<>();
+		data.put("name", "value");
+		params.put("skip_dom", true);
+		params.put("setting", data);
+
+		executeScript(getScriptContent("session-replay-embed.js"), params);
 		WebElement element = driver
 				.findElement(By.cssSelector("#js-link-box-en > strong"));
 		actions.moveToElement(element).contextClick().build().perform();
 		sleep(1000);
-		// do assetion on their end
-		String result = (String) executeScript(
+		// NOTE:attempt to carry assertion on their end is risky of not getting any
+		// data at all
+		// org.openqa.selenium.JavascriptException:
+		// javascript error: Unexpected number in JSON at position 208544
+		result = (String) executeScript(
 				"return JSON.stringify(JSON.parse(document.getElementById('session-replay_events').innerHTML));");
 
 		Gson gson = new GsonBuilder()
@@ -236,3 +253,4 @@ public class SessionReplayTest extends BaseTest {
 	}
 
 }
+
