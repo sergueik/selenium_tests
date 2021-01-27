@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -35,27 +36,21 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 /**
- * Selected test scenarios for Selenium WebDriver based on
- * https://github.com/mismith/session-replay
+ * Selected test scenarios for Selenium WebDriver the test site:
+ * https://github.com/sergueik/springboot_study/tree/master/basic-jsp
  * 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
 public class ChildToParentWindowpostMessageTest extends BaseTest {
 
-	private static final StringBuffer verificationErrors = new StringBuffer();
-	private static final Logger log = LogManager.getLogger(ChildToParentWindowpostMessageTest.class);
 	private static final String baseURL = "http://localhost:8080/demo/iframe_example.html";
-	private static Map<String, Object> params = new HashMap<>();
-	private static Map<String, Object> data = new HashMap<>();
 	private static String result = null;
+
+	private static WebDriver iframe = null;
 	private static WebElement element = null;
 
-	@SuppressWarnings("unused")
-	private static Pattern pattern;
-	private static Matcher matcher;
-
-	private static final boolean debug = false;
+	private static final boolean debug = Boolean.parseBoolean(getPropertyEnv("DEBUG", "false"));
 	private static final boolean remote = Boolean.parseBoolean(getPropertyEnv("REMOTE", "false"));
 
 	@BeforeClass
@@ -70,8 +65,6 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 
 	}
 
-	private static WebDriver iframe = null;
-
 	@Test(enabled = true)
 	public void test1() {
 		driver.navigate().to(baseURL);
@@ -80,10 +73,15 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 
 		iframe = driver.switchTo().frame(element);
 		sleep(1000);
-
+		executeScript(iframe, "alert('hello');", new Object[] {});
+		sleep(1000);
+		alert = driver.switchTo().alert();
+		alert.accept();
+		executeScript(iframe, getScriptContent("data_sender.js"), new Object[] {});
+		sleep(2000);
 		element = iframe.findElement(By.cssSelector("form input[type='button']"));
 		actions.moveToElement(element).click().build().perform();
-		sleep(1000);
+		sleep(2000);
 		alert = driver.switchTo().alert();
 		alert.accept();
 		driver.switchTo().defaultContent();
@@ -92,6 +90,15 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 		assertThat(element, notNullValue());
 		result = element.getAttribute("innerHTML");
 		System.err.println("Raw result: " + result.substring(0, 200) + "...");
+	}
+
+	public Object executeScript(WebDriver driver, String script, Object... arguments) {
+		if (driver instanceof JavascriptExecutor) {
+			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class.cast(driver);
+			return javascriptExecutor.executeScript(script, arguments);
+		} else {
+			throw new RuntimeException("Script execution failed.");
+		}
 	}
 
 }
