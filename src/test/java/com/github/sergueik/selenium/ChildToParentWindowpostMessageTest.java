@@ -1,0 +1,97 @@
+package com.github.sergueik.selenium;
+/**
+ * Copyright 2021 Serguei Kouzmine
+ */
+
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import java.lang.reflect.Type;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+/**
+ * Selected test scenarios for Selenium WebDriver based on
+ * https://github.com/mismith/session-replay
+ * 
+ * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
+ */
+
+public class ChildToParentWindowpostMessageTest extends BaseTest {
+
+	private static final StringBuffer verificationErrors = new StringBuffer();
+	private static final Logger log = LogManager.getLogger(ChildToParentWindowpostMessageTest.class);
+	private static final String baseURL = "http://localhost:8080/demo/iframe_example.html";
+	private static Map<String, Object> params = new HashMap<>();
+	private static Map<String, Object> data = new HashMap<>();
+	private static String result = null;
+	private static WebElement element = null;
+
+	@SuppressWarnings("unused")
+	private static Pattern pattern;
+	private static Matcher matcher;
+
+	private static final boolean debug = false;
+	private static final boolean remote = Boolean.parseBoolean(getPropertyEnv("REMOTE", "false"));
+
+	@BeforeClass
+	public void beforeClass() throws IOException {
+		super.beforeClass();
+		assertThat(driver, notNullValue());
+	}
+
+	@BeforeMethod
+	public void loadPage() {
+		driver.navigate().to("about:blank");
+
+	}
+
+	private static WebDriver iframe = null;
+
+	@Test(enabled = true)
+	public void test1() {
+		driver.navigate().to(baseURL);
+
+		element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe#frame1")));
+
+		iframe = driver.switchTo().frame(element);
+		sleep(1000);
+
+		element = iframe.findElement(By.cssSelector("form input[type='button']"));
+		actions.moveToElement(element).click().build().perform();
+		sleep(1000);
+		alert = driver.switchTo().alert();
+		alert.accept();
+		driver.switchTo().defaultContent();
+		element = driver.findElement(By.id("messages"));
+
+		assertThat(element, notNullValue());
+		result = element.getAttribute("innerHTML");
+		System.err.println("Raw result: " + result.substring(0, 200) + "...");
+	}
+
+}
