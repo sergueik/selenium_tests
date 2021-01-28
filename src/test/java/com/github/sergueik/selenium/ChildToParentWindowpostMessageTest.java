@@ -50,8 +50,10 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 	private static WebDriver iframe = null;
 	private static WebElement element = null;
 
-	private static final boolean debug = Boolean.parseBoolean(getPropertyEnv("DEBUG", "false"));
-	private static final boolean remote = Boolean.parseBoolean(getPropertyEnv("REMOTE", "false"));
+	private static final boolean debug = Boolean
+			.parseBoolean(getPropertyEnv("DEBUG", "false"));
+	private static final boolean remote = Boolean
+			.parseBoolean(getPropertyEnv("REMOTE", "false"));
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -68,17 +70,15 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 	@Test(enabled = true)
 	public void test1() {
 		driver.navigate().to(baseURL);
-
-		element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe#frame1")));
-
-		iframe = driver.switchTo().frame(element);
-		sleep(1000);
-		executeScript(iframe, "alert('hello');", new Object[] {});
+		iframe = wait.until(ExpectedConditions
+				.frameToBeAvailableAndSwitchToIt(By.cssSelector("iframe#frame1")));
 		sleep(1000);
 		alert = driver.switchTo().alert();
 		alert.accept();
 		executeScript(iframe, getScriptContent("data_sender.js"), new Object[] {});
 		sleep(2000);
+		alert = driver.switchTo().alert();
+		alert.accept();
 		element = iframe.findElement(By.cssSelector("form input[type='button']"));
 		actions.moveToElement(element).click().build().perform();
 		sleep(2000);
@@ -92,9 +92,11 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 		System.err.println("Raw result: " + result.substring(0, 200) + "...");
 	}
 
-	public Object executeScript(WebDriver driver, String script, Object... arguments) {
+	public Object executeScript(WebDriver driver, String script,
+			Object... arguments) {
 		if (driver instanceof JavascriptExecutor) {
-			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class.cast(driver);
+			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class
+					.cast(driver);
 			return javascriptExecutor.executeScript(script, arguments);
 		} else {
 			throw new RuntimeException("Script execution failed.");
