@@ -84,7 +84,7 @@ get_load = function(options = {}) {
     data = JSON.stringify(phases);
     document.getElementById('data').innerHTML = data;
     if (options['debug'] === true) {
-        confirm(data);
+        confirm('Child sends:' + data);
     }
 };
-get_load();
+get_load({'debug':true});
