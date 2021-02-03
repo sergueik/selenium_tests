@@ -49,8 +49,10 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 	private static WebDriver iframe = null;
 	private static WebElement element = null;
 
-	private static final boolean debug = Boolean.parseBoolean(getPropertyEnv("DEBUG", "false"));
-	private static final boolean remote = Boolean.parseBoolean(getPropertyEnv("REMOTE", "false"));
+	private static final boolean debug = Boolean
+			.parseBoolean(getPropertyEnv("DEBUG", "false"));
+	private static final boolean remote = Boolean
+			.parseBoolean(getPropertyEnv("REMOTE", "false"));
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
