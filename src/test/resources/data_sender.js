@@ -1,13 +1,18 @@
-// based on: https://github.com/sunnylost/navigation-timing
 add_element = function() {
-    element = document.createElement('div');
-    element.id = 'data';
+  const id = 'data';
+  if (document.getElementById(id) == null) { 
+    element = document.createElement('span');
+    element.id = id;
     element.style.display = 'none';
     if (document.body != null) {
-        document.body.appendChild(element);
+      document.body.appendChild(element);
     }
+  }
 }
+
 add_element();
+
+// based on: https://github.com/sunnylost/navigation-timing
 get_load = function(options = {}) {
     var phases = [{
         name: 'Redirect',
