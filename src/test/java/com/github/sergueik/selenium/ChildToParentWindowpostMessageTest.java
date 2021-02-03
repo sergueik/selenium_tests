@@ -44,7 +44,6 @@ import com.google.gson.JsonSerializer;
 
 public class ChildToParentWindowpostMessageTest extends BaseTest {
 
-	private static final String baseURL = "http://localhost:8080/demo/iframe_example.html";
 	private static String result = null;
 
 	private static WebDriver iframe = null;
@@ -67,22 +66,21 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 
 	@Test(enabled = true)
 	public void test1() {
-		driver.navigate().to(baseURL);
-
-		element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe#frame1")));
-
-		iframe = driver.switchTo().frame(element);
-		sleep(1000);
-		executeScript(iframe, "alert('hello');", new Object[] {});
-		sleep(1000);
-		alert = driver.switchTo().alert();
-		alert.accept();
+		driver.navigate().to("http://localhost:8080/demo/iframe_example.html");
+		iframe = wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.cssSelector("iframe#frame1")));
+		sleep(100);
 		executeScript(iframe, getScriptContent("data_sender.js"), new Object[] {});
 		sleep(2000);
+		alert = driver.switchTo().alert();
+		result = alert.getText();
+		System.err.println("Raw result: " + result.substring(0, 200) + "...");
+		alert.accept();
 		element = iframe.findElement(By.cssSelector("form input[type='button']"));
 		actions.moveToElement(element).click().build().perform();
 		sleep(2000);
 		alert = driver.switchTo().alert();
+		result = alert.getText();
+		System.err.println("Raw result: " + result.substring(0, 200) + "...");
 		alert.accept();
 		driver.switchTo().defaultContent();
 		element = driver.findElement(By.id("messages"));
@@ -92,13 +90,31 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 		System.err.println("Raw result: " + result.substring(0, 200) + "...");
 	}
 
-	public Object executeScript(WebDriver driver, String script, Object... arguments) {
-		if (driver instanceof JavascriptExecutor) {
-			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class.cast(driver);
-			return javascriptExecutor.executeScript(script, arguments);
-		} else {
-			throw new RuntimeException("Script execution failed.");
-		}
+	@Test(enabled = true)
+	public void test2() {
+		driver.navigate().to("http://localhost:8080/demo/iframe_nocode_example.html");
+		executeScript(getScriptContent("parent_script.js"));
+		iframe = wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.cssSelector("iframe#frame1")));
+		sleep(100);
+		executeScript(iframe, getScriptContent("data_sender.js"), new Object[] {});
+		sleep(2000);
+		alert = driver.switchTo().alert();
+		result = alert.getText();
+		System.err.println("Raw result: " + result.substring(0, 200) + "...");
+		alert.accept();
+		element = iframe.findElement(By.cssSelector("form input[type='button']"));
+		actions.moveToElement(element).click().build().perform();
+		sleep(2000);
+		alert = driver.switchTo().alert();
+		result = alert.getText();
+		System.err.println("Raw result: " + result.substring(0, 200) + "...");
+		alert.accept();
+		driver.switchTo().defaultContent();
+		element = driver.findElement(By.id("messages"));
+
+		assertThat(element, notNullValue());
+		result = element.getAttribute("innerHTML");
+		System.err.println("Raw result: " + result.substring(0, 200) + "...");
 	}
 
 }
