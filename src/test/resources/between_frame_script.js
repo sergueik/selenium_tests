@@ -10,9 +10,8 @@ add_element = function() {
   }
 }
 
-add_element();
-
 window.addEventListener('message', function(event) {
+    add_element();
     if (event.origin === window.location.protocol + '//' + window.location.hostname + ':' + window.location.port) {
         confirmation_message = 'Parent received message: ' + event.data.message;
     } else {

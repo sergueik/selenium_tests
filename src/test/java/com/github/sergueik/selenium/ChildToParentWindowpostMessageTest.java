@@ -48,6 +48,14 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 
 	private static WebDriver iframe = null;
 	private static WebElement element = null;
+	// private static String baseURL =
+	// "http://localhost:8080/demo/iframe_example.html"
+	private static String tagetHost = getPropertyEnv("TARGET_HOST", "localhost");
+
+	private static String baseURL = String.format("http://192.168.0.64:8080/demo",
+			tagetHost);
+
+	// "http://192.168.0.64:8080/demo/iframe_example.html";
 
 	private static final boolean debug = Boolean
 			.parseBoolean(getPropertyEnv("DEBUG", "false"));
@@ -68,8 +76,9 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 
 	@Test(enabled = true)
 	public void test1() {
-		driver.navigate().to("http://localhost:8080/demo/iframe_example.html");
-		iframe = wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.cssSelector("iframe#frame1")));
+		driver.navigate().to(baseURL + "/" + "iframe_example.html");
+		iframe = wait.until(ExpectedConditions
+				.frameToBeAvailableAndSwitchToIt(By.cssSelector("iframe#frame1")));
 		sleep(100);
 		executeScript(iframe, getScriptContent("data_sender.js"), new Object[] {});
 		sleep(2000);
@@ -94,9 +103,10 @@ public class ChildToParentWindowpostMessageTest extends BaseTest {
 
 	@Test(enabled = true)
 	public void test2() {
-		driver.navigate().to("http://localhost:8080/demo/iframe_nocode_example.html");
+		driver.navigate().to(baseURL + "/" + "iframe_nocode_example.html");
 		executeScript(getScriptContent("parent_script.js"));
-		iframe = wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.cssSelector("iframe#frame1")));
+		iframe = wait.until(ExpectedConditions
+				.frameToBeAvailableAndSwitchToIt(By.cssSelector("iframe#frame1")));
 		sleep(100);
 		executeScript(iframe, getScriptContent("data_sender.js"), new Object[] {});
 		sleep(2000);
