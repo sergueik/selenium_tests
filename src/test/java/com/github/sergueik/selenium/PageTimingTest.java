@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Ignore;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -62,14 +63,32 @@ public class PageTimingTest extends BaseTest {
 	public void loadPage() {
 
 	}
-
+	@Ignore
 	@Test
-	public void pageTimingTest() {
+	public void test1() {
 		driver.navigate().to(baseURL);
 		Map<String, String> param = new HashMap<>();
 		param.put("ladder", "true");
 		String result = (String) executeScript(
 				getScriptContent("compute-timing.js"), param);
+		System.err.println(result);
+		Gson gson = new GsonBuilder()
+				.registerTypeAdapter(Phase.class, new PhaseSerializer())
+				.setPrettyPrinting().create();
+		Phase[] data = gson.fromJson(result, Phase[].class);
+		Arrays.asList(data).stream().map(o -> gson.toJson(o))
+				.forEach(System.err::println);
+
+	}
+
+	@Ignore
+	@Test
+	public void test2() {
+		driver.navigate().to(baseURL);
+		Map<String, String> param = new HashMap<>();
+		param.put("ladder", "true");
+		String result = (String) executeScript(
+				getScriptContent("compute-timing.js"));
 		System.err.println(result);
 		Gson gson = new GsonBuilder()
 				.registerTypeAdapter(Phase.class, new PhaseSerializer())
@@ -198,4 +217,3 @@ public class PageTimingTest extends BaseTest {
 	}
 
 }
-
