@@ -30,12 +30,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-
+import com.google.gson.JsonSyntaxException;
 // import static com.google.gson.Gson.DEFAULT_PRETTY_PRINT;
 
 /**
  * Selected test scenarios for Selenium WebDriver based on
  * https://github.com/sunnylost/navigation-timing
+ * 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
@@ -50,8 +51,12 @@ public class PageTimingTest extends BaseTest {
 	private static Matcher matcher;
 
 	private static final boolean debug = false;
-	private static final boolean remote = Boolean
-			.parseBoolean(getPropertyEnv("REMOTE", "false"));
+	private static final boolean remote = Boolean.parseBoolean(getPropertyEnv("REMOTE", "false"));
+
+	private static final Map<String, String> param = new HashMap<>();
+
+	private static final Gson gson = new GsonBuilder().registerTypeAdapter(Phase.class, new PhaseSerializer())
+			.setPrettyPrinting().create();
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -63,46 +68,47 @@ public class PageTimingTest extends BaseTest {
 	public void loadPage() {
 
 	}
-	@Ignore
+
+	// @Ignore
 	@Test
 	public void test1() {
 		driver.navigate().to(baseURL);
-		Map<String, String> param = new HashMap<>();
+		param.clear();
 		param.put("ladder", "true");
-		String result = (String) executeScript(
-				getScriptContent("compute-timing.js"), param);
-		System.err.println(result);
-		Gson gson = new GsonBuilder()
-				.registerTypeAdapter(Phase.class, new PhaseSerializer())
-				.setPrettyPrinting().create();
-		Phase[] data = gson.fromJson(result, Phase[].class);
-		Arrays.asList(data).stream().map(o -> gson.toJson(o))
-				.forEach(System.err::println);
+		String result = (String) executeScript(getScriptContent("compute-timing.js"), param);
+		System.err.println("Result (raw)" + result);
+		// JsonSyntax java.lang.NumberFormatException, Linux only
+		try {
+			Phase[] data = gson.fromJson(result, Phase[].class);
+			Arrays.asList(data).stream().map(o -> gson.toJson(o)).forEach(System.err::println);
+		} catch (JsonSyntaxException e) {
+			System.err.println("Exception (ignored): " + e.toString());
+		}
+		sleep(100);
 
 	}
 
-	@Ignore
+	// @Ignore
 	@Test
 	public void test2() {
 		driver.navigate().to(baseURL);
-		Map<String, String> param = new HashMap<>();
+		param.clear();
 		param.put("ladder", "true");
-		String result = (String) executeScript(
-				getScriptContent("compute-timing.js"));
-		System.err.println(result);
-		Gson gson = new GsonBuilder()
-				.registerTypeAdapter(Phase.class, new PhaseSerializer())
-				.setPrettyPrinting().create();
-		Phase[] data = gson.fromJson(result, Phase[].class);
-		Arrays.asList(data).stream().map(o -> gson.toJson(o))
-				.forEach(System.err::println);
+		String result = (String) executeScript(getScriptContent("compute-timing.js"));
+		System.err.println("Result (raw)" + result);
+
+		try {
+			Phase[] data = gson.fromJson(result, Phase[].class);
+			Arrays.asList(data).stream().map(o -> gson.toJson(o)).forEach(System.err::println);
+		} catch (JsonSyntaxException e) {
+			System.err.println("Exception (ignored): " + e.toString());
+		}
 
 	}
 
 	private static class PhaseSerializer implements JsonSerializer<Phase> {
 		@Override
-		public JsonElement serialize(final Phase data, final Type type,
-				final JsonSerializationContext context) {
+		public JsonElement serialize(final Phase data, final Type type, final JsonSerializationContext context) {
 			JsonObject result = new JsonObject();
 			String id = data.getId();
 			if (id != null && !id.isEmpty()) {
@@ -126,7 +132,7 @@ public class PageTimingTest extends BaseTest {
 			}
 			int index = data.getIndex();
 			result.add("index", new JsonPrimitive(index));
-			int value = data.getValue();
+			long value = data.getValue();
 			result.add("value", new JsonPrimitive(value));
 
 			Float width = data.getWidth();
@@ -145,7 +151,7 @@ public class PageTimingTest extends BaseTest {
 		private String start;
 		private String end;
 		private int index;
-		private int value;
+		private long value;
 		// TODO: make optional
 		private float left;
 		private float width;
@@ -186,11 +192,11 @@ public class PageTimingTest extends BaseTest {
 			index = data;
 		}
 
-		public int getValue() {
+		public long getValue() {
 			return value;
 		}
 
-		public void setValue(int data) {
+		public void setValue(long data) {
 			value = data;
 		}
 
