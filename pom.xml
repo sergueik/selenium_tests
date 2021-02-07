@@ -323,6 +323,17 @@ rem ${encoding}
  -->
           <compilerArgument>-Xlint:all</compilerArgument>
           <compilerArgument>-Xlint:-processing</compilerArgument>
+		  <!-- NOTE: some compiler optimizatino flags not recognized on JDK 1.8.0.101 and were added in later builds e.g. 1.8.0.151:  
+                  Fatal error compiling: 
+                  invalid flag: -XX:+AggressiveUnboxing
+                  invalid flag: -XX:+AggressiveOpts
+                  invalid flag: -XX:+UnlockExperimentalVMOptions
+                  -->
+          <!--
+          <compilerArgument>-XX:+UnlockExperimentalVMOptions</compilerArgument>
+          <compilerArgument>-XX:+AggressiveOpts</compilerArgument>
+	  <compilerArgument>-XX:+AggressiveUnboxing</compilerArgument>
+	  -->
           <!--
    <compilerArgument>-Dfile.encoding=${encoding}</compilerArgument>
 Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
@@ -353,14 +364,14 @@ Fatal error compiling: invalid flag: -Dfile.encoding=UTF-8 -> [Help 1]
           <trimStackTrace>false</trimStackTrace>
           <encoding>${encoding}</encoding>
           <!--
-	  NOTE: specifying the suite XML file prevents surefile from scannint all tests casses and execute everything with the method name mask match
+          NOTE: specifying the suite XML file prevents surefile from scannint all tests casses and execute everything with the method name mask match
           <suiteXmlFiles>
             <suiteXmlFile>src/test/resources/suites/testng.xml</suiteXmlFile>
-	  </suiteXmlFiles>
-	  -->
+          </suiteXmlFiles>
+          -->
           <!-- For parallel runs with e.g. Vagrant https://github.com/sergueik/selenium-fluxbox
-	  <argLine>-Dfile.encoding=${encoding} -Dparallel=tests -DthreadCount=2 </argLine>
-	  -->
+          <argLine>-Dfile.encoding=${encoding} -Dparallel=tests -DthreadCount=2 </argLine>
+          -->
           <argLine>-Dfile.encoding=${encoding}</argLine>
           <!-- Skip the default running of this plug-in (or everything is run twice...see below) -->
           <skip>true</skip>
