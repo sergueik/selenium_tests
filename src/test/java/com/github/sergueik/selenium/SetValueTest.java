@@ -86,6 +86,8 @@ public class SetValueTest extends BaseTest {
 		assertThat(element.getText(), is(""));
 		String value = text.substring(10, 100);
 		super.fastSetText(element, value);
+		// delay to inspect console log in Chrome Dev Tools
+		// sleep(10000);
 		element = driver.findElement(By.cssSelector(selector));
 		assertThat(element.getAttribute("value"), is(value));
 		System.err
@@ -101,6 +103,8 @@ public class SetValueTest extends BaseTest {
 		assertThat(element.getText(), is(""));
 		String value = text.substring(0, 100);
 		super.fastSetText(selector, value);
+		// delay to inspect console log in Chrome Dev Tools
+		// sleep(10000);
 		element = driver.findElement(By.cssSelector(selector));
 		assertThat(element.getAttribute("value"), is(value));
 		System.err
