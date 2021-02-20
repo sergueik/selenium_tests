@@ -825,7 +825,7 @@ public class BaseTest {
 	// see also:
 	// https://stackoverflow.com/questions/5700471/set-value-of-input-using-javascript-function
 	protected void fastSetText(String selector, String text) {
-		String script = getScriptContent("setValueWithSelector.js");
+		String script = getScriptContent("setValue.js");
 		try {
 			executeScript(script, selector, text);
 		} catch (Exception e) {
@@ -834,7 +834,7 @@ public class BaseTest {
 	}
 
 	protected void fastSetText(WebElement element, String text) {
-		String script = getScriptContent("setValueWithSelector.js");
+		String script = getScriptContent("setValue.js");
 		try {
 			wait.until(ExpectedConditions.visibilityOf(element));
 			executeScript(script, element, text);

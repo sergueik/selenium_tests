@@ -1,5 +1,7 @@
 // based on: https://github.com/selenide/selenide/blob/master/src/main/java/com/codeborne/selenide/commands/SetValue.java
 var setValue = function(element, text) {
+
+
 if (element.getAttribute('readonly') != undefined) return 'Cannot change value of readonly element';
 if (element.getAttribute('disabled') != undefined) return 'Cannot change value of disabled element';
 element.focus();
@@ -8,10 +10,18 @@ element.value = maxlength == -1 ? text : text.length <= maxlength ? text : text.
 return null;
 }
 
-var selector = arguments[0];
 var text = arguments[1];
-var nodes = window.document.querySelectorAll(selector);
-if (nodes) { 
-  setValue(nodes[0], text);
+
+console.log("Argument type is " + typeof(arguments[0]));
+if (typeof(arguments[0]) === 'string') {
+  var selector = arguments[0];
+  // alert("Variable selector value type is " + typeof(selector));
+  var nodes = window.document.querySelectorAll(selector);
+  if (nodes) { 
+    setValue(nodes[0], text);
+  }
+} else {
+  var element = arguments[0]; 
+  setValue(element, text);
 }
 return;
