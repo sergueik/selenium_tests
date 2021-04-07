@@ -45,7 +45,9 @@ import org.testng.annotations.Test;
 
 // origin:
 // https://github.com/TsvetomirSlavov/JavaScriptSwTestAcademy/blob/master/ExecuteAsyncXMLHttpRequestTest.java
-
+// see also: XMLHttpRequest overwrite at Object level (in Russian)
+// https://habr.com/ru/post/148140/?_ga=2.134444785.1051269828.1617671354-1174242598.1608300071
+// https://github.com/ilinsky/xmlhttprequest
 // Ref1:
 // https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/JavascriptExecutor.html
 // Ref2: http://www.openjs.com/articles/ajax_xmlhttp_using_post.php
@@ -143,8 +145,9 @@ public class XMLHttpRequestAsyncTest {
 		stateListElement.click();
 		sleep(100);
 	}
+	// http://demo.guru99.com/test/ajax.html
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	// asynchronous script timeout: result was not received in 30 seconds(..)
 	public void sendJSONArgBasicTest() {
 		String response = null;
@@ -226,7 +229,7 @@ public class XMLHttpRequestAsyncTest {
 		sleep(100);
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void sendJSONArgDebugTest() {
 		String response = null;
 		int country_index = 3;
@@ -309,7 +312,7 @@ public class XMLHttpRequestAsyncTest {
 		sleep(100);
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void sendJSONArgTrackingTest() {
 		String response = null;
 
@@ -398,7 +401,7 @@ public class XMLHttpRequestAsyncTest {
 		sleep(100);
 	}
 
-	@Test(enabled = false)
+	@Test(enabled = true)
 	public void sendJSONArgTest() {
 		String response = null;
 
@@ -569,11 +572,6 @@ public class XMLHttpRequestAsyncTest {
 			}
 		}
 		actions = new Actions(driver);
-		/*
-		System.setProperty("webdriver.chrome.driver",
-				"c:/java/selenium/chromedriver.exe");
-		driver = new ChromeDriver();
-		*/
 		driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
 		wait = new WebDriverWait(driver, flexibleWait);
 		wait.pollingEvery(pollingInterval, TimeUnit.MILLISECONDS);
@@ -598,7 +596,15 @@ public class XMLHttpRequestAsyncTest {
 			throw new RuntimeException(String.format("Error in the method %s : %s",
 					result.getMethod().getMethodName(), verificationErrors.toString()));
 		}
-		driver.get("about:blank");
+
+		// [ERROR] Run 1: XMLHttpRequestAsyncTest.AfterMethod:609 » UnhandledAlert
+		// unexpected alert open...
+		try {
+			driver.get("about:blank");
+		} catch (org.openqa.selenium.UnhandledAlertException e) {
+			System.err.println("Exception (aborting method): " + e.toString());
+			return;
+		}
 	}
 
 	// utilities
