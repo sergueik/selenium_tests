@@ -144,8 +144,12 @@ public class BaseTest {
 
 	private boolean debug = false;
 
+	public boolean getDebug() {
+		return debug;
+	}
+
 	public void setDebug(boolean value) {
-		this.debug = value;
+		debug = value;
 	}
 
 	public String getHandle() {
