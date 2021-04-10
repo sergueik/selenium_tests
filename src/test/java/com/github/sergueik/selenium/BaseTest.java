@@ -683,8 +683,8 @@ public class BaseTest {
 					"const element = arguments[0]; current_value = element.style.border; element.style.border='3px %s' ; return current_value;",
 					color), element);
 			// TODO: pass argument
-			if (debug)
-				System.err.println("Current value :" + current_value);
+			// if (debug)
+			//	System.err.println("Current value :" + current_value);
 			Thread.sleep(highlightInterval);
 			executeScript("arguments[0].style.border=arguments[1]", element,
 					current_value);
