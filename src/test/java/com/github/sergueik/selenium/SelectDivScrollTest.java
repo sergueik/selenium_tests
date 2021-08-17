@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
@@ -28,8 +30,9 @@ import org.openqa.selenium.WebElement;
 public class SelectDivScrollTest extends BaseTest {
 
 	private final static String baseUrl = "https://www.speechtexter.com";
-	private final static String selector1 = "div#top-navbar div#lang-flag-display"; // div#lang-flag-display
-	private final static String selector2 = "div#overlay-lang div#popup-lang div#lang-menu-content div.lang-option";
+	private final static String selector1 = "div#top-navbar div#lang-flag-display";
+	private final static String selector2 = "div#overlay-lang div#popup-lang";
+	private final static String selector3 = "div#lang-menu-content div.lang-option";
 	private final int maxCount = Integer.parseInt(getEnv("MAXCOUNT", "20"));
 	public JavascriptExecutor js;
 	private WebElement element;
@@ -56,17 +59,18 @@ public class SelectDivScrollTest extends BaseTest {
 		actions.moveToElement(element);
 		highlight(element);
 		element.click();
+		wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(selector2))));
+		elements = driver.findElements(By.cssSelector(selector3));
+		assertThat(elements, notNullValue());
+		assertThat(elements.size(), greaterThan(0));
+		System.err.println(String.format("iterating over first %d of %d elements",
+				maxCount, elements.size()));
 	}
 
 	@Test(enabled = true)
 	public void test1() {
 		// Act
-		elements = driver.findElements(By.cssSelector(selector2));
-		assertThat(elements, notNullValue());
-		assertThat(elements.size(), greaterThan(0));
-		System.err.println(String.format("iterating over first %d of %d elements",
-				maxCount, elements.size()));
-
 		elements.stream().limit(maxCount).forEach(element1 -> {
 
 			assertThat(element1, notNullValue());
@@ -88,11 +92,6 @@ public class SelectDivScrollTest extends BaseTest {
 	@Test(enabled = true)
 	public void test2() {
 		// Act
-		elements = driver.findElements(By.cssSelector(selector2));
-		assertThat(elements, notNullValue());
-		assertThat(elements.size(), greaterThan(0));
-		System.err.println(String.format("iterating over first %d of %d elements",
-				maxCount, elements.size()));
 		elements.stream().limit(maxCount).forEach(element1 -> {
 
 			assertThat(element1, notNullValue());
@@ -111,18 +110,15 @@ public class SelectDivScrollTest extends BaseTest {
 		sleep(delay2);
 	}
 
+	// NOTE: not a legacy select
+	// https://www.w3schools.com/tags/tryit.asp?filename=tryhtml_select
+	// therefore the org.openqa.selenium.support.ui.Select is of no use
 	@Test(enabled = true)
 	public void test3() {
 		// Act
-		elements = driver.findElements(By.cssSelector(selector2));
-		assertThat(elements, notNullValue());
-		assertThat(elements.size(), greaterThan(0));
-		System.err.println(String.format("iterating over first %d of %d elements",
-				maxCount, elements.size()));
-
 		for (int cnt = 0; cnt != ((elements.size() > maxCount) ? maxCount
 				: elements.size()); cnt++) {
-			String selector = String.format("%s:nth-of-type(%d)", selector2, cnt + 1);
+			String selector = String.format("%s:nth-of-type(%d)", selector3, cnt + 1);
 			element1 = driver.findElement(By.cssSelector(selector));
 			assertThat(element1, notNullValue());
 			comment(element1);
