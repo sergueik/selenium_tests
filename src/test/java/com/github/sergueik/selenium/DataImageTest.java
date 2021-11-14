@@ -52,9 +52,10 @@ public class DataImageTest extends BaseTest {
 
 	// $x("//img[@id='data_image']/@src")[0]
 	private static final String script1 = "var path = arguments[0]; \n"
-			+ "var element; try { \n"
-			+ "element = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; \n"
+			+ "try { \n"
+			+ "var element = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; \n"
 			+ "return element; } \n" + "catch (e) { return e.toString()}";
+	// NOTE: script2 will not work
 	private static final String script2 = "function getAttributeAsJSON(path) {\n"
 			+ "    try {\n"
 			+ "        var element = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;\n"
