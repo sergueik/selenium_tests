@@ -45,16 +45,15 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 /**
- * Selected test scenarios for Selenium WebDriver
- * inspired by: https://qna.habr.com/q/1081000  
+ * Selected test scenarios for Selenium WebDriver inspired by:
+ * https://qna.habr.com/q/1081000
+ * 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com) based on
  */
 
 public class MintCoinImageTest extends BaseTest {
 
-	private static final Logger log = LogManager
-			.getLogger(MintCoinImageTest.class);
-	private static List<String> brokenImages = new ArrayList<>();
+	private static final Logger log = LogManager.getLogger(MintCoinImageTest.class);
 
 	private static boolean debug = false;
 	private static String selector;
@@ -62,15 +61,13 @@ public class MintCoinImageTest extends BaseTest {
 	private static WebElement element2;
 	private static List<WebElement> elements;
 	private static String baseURL = "https://catalog.usmint.gov/coins/coin-programs/america-the-beautiful-quarters-program";
-	private static final StringBuffer report = new StringBuffer();
 	private static Document jsoupDocument;
 	private static boolean found = false;
 	private static String document;
 	private static Elements jsoupElements;
 	private static Element jsoupElement;
 	private static Node jsoupNode;
-	private List<String> jsoupSelectors = Arrays
-			.asList(new String[] { "product-image", "product-id" });
+	private List<String> jsoupSelectors = Arrays.asList(new String[] { "product-image", "product-id" });
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -82,26 +79,35 @@ public class MintCoinImageTest extends BaseTest {
 	@BeforeMethod
 	public void beforeMethod() {
 		driver.navigate().to(baseURL);
-		wait.until(ExpectedConditions
-				.urlContains("america-the-beautiful-quarters-program"));
-		// NOTE: being randomly redirected to
-		// "Please verify you are a human
-		// Access to this page has been denied because it appears you are using
-		// automation tools to browse the website".
-		// page
-		// https://catalog.usmint.gov/verify-show?url=aHR0cHM6Ly9jYXRhbG9nLnVzbWludC5nb3Yvb24vZGVtYW5kd2FyZS5zdG9yZS9TaXRlcy1VU00tU2l0ZS9kZWZhdWx0L1NlYXJjaC1TaG93P2NnaWQ9YW1lcmljYS10aGUtYmVhdXRpZnVsLXF1YXJ0ZXJz
-		// echo
-		// 'aHR0cHM6Ly9jYXRhbG9nLnVzbWludC5nb3Yvb24vZGVtYW5kd2FyZS5zdG9yZS9TaXRlcy1VU00tU2l0ZS9kZWZhdWx0L1NlYXJjaC1TaG93P2NnaWQ9YW1lcmljYS10aGUtYmVhdXRpZnVsLXF1YXJ0ZXJz'
-		// | base64 -d
-		// https://catalog.usmint.gov/on/demandware.store/Sites-USM-Site/default/Search-Show?cgid=america-the-beautiful-quarters
-		System.err.println(driver.getCurrentUrl());
+		try {
+			wait.until(ExpectedConditions.urlContains("america-the-beautiful-quarters-program"));
+			// NOTE: being randomly redirected to
+			// "Please verify you are a human
+			// Access to this page has been denied because it appears you are using
+			// automation tools to browse the website".
+			// page
+			// https://catalog.usmint.gov/verify-show?url=aHR0cHM6Ly9jYXRhbG9nLnVzbWludC5nb3Yvb24vZGVtYW5kd2FyZS5zdG9yZS9TaXRlcy1VU00tU2l0ZS9kZWZhdWx0L1NlYXJjaC1TaG93P2NnaWQ9YW1lcmljYS10aGUtYmVhdXRpZnVsLXF1YXJ0ZXJz
+			// echo
+			// 'aHR0cHM6Ly9jYXRhbG9nLnVzbWludC5nb3Yvb24vZGVtYW5kd2FyZS5zdG9yZS9TaXRlcy1VU00tU2l0ZS9kZWZhdWx0L1NlYXJjaC1TaG93P2NnaWQ9YW1lcmljYS10aGUtYmVhdXRpZnVsLXF1YXJ0ZXJz'
+			// | base64 -d
+			// https://catalog.usmint.gov/on/demandware.store/Sites-USM-Site/default/Search-Show?cgid=america-the-beautiful-quarters
+			System.err.println(driver.getCurrentUrl());
+		} catch (TimeoutException e) {
+			// TODO: terminate test execution
+			// Expected condition failed:
+			// waiting for url to contain
+			// "america-the-beautiful-quarters-program".
+			// Current url:
+			// "https://catalog.usmint.gov/verify-show?url=aHR0cHM6Ly9jYXRhbG9nLnVzbWludC5nb3Yvb24vZGVtYW5kd2FyZS5zdG9yZS9TaXRlcy1VU00tU2l0ZS9kZWZhdWx0L1NlYXJjaC1TaG93P2NnaWQ9YW1lcmljYS10aGUtYmVhdXRpZnVsLXF1YXJ0ZXJz"
+			// ( tried for 60 second(s) with 500 milliseconds interval)
+			// shown every 15 or so runs
+		}
 	}
 
 	// dump
 	@Test(enabled = false)
 	public void test1() {
-		elements = driver
-				.findElements(By.xpath("//div[contains(@class,'product-tile')]"));
+		elements = driver.findElements(By.xpath("//div[contains(@class,'product-tile')]"));
 		processElements(elements);
 
 	}
@@ -128,8 +134,7 @@ public class MintCoinImageTest extends BaseTest {
 			selector += (cnt > 1) ? ":nth-of-type(" + cnt + ")" : ":first-of-type";
 			element = null;
 			try {
-				element = wait.until(ExpectedConditions
-						.visibilityOf(driver.findElement(By.cssSelector(selector))));
+				element = wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(selector))));
 			} catch (NoSuchElementException e) {
 				System.err.println("Exception (ignored):  " + e.toString());
 				System.err.println("Continue to next element");
@@ -138,11 +143,10 @@ public class MintCoinImageTest extends BaseTest {
 			// NOTE: challenge past 3 element presumably due to
 			// div.product-tile.topper-wrap
 			assertThat(element, notNullValue());
-			System.err
-					.println("Element itemid: " + element.getAttribute("data-itemid"));
+			System.err.println("Element itemid: " + element.getAttribute("data-itemid"));
 			try {
-				element2 = wait.until(ExpectedConditions.visibilityOf(
-						driver.findElement(By.cssSelector(selector + " div.product-id"))));
+				element2 = wait.until(ExpectedConditions
+						.visibilityOf(driver.findElement(By.cssSelector(selector + " div.product-id"))));
 				System.err.println("Element product id: " + element2.getText());
 				found = true;
 			} catch (NoSuchElementException e) {
@@ -150,19 +154,16 @@ public class MintCoinImageTest extends BaseTest {
 				found = false;
 			}
 			try {
-				element2 = wait
-						.until(ExpectedConditions.visibilityOf(driver.findElement(
-								By.cssSelector(selector + " div[class *='product-image']"))));
-				System.err
-						.println("Element image: " + element2.getAttribute("outerHTML"));
+				element2 = wait.until(ExpectedConditions
+						.visibilityOf(driver.findElement(By.cssSelector(selector + " div[class *='product-image']"))));
+				System.err.println("Element image: " + element2.getAttribute("outerHTML"));
 				found = true;
 			} catch (NoSuchElementException e) {
 				System.err.println("Exception (ignored):  " + e.toString());
 				found = false;
 			}
 			if (!found) {
-				System.err
-						.println("Element document: " + element.getAttribute("innerHTML"));
+				System.err.println("Element document: " + element.getAttribute("innerHTML"));
 			}
 			int y = element.getLocation().y;
 			System.err.println("Element y position to scroll: " + y);
@@ -174,7 +175,75 @@ public class MintCoinImageTest extends BaseTest {
 	}
 
 	// load more
+
 	@Test(enabled = true)
+	public void test5() {
+		String url = null;
+		found = false;
+		selector = "div.infinite-scroll-placeholder";
+		element = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(selector)));
+
+		// element = driver.findElement(By.cssSelector(selector));
+		url = element.getAttribute("data-grid-url");
+		System.err.println("Element url attribute: " + url);
+		selector = "div.infinite-scroll-manual-loadmore";
+
+		element = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(selector)));
+		// element = driver.findElement(By.cssSelector(selector));
+		executeScript("var element = arguments[0];" + "element.style.display = 'inline';\r\n" + "", element);
+		// element =
+		// wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(selector)));
+		element = wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector(selector))));
+		System.err.println("Element is visible: " + element.getAttribute("outerHTML"));
+		elements = driver.findElements(By.xpath("//button[contains(text(),'Load More')]"));
+		element = null;
+		if (elements.size() > 0) {
+			System.err.println("Found button");
+			element = elements.get(0);
+			element = wait.until(ExpectedConditions
+					.visibilityOf(driver.findElement(By.xpath("//button[contains(text(),'Load More')]"))));
+			System.err.println("Element is visible: " + element.getAttribute("outerHTML"));
+		}
+		if (element != null) {
+			try {
+				System.err.println("Try to focus (via actions) on element: " + element.getAttribute("outerHTML"));
+				actions.moveToElement(element).build().perform();
+				System.err.println("Focused element: " + element.getAttribute("outerHTML"));
+				sleep(3000);
+			} catch (ElementNotInteractableException e) {
+				System.err.println("Exception (ignored): " + e.toString());
+			}
+			try {
+				System.err.println("Try to click (via actions) the element: " + element.getAttribute("outerHTML"));
+				actions.moveToElement(element).click().build().perform();
+				System.err.println("Clicked (via actions) the element: " + element.getAttribute("outerHTML"));
+				found = true;
+			} catch (ElementNotInteractableException e) {
+				System.err.println("Exception (ignored): " + e.toString());
+				// element not interactable: [object HTMLButtonElement] has no size and
+				// location
+			}
+			if (!found)
+				try {
+					System.err.println("Try to click the element: " + element.getAttribute("outerHTML"));
+					element.click();
+					found = true;
+				} catch (ElementNotInteractableException e) {
+					System.err.println("Exception (ignored): " + e.toString());
+					// Exception (ignored): org.openqa.selenium.ElementNotInteractableException:
+					// element not interactable
+				}
+			if (!found) {
+				System.err.println("Navigate to url via browser: " + url);
+				driver.navigate().to(url);
+			}
+			sleep(10000);
+		}
+
+	}
+
+	// load more
+	@Test(enabled = false)
 	public void test4() {
 		int increment = 250;
 		int max_iterarion = 10;
@@ -182,8 +251,7 @@ public class MintCoinImageTest extends BaseTest {
 		element = null;
 		for (int cnt = 0; cnt != max_iterarion; cnt++) {
 			System.err.println("Iteration :  " + cnt);
-			elements = driver
-					.findElements(By.xpath("//button[contains(text(),'Load More')]"));
+			elements = driver.findElements(By.xpath("//button[contains(text(),'Load More')]"));
 			if (elements.size() > 0) {
 				System.err.println("Found button");
 				element = elements.get(0);
@@ -208,22 +276,14 @@ public class MintCoinImageTest extends BaseTest {
 			}
 		}
 		/*
-		max_iterarion = 10;
-		found = false;
-		for (int cnt = 0; cnt != max_iterarion; cnt++) {
-			if (found)
-				break;
-			System.err.println("Iteration :  " + cnt);
-			try {
-				element = wait.until(ExpectedConditions.visibilityOf(driver
-						.findElement(By.xpath("//button[contains(text(),'Load More')]"))));
-				found = true;
-			} catch (TimeoutException e) {
-				System.err.println("Exception (ignored):  " + e.toString());
-				scroll(0, increment);
-			}
-		}
-		*/
+		 * max_iterarion = 10; found = false; for (int cnt = 0; cnt != max_iterarion;
+		 * cnt++) { if (found) break; System.err.println("Iteration :  " + cnt); try {
+		 * element = wait.until(ExpectedConditions.visibilityOf(driver
+		 * .findElement(By.xpath("//button[contains(text(),'Load More')]")))); found =
+		 * true; } catch (TimeoutException e) {
+		 * System.err.println("Exception (ignored):  " + e.toString()); scroll(0,
+		 * increment); } }
+		 */
 
 	}
 
@@ -239,18 +299,14 @@ public class MintCoinImageTest extends BaseTest {
 				System.err.println("Element document: " + document);
 			jsoupDocument = Jsoup.parse(document);
 			assertThat(jsoupDocument.body(), notNullValue());
-			System.err.println("Element tree: " + jsoupDocument.body().childNodeSize()
-					+ " child nodes.");
-			System.err.println("Element sub tree: "
-					+ jsoupDocument.body().childNode(0).childNodeSize()
-					+ " child nodes.");
+			System.err.println("Element tree: " + jsoupDocument.body().childNodeSize() + " child nodes.");
+			System.err.println(
+					"Element sub tree: " + jsoupDocument.body().childNode(0).childNodeSize() + " child nodes.");
 			for (String jsoupSelector : jsoupSelectors) {
 				System.err.println("Seaching: " + jsoupSelector);
-				for (int k = 0; k != jsoupDocument.body().childNode(0)
-						.childNodeSize(); k++) {
+				for (int k = 0; k != jsoupDocument.body().childNode(0).childNodeSize(); k++) {
 					jsoupNode = jsoupDocument.body().childNode(0).childNode(k);
-					if (jsoupNode.hasAttr("class")
-							&& jsoupNode.attr("class").startsWith(jsoupSelector)) {
+					if (jsoupNode.hasAttr("class") && jsoupNode.attr("class").startsWith(jsoupSelector)) {
 						System.err.println("Found: " + jsoupSelector);
 						System.err.println(jsoupNode.outerHtml());
 					}
@@ -258,17 +314,15 @@ public class MintCoinImageTest extends BaseTest {
 			}
 			// this is failing, commented
 			/*
-			for (String jsoupSelector : jsoupSelectors) {
-				System.err.println("Seaching: " + jsoupSelector);
-				jsoupElements = jsoupDocument.body()
-						.getElementsByAttributeValueContaining("class", jsoupSelector);
-				assertThat(jsoupElements, notNullValue());
-				assertThat(jsoupElements.iterator().hasNext(), is(true));
-				assertThat(jsoupElements.eachText().size(), greaterThan(0));
-				System.err.println(String.format("Processing jsoup selector \"%s\" %s",
-						jsoupSelector, jsoupElements.first().text()));
-			}
-			*/
+			 * for (String jsoupSelector : jsoupSelectors) { System.err.println("Seaching: "
+			 * + jsoupSelector); jsoupElements = jsoupDocument.body()
+			 * .getElementsByAttributeValueContaining("class", jsoupSelector);
+			 * assertThat(jsoupElements, notNullValue());
+			 * assertThat(jsoupElements.iterator().hasNext(), is(true));
+			 * assertThat(jsoupElements.eachText().size(), greaterThan(0));
+			 * System.err.println(String.format("Processing jsoup selector \"%s\" %s",
+			 * jsoupSelector, jsoupElements.first().text())); }
+			 */
 		}
 
 	}
