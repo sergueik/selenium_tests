@@ -28,8 +28,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidSelectorException;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.annotations.BeforeClass;
@@ -96,7 +98,7 @@ public class MintCoinImageTest extends BaseTest {
 	}
 
 	// dump
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test1() {
 		elements = driver
 				.findElements(By.xpath("//div[contains(@class,'product-tile')]"));
@@ -105,14 +107,14 @@ public class MintCoinImageTest extends BaseTest {
 	}
 
 	// dump, only different in selector
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test2() {
 		elements = driver.findElements(By.cssSelector("div.product-tile"));
 		processElements(elements);
 	}
 
 	// scroll
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test3() {
 		elements = driver.findElements(By.cssSelector("div.product-tile"));
 		System.err.println("Processing " + elements.size() + " elements");
@@ -174,18 +176,60 @@ public class MintCoinImageTest extends BaseTest {
 	// load more
 	@Test(enabled = true)
 	public void test4() {
-		try {
-			element = wait.until(ExpectedConditions.visibilityOf(driver
-					.findElement(By.xpath("//button[contains(text(),'Load More')]"))));
-		} catch (TimeoutException e) {
-			System.err.println("Exception (ignored):  " + e.toString());
+		int increment = 250;
+		int max_iterarion = 10;
+		found = false;
+		element = null;
+		for (int cnt = 0; cnt != max_iterarion; cnt++) {
+			System.err.println("Iteration :  " + cnt);
+			elements = driver
+					.findElements(By.xpath("//button[contains(text(),'Load More')]"));
+			if (elements.size() > 0) {
+				System.err.println("Found button");
+				element = elements.get(0);
+				break;
+			}
+			scroll(0, increment);
+			actions.sendKeys(Keys.ARROW_DOWN);
+			sleep(1000);
 		}
+		if (element != null) {
+			try {
+				actions.moveToElement(element).build().perform();
+				sleep(3000);
+				highlight(element);
+				sleep(1000);
+				element.click();
+				sleep(10000);
+			} catch (ElementNotInteractableException e) {
+				System.err.println("Exception (ignored):  " + e.toString());
+				// element not interactable: [object HTMLButtonElement] has no size and
+				// location
+			}
+		}
+		/*
+		max_iterarion = 10;
+		found = false;
+		for (int cnt = 0; cnt != max_iterarion; cnt++) {
+			if (found)
+				break;
+			System.err.println("Iteration :  " + cnt);
+			try {
+				element = wait.until(ExpectedConditions.visibilityOf(driver
+						.findElement(By.xpath("//button[contains(text(),'Load More')]"))));
+				found = true;
+			} catch (TimeoutException e) {
+				System.err.println("Exception (ignored):  " + e.toString());
+				scroll(0, increment);
+			}
+		}
+		*/
+
 	}
 
 	private void processElements(List<WebElement> elements) {
 		System.err.println("Processing " + elements.size() + " elements");
 		int max_cnt = elements.size();
-		// max_cnt = 2;
 		for (int cnt = 0; cnt < max_cnt; cnt++) {
 			System.err.println("Processing element " + cnt);
 			element = elements.get(cnt);
