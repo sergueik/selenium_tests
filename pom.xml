@@ -9,7 +9,7 @@ processing instruction can not have PITarget with reserved xml name (position: S
   <groupId>com.mycompany.app</groupId>
   <artifactId>selenium_tests</artifactId>
   <packaging>jar</packaging>
-  <version>1.8-SNAPSHOT</version>
+  <version>1.9-SNAPSHOT</version>
   <name>app</name>
   <url>http://maven.apache.org</url>
   <developers>
@@ -33,15 +33,14 @@ processing instruction can not have PITarget with reserved xml name (position: S
     <htmlunit.version>2.37.0</htmlunit.version>
     <java.version>1.8</java.version>
     <json.version>20080701</json.version>
-    <jackson.version>[2.19.8,)</jackson.version>
     <!-- open-ended version expression will allow maven download snapshot versions like 2.10.0-SNAPSHOT
   from ossrh e.g.:
   https://oss.sonatype.org/content/repositories/snapshots/
 om/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotatio
 s-2.10.0-20190601.024115-4.pom
     which will lead to quickly polluting the maven local repository cache ~/.m2/repository/com/fasterxml/jackson with snapshot versions. -->
-    <jackson.version>2.9.9</jackson.version>
-    <jackson-databind.version>[2.9.10.8,)</jackson-databind.version>
+    <jackson.version>2.13.1</jackson.version>
+    <jackson-databind.version>${jackson.version}</jackson-databind.version>
     <jsoup.version>1.14.2</jsoup.version>
     <junit.version>4.13.2</junit.version>
     <log4j.version>2.17.0</log4j.version>

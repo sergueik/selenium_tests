@@ -35,7 +35,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.yaml.snakeyaml.Yaml;
 
-import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -115,10 +115,7 @@ public class JacksonDummyHtmlUnitTest {
 		// @formatter:on
 			User user = inputJSONObjectMapper.readValue(jsonOfUser, User.class);
 			jsonString = ouputObjectMapper.writeValueAsString(user);
-		} catch (JsonProcessingException e) {
-
-		} catch (IOException e) {
-
+		} catch (JacksonException e) {
 		}
 		System.err.println(String.format("testYAMLtoJSON:\n%s\n", jsonString));
 	}
