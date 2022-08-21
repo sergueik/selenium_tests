@@ -1,3 +1,5 @@
+// see also: https://stackoverflow.com/questions/442404/retrieve-the-position-x-y-of-an-html-element
+// 
 var getCoords = function(selector, kind, debug) {
   var element;
   try {
@@ -19,6 +21,9 @@ var getCoords = function(selector, kind, debug) {
   var data = null;
   if (element != null) {
     data = element.getBoundingClientRect();
+    //  var bodyRect = document.body.getBoundingClientRect(),
+    //  elemRect = element.getBoundingClientRect(),
+    //  offset   = elemRect.top - bodyRect.top;
     if (debug) {
       alert("result: " + JSON.stringify(data));
         /*

@@ -1,7 +1,7 @@
 package com.github.sergueik.selenium;
 
 /**
- * Copyright 2017-2021 Serguei Kouzmine
+ * Copyright 2017-2022 Serguei Kouzmine
  */
 import java.io.BufferedReader;
 import java.io.File;
