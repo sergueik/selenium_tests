@@ -9,7 +9,7 @@ processing instruction can not have PITarget with reserved xml name (position: S
   <groupId>com.mycompany.app</groupId>
   <artifactId>selenium_tests</artifactId>
   <packaging>jar</packaging>
-  <version>1.9-SNAPSHOT</version>
+  <version>1.10-SNAPSHOT</version>
   <name>app</name>
   <url>http://maven.apache.org</url>
   <developers>

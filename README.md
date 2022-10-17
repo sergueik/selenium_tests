@@ -54,6 +54,9 @@ password=${env.TEST_PASSWORD}
  * Elemental Selenium Tips [repo](https://github.com/tourdedave/elemental-selenium-tips) 
  * __at.info__ [test automation examples on different tools and technologies](http://atinfo.github.io/at.info-knowledge-base/)  (in Russian and Eglish )
  * KB of [xpath, locators, css-selectors](https://automated-testing.info/t/sbornik-poleznyh-ssylok-po-razlichnym-lokatoram/5316) (in Russian)
+ * https://abstracta.us/blog/software-testing/best-demo-websites-for-practicing-different-types-of-software-tests/
+ * https://www.techlistic.com/2020/07/automation-testing-demo-websites.html
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
+

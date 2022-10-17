@@ -26,6 +26,8 @@ import org.testng.annotations.Test;
  * see also other practice sites https://techlisticspace.blogspot.com/2016/06/top-6-demo-websites-for-practice.html
  * https://www.utest.com/articles/best-websites-to-practice-test-automation-using-selenium-webdriver
  * https://www.ultimateqa.com/best-test-automation-websites-to-practice-using-selenium-webdriver/
+ * now the test page - is on successor of "way2automation.com" 
+ * https://www.globalsqa.com/angularJs-protractor/BankingProject/#/login 
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
@@ -112,7 +114,8 @@ public class Way2AutomationTest extends BaseTest {
 
 		assertThat("non-selected option is not selected check",
 				element.isSelected(), is(false));
-		// NOTE: the following fails: the non-selected option will still be reported displayed
+		// NOTE: the following fails: the non-selected option will still be reported
+		// displayed
 		// assertThat("non-selected option is not displayed check",
 		// element.isDisplayed(), is(false));
 
@@ -120,3 +123,4 @@ public class Way2AutomationTest extends BaseTest {
 	// based on:
 	// https://saucelabs.com/resources/articles/selenium-tips-css-selectors
 }
+
