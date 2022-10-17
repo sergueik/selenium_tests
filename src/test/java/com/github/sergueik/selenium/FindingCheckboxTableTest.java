@@ -1,5 +1,7 @@
 package com.github.sergueik.selenium;
-
+/**
+ * Copyright 2022 Serguei Kouzmine
+ */
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,8 +21,6 @@ import org.testng.annotations.Test;
 
 /**
  * Selected test scenarios for Selenium WebDriver
- * https://www.w3.org/WAI/tutorials/forms/labels/
- * http://software-testing.ru/forum/index.php?/topic/31004-dinamicheskie-id/page-2
  * @author: Serguei Kouzmine (kouzmine_serguei@yahoo.com)
  */
 
@@ -41,8 +41,10 @@ public class FindingCheckboxTableTest extends BaseTest {
 		driver.navigate().to(getPageContent("table_search_by.html"));
 	}
 
+	// https://www.w3.org/TR/1999/REC-xpath-19991116/
+	// https://www.w3.org/TR/xpath20/
 	@Test(enabled = true)
-	public void test() {
+	public void test1() {
 		// Arrange
 		System.err.println(String.format("Looking for span with text %s", text1));
 		final String selector1 = String.format("//span[contains(text(), '%s')]",
@@ -79,7 +81,56 @@ public class FindingCheckboxTableTest extends BaseTest {
 			System.err.println(
 					String.format("Exception: %s...", e.toString().substring(0, 200)));
 		}
-		sleep(100);
+	}
+
+	@Test(enabled = true)
+	public void test2() {
+		// Arrange
+		final String selector = String.format("//span[text()[contains(., '%s')]]",
+				text1);
+		System.err.println(String.format("Looking for span with text %s", text1));
+		List<WebElement> labels = driver.findElements(By.xpath(selector));
+		assertTrue(labels.size() > 0);
+		WebElement label = labels.get(0);
+		highlight(label);
+		System.err.println("Found element with text: " + label.getText());
+	}
+
+	@Test(enabled = true)
+	public void test3() {
+		// Arrange
+		String selector = String
+				.format("//span[contains(text(), '%s')]/preceding::input[1]", text1);
+		List<WebElement> checkboxes = driver.findElements(By.xpath(selector));
+		System.err.println(String
+				.format("Looking for first input next to span with text %s", text1));
+		assertTrue(checkboxes.size() > 0);
+		WebElement checkbox = checkboxes.get(0);
+		highlight(checkbox, 2000);
+		// NOTE: highlight does not work ?
+		flash(checkbox);
+		String name = checkbox.getAttribute("name");
+		System.err.println(
+				String.format("Found input element with name: \"%s\" type: \"%s\"",
+						name, checkbox.getAttribute("type")));
+		// finding the wrong check box
+		selector = String.format(
+				"//span[contains(text(), '%s')]/preceding::input[@type='checkbox']",
+				text1);
+		checkboxes = driver.findElements(By.xpath(selector));
+		System.err.println(
+				String.format("Looking for checkbox next to span with text %s", text1));
+		assertTrue(checkboxes.size() > 0);
+		System.err.println(
+				String.format("Found %d Check box elements", checkboxes.size()));
+		checkboxes.stream().forEach(c -> {
+			highlight(c, 2000);
+			// NOTE: highlight does not work ?
+			flash(c);
+			System.err
+					.println(String.format("Found Check box element with HTML: \"%s\"",
+							c.getAttribute("outerHTML")));
+		});
 	}
 
 }
