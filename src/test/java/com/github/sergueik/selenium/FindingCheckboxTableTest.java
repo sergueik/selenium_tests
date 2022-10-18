@@ -1,4 +1,5 @@
 package com.github.sergueik.selenium;
+
 /**
  * Copyright 2022 Serguei Kouzmine
  */
@@ -8,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -29,6 +31,14 @@ public class FindingCheckboxTableTest extends BaseTest {
 	private static final Logger log = LogManager
 			.getLogger(FindingCheckboxTableTest.class);
 	private String text1 = "AP-116516";
+	private int cnt = 0;
+	private String selector = "";
+	private String selector1 = "";
+	private List<WebElement> labels = new ArrayList<>();
+	private WebElement label;
+	private List<WebElement> checkboxes = new ArrayList<>();
+	private WebElement checkbox;
+	private String name = "";
 
 	@BeforeClass
 	public void beforeClass() throws IOException {
@@ -47,35 +57,31 @@ public class FindingCheckboxTableTest extends BaseTest {
 	public void test1() {
 		// Arrange
 		System.err.println(String.format("Looking for span with text %s", text1));
-		final String selector1 = String.format("//span[contains(text(), '%s')]",
-				text1);
-		List<WebElement> labels = driver.findElements(By.xpath(selector1));
+		selector1 = String.format("//span[contains(text(), '%s')]", text1);
+		labels = driver.findElements(By.xpath(selector1));
 		assertTrue(labels.size() > 0);
-		WebElement label = labels.get(0);
+		label = labels.get(0);
 		highlight(label);
 		System.err.println("text: " + label.getText());
 		final String selector2 = String.format(
 				"//span[contains(text(), '%s')]/../..//input[@type='checkbox']", text1);
-		List<WebElement> checkboxes = driver.findElements(By.xpath(selector2));
+		checkboxes = driver.findElements(By.xpath(selector2));
 		System.err.println(String
 				.format("Looking for checkbox name in the row with text %s", text1));
 		assertTrue(checkboxes.size() > 0);
-		WebElement checkbox = checkboxes.get(0);
-		highlight(checkbox, 2000);
-		// NOTE: highlight does not work ?
-		flash(checkbox);
-		String name = checkbox.getAttribute("name");
+		checkbox = checkboxes.get(0);
+		highlight(checkbox);
+		name = checkbox.getAttribute("name");
 		System.err.println(String.format("Check box name: \"%s\"", name));
 		final String selector3 = String.format("//input[@name='%s']", name);
 		// Act
 		try {
 			System.err
 					.println(String.format("Looking for checkbox with name %s", name));
-			WebElement inputElement = driver.findElement(By.xpath(selector3));
+			checkbox = driver.findElement(By.xpath(selector3));
 			// Assert
-			assertThat(inputElement, notNullValue());
-			assertThat(inputElement.getAttribute("name"), equalTo(name));
-			flash(inputElement);
+			assertThat(checkbox, notNullValue());
+			assertThat(checkbox.getAttribute("name"), equalTo(name));
 			System.err.println("Found via selector: " + selector2);
 		} catch (NoSuchElementException e) {
 			System.err.println(
@@ -86,12 +92,11 @@ public class FindingCheckboxTableTest extends BaseTest {
 	@Test(enabled = true)
 	public void test2() {
 		// Arrange
-		final String selector = String.format("//span[text()[contains(., '%s')]]",
-				text1);
+		selector = String.format("//span[text()[contains(., '%s')]]", text1);
 		System.err.println(String.format("Looking for span with text %s", text1));
-		List<WebElement> labels = driver.findElements(By.xpath(selector));
+		labels = driver.findElements(By.xpath(selector));
 		assertTrue(labels.size() > 0);
-		WebElement label = labels.get(0);
+		label = labels.get(0);
 		highlight(label);
 		System.err.println("Found element with text: " + label.getText());
 	}
@@ -99,21 +104,45 @@ public class FindingCheckboxTableTest extends BaseTest {
 	@Test(enabled = true)
 	public void test3() {
 		// Arrange
-		String selector = String
+		selector = String
 				.format("//span[contains(text(), '%s')]/preceding::input[1]", text1);
-		List<WebElement> checkboxes = driver.findElements(By.xpath(selector));
+		checkbox = driver.findElement(By.xpath(selector));
+		highlight(checkbox);
+		name = checkbox.getAttribute("name");
+		System.err.println(String.format(
+				"Selector %s found input element with name: \"%s\" type: \"%s\"",
+				selector, name, checkbox.getAttribute("type")));
+	}
+
+	@Test(enabled = true)
+	public void test4() {
+		// Arrange
+		selector = String.format(
+				"//span[contains(text(), '%s')]/preceding::input[@type='checkbox']",
+				text1);
+		checkboxes = driver.findElements(By.xpath(selector));
 		System.err.println(String
 				.format("Looking for first input next to span with text %s", text1));
 		assertTrue(checkboxes.size() > 0);
-		WebElement checkbox = checkboxes.get(0);
-		highlight(checkbox, 2000);
-		// NOTE: highlight does not work ?
-		flash(checkbox);
-		String name = checkbox.getAttribute("name");
+		System.err.println(String.format("found %d elements", checkboxes.size()));
+		cnt = 0;
+		checkbox = checkboxes.get(cnt);
+		highlight(checkbox);
+		name = checkbox.getAttribute("name");
 		System.err.println(
-				String.format("Found input element with name: \"%s\" type: \"%s\"",
-						name, checkbox.getAttribute("type")));
-		// finding the wrong check box
+				String.format("Found input element #%d with name: \"%s\" type: \"%s\"",
+						cnt, name, checkbox.getAttribute("type")));
+		for (cnt = 0; cnt != checkboxes.size(); cnt++) {
+			selector1 = String.format(
+					"//span[contains(text(), '%s')]/preceding::input[@type='checkbox'][%d]",
+					text1, cnt + 1);
+			checkbox = driver.findElement(By.xpath(selector1));
+			System.err.println(
+					String.format("Found Check box element #%d with HTML: \"%s\"", cnt,
+							checkbox.getAttribute("outerHTML")));
+			highlight(checkbox);
+		}
+		// finding the wrong check box ?
 		selector = String.format(
 				"//span[contains(text(), '%s')]/preceding::input[@type='checkbox']",
 				text1);
@@ -124,13 +153,21 @@ public class FindingCheckboxTableTest extends BaseTest {
 		System.err.println(
 				String.format("Found %d Check box elements", checkboxes.size()));
 		checkboxes.stream().forEach(c -> {
-			highlight(c, 2000);
-			// NOTE: highlight does not work ?
-			flash(c);
+			highlight(c);
 			System.err
 					.println(String.format("Found Check box element with HTML: \"%s\"",
 							c.getAttribute("outerHTML")));
 		});
+		cnt = 0;
+		for (WebElement c : checkboxes) {
+			highlight(c);
+			System.err.println(
+					String.format("Found Check box element #%d with HTML: \"%s\"", cnt,
+							c.getAttribute("outerHTML")));
+
+			cnt++;
+
+		}
 	}
 
 }
