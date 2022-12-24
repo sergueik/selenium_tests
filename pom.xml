@@ -50,6 +50,7 @@ s-2.10.0-20190601.024115-4.pom
     <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
     <maven-surefire-plugin.version>2.20</maven-surefire-plugin.version>
     <minimal-json.version>0.9.5</minimal-json.version>
+    <pdfbox.version>2.0.27</pdfbox.version>
     <phantomjsdriver.version>1.4.4</phantomjsdriver.version>
     <!-- cannot upgrade -  4.0.0 is too different - in particular Selenium driver no longer has Actions -->
     <selenium.version>4.0.0-alpha-2</selenium.version>
@@ -106,6 +107,11 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
       <artifactId>minimal-json</artifactId>
       <version>${minimal-json.version}</version>
     </dependency>
+<dependency>
+    <groupId>org.apache.pdfbox</groupId>
+    <artifactId>pdfbox</artifactId>
+    <version>${pdfbox.version}</version>
+</dependency>
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
