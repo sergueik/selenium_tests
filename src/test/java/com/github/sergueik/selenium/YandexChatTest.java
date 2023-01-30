@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.annotations.BeforeMethod;
@@ -32,12 +34,15 @@ public class YandexChatTest extends BaseTest {
 
 	@Test(enabled = true)
 	public void test1() {
-		element = wait.until(
-				ExpectedConditions.visibilityOf(driver.findElement(By.id("content"))));
+		element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector("#ud-root main"))));
+		log.info("element: " + element.getRect().toString());
 
 		String script = getScriptContent("mouseWheel.js");
+		// No effect
 		try {
-			executeScript(script, element, 10000);
+			executeScript(script, element, 1000);
+			sleep(1000);
 		} catch (Exception e) {
 			err.println("Ignored: " + e.toString());
 		}

@@ -1206,13 +1206,15 @@ public class BaseTest {
 	}
 
 	// Scroll
+	// https://linuxhint.com/scroll-to-element-javascript/
 	public void scroll(final int x, final int y) {
 		final JavascriptExecutor js = (JavascriptExecutor) driver;
-		for (int i = 0; i <= x; i = i + 50) {
+		for (int i = 0; i <= x; i = i + 10) {
+			// NOTE: can omit the "window"
 			js.executeScript("scroll(" + i + ",0)");
 		}
-		for (int j = 0; j <= y; j = j + 50) {
-			js.executeScript("scroll(0," + j + ")");
+		for (int j = 0; j <= y; j = j + 10) {
+			js.executeScript("window.scroll(0," + j + ")");
 		}
 	}
 
