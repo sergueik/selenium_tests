@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
@@ -32,8 +33,10 @@ public class ScrollMouseWheelTest extends BaseTest {
 	private static String response = null;
 	private static Map<String, Object> data = new HashMap<>();
 	private static Map<String, Object> result = new HashMap<>();
-	private final static String selector = "#Welcome_to_Wikipedia > a";
-	private static Point elementLocation = null;
+	private static String selector = "#Welcome_to_Wikipedia > a";
+	private static Point location = null;
+	private static Dimension size;
+
 	private static float lasty = 0f;
 
 	@BeforeClass
@@ -52,9 +55,9 @@ public class ScrollMouseWheelTest extends BaseTest {
 	public void test1() {
 		// NOTE: several exceptions in "scrollGMapExample.js"
 		script = getScriptContent("mouseWheel.js");
-
-		element = wait.until(ExpectedConditions.visibilityOf(driver
-				.findElement(By.cssSelector("body > div.mw-page-container > div"))));
+		selector = "body > div.mw-page-container > div";
+		element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(selector))));
 		int cnt;
 		// makes no effect
 		for (cnt = 0; cnt != 10; cnt++) {
@@ -70,8 +73,9 @@ public class ScrollMouseWheelTest extends BaseTest {
 		// it does not scroll far enough
 		for (cnt = 0; cnt != 3; cnt++) {
 			scroll(0, 1000);
-			element = wait.until(ExpectedConditions.visibilityOf(driver
-					.findElement(By.cssSelector("body > div.mw-page-container > div"))));
+			selector = "body > div.mw-page-container > div";
+			element = wait.until(ExpectedConditions
+					.visibilityOf(driver.findElement(By.cssSelector(selector))));
 			log.info(String.format("element: %d %d", element.getRect().getX(),
 					element.getRect().getY()));
 
@@ -80,7 +84,7 @@ public class ScrollMouseWheelTest extends BaseTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(enabled = true)
+	@Test(enabled = false)
 	public void test3() {
 
 		final JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -88,9 +92,10 @@ public class ScrollMouseWheelTest extends BaseTest {
 		for (int j = 0; j <= y; j = j + 100) {
 			js.executeScript("window.scroll(0," + j + ")");
 			sleep(1000);
-			element = wait.until(ExpectedConditions.visibilityOf(
-					driver.findElement(By.cssSelector("#Welcome_to_Wikipedia > a"))));
-			elementLocation = element.getLocation();
+			selector = "#Welcome_to_Wikipedia > a";
+			element = wait.until(ExpectedConditions
+					.visibilityOf(driver.findElement(By.cssSelector(selector))));
+			location = element.getLocation();
 
 			response = (String) super.executeScript(
 					super.getScriptContent("getCoords.js"), selector, "css", false);
@@ -104,9 +109,23 @@ public class ScrollMouseWheelTest extends BaseTest {
 					Float.parseFloat(result.get("y").toString()),
 					Float.parseFloat(result.get("bottom").toString())));
 
-			log.info(String.format("element: %d %d", elementLocation.getX(),
-					elementLocation.getY()));
+			// The element location will not change
+			log.info(
+					String.format("element: %d %d", location.getX(), location.getY()));
 			lasty = Float.parseFloat(result.get("y").toString());
 		}
+	}
+
+	@Test(enabled = true)
+	public void test4() {
+		selector = "body > div.mw-page-container > div";
+		element = wait.until(ExpectedConditions
+				.visibilityOf(driver.findElement(By.cssSelector(selector))));
+		size = element.getSize();
+
+		log.info(String.format("body element size: %d %d", size.getHeight(),
+				size.getWidth()));
+		executeScript("window.scrollTo(0, arguments[0])", size.getHeight());
+		sleep(10000);
 	}
 }
