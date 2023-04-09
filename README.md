@@ -56,6 +56,7 @@ password=${env.TEST_PASSWORD}
  * KB of [xpath, locators, css-selectors](https://automated-testing.info/t/sbornik-poleznyh-ssylok-po-razlichnym-lokatoram/5316) (in Russian)
  * https://abstracta.us/blog/software-testing/best-demo-websites-for-practicing-different-types-of-software-tests/
  * https://www.techlistic.com/2020/07/automation-testing-demo-websites.html
+ * [list of existing headless web browsers](https://github.com/dhamaniasad/HeadlessBrowsers)
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
