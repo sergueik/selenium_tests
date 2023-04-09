@@ -9,7 +9,7 @@ processing instruction can not have PITarget with reserved xml name (position: S
   <groupId>com.mycompany.app</groupId>
   <artifactId>selenium_tests</artifactId>
   <packaging>jar</packaging>
-  <version>1.11-SNAPSHOT</version>
+  <version>1.12-SNAPSHOT</version>
   <name>app</name>
   <url>http://maven.apache.org</url>
   <developers>
@@ -35,12 +35,11 @@ processing instruction can not have PITarget with reserved xml name (position: S
     <json.version>20080701</json.version>
     <!-- open-ended version expression will allow maven download snapshot versions like 2.10.0-SNAPSHOT
   from ossrh e.g.:
-  https://oss.sonatype.org/content/repositories/snapshots/
-om/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotatio
-s-2.10.0-20190601.024115-4.pom
+  https://oss.sonatype.org/content/repositories/snapshots/com/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotations-2.10.0-20190601.024115-4.pom
     which will lead to quickly polluting the maven local repository cache ~/.m2/repository/com/fasterxml/jackson with snapshot versions. -->
     <jackson.version>2.13.1</jackson.version>
     <jackson-databind.version>${jackson.version}</jackson-databind.version>
+    <json-path.version>2.6.0</json-path.version>
     <jsoup.version>1.15.3</jsoup.version>
     <junit.version>4.13.2</junit.version>
     <log4j.version>2.17.1</log4j.version>
@@ -86,6 +85,12 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
     <xerces.version>2.12.2</xerces.version>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <scope>test</scope>
+      <version>${json-path.version}</version>
+    </dependency>
 <!-- to quickly download specific version of selenium server standalone, utilize maven
 <dependency>
     <groupId>org.seleniumhq.selenium</groupId>

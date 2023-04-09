@@ -429,6 +429,9 @@ public class BaseTest {
 			// see also: https://developers.google.com/recaptcha/docs/faq
 			// https://peter.sh/experiments/chromium-command-line-switches/
 			// see also:
+			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
+			// https://chromedriver.chromium.org/capabilities
+			// see also:
 			// https://ivanderevianko.com/2020/04/disable-logging-in-selenium-chromedriver
 			// https://antoinevastel.com/bot%20detection/2017/08/05/detect-chrome-headless.html
 			// @formatter:off
@@ -936,6 +939,9 @@ public class BaseTest {
 	}
 
 	// http://www.javawithus.com/tutorial/using-ellipsis-to-accept-variable-number-of-arguments
+	// see also:
+	// https://github.com/handakumbura/Seleniumuntil/blob/master/src/main/java/io/github/handakumbura/JavaScriptHelper.java
+	// for binding events listeners to DOM
 	public Object executeScript(String script, Object... arguments) {
 		if (driver instanceof JavascriptExecutor) {
 			JavascriptExecutor javascriptExecutor = JavascriptExecutor.class
