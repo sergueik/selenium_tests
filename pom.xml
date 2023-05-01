@@ -72,8 +72,15 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
     public @interface Nullable { removed past 6.11 release
     Mar 3 2017
     commit/6de2a49c5321dfb1e5aeaaf36578e8f6c577713e
+
     Replace internal @nullable by javax.annotation.Nullable
     -->
+<!-- NOTE: cannot upgrade to testng 7.7.0+ CVE-2022-4065
+without switching to Java 11 or later: 
+ bad class file: .m2/repository/org/testng/testng/7.7.0/testng-7.7.0.jar(org/testng/Assert.class)
+[ERROR]     class file has wrong version 55.0, should be 52.0
+
+-->
     <testng.version>6.14.3</testng.version>
     <unirest-java.version>1.4.9</unirest-java.version>
     <gson.version>2.8.9</gson.version>
