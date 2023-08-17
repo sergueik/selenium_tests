@@ -6,15 +6,29 @@ https://stackoverflow.com/questions/35200508/regex-validation-angularjs
 -->
 <html ng-app="myApp">
 <head>
-<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.js"></script>
+<script src="angular.js"></script>
 
 <style id="jsbin-css">
+small { position: relative; top:14px;}
 input.ng-invalid {
   border: 1px solid red;
 }
 
 input.ng-valid {
   border: 1px solid green;
+}
+table { border-collapse: collapse; }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-weight: 400;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.2rem;
+  line-height: 2.58;
+  color: #333;
+  background-color: #f4f4f4;
+  height: 100%;
 }
 </style>
 </head>
@@ -59,7 +73,7 @@ input.ng-valid {
       </div>
     </div>  
     <div class="large-12 columns">
-      <label>Pattern</label><span><small>built-in Angular validator</small></span>
+      <label for="pattern1">Pattern</label><span><small>built-in Angular validator</small></span>
         <input  type="text" placeholder="pattern1" name="pattern1" ng-model="pattern1" ng-minlength=3 ng-maxlength=20 ng-pattern="/.*(?!(?:\*\*|\\\\)).*/"required />
         <!-- for negative match use e.g. /(?!\*\*)/ -->
       <div class="error" ng-show="signup_form.pattern1.$dirty && signup_form.pattern.$invalid">
@@ -70,18 +84,17 @@ input.ng-valid {
       </div>
     </div>  
     <div class="large-12 columns">
-      <label>Pattern</label><span><small>local function to validate</small></span>
-        <input  type="text" placeholder="pattern" name="pattern" ng-model="pattern" ng-minlength=3 ng-maxlength=20 ng-pattern="/.*(?!(?:\*\*|\\\\)).*/" ensure-validpattern="pattern" required />
-      <div class="error" ng-show="signup_form.pattern.$dirty && signup_form.pattern.$invalid">
-        <small class="error" ng-show="signup_form.pattern.$error.required">Please input a pattern</small>
-        <small class="error" ng-show="signup_form.pattern.$error.minlength">Your pattern is required to be at least 3 characters</small>
-        <small class="error" ng-show="signup_form.pattern.$error.pattern">Your pattern does not match the pattern: no double **</small>
-        <small class="error" ng-show="signup_form.pattern.$error.maxlength">Your pattern cannot be longer than 20 characters</small>
-        <small class="error" ng-show="signup_form.pattern.$error.validpattern">That pattern is invalid</small>
+      <label for="pattern2">Pattern</label><span><small>local function to validate</small></span>
+        <input  type="text" placeholder="pattern2" name="pattern2" ng-model="pattern2" ng-minlength=3 ng-maxlength=20 ensure-validpattern="pattern2" required />
+      <div class="error" ng-show="signup_form.pattern2.$dirty && signup_form.pattern2.$invalid">
+        <small class="error" ng-show="signup_form.pattern2.$error.required">Please input a pattern</small>
+        <small class="error" ng-show="signup_form.pattern2.$error.minlength">Your pattern is required to be at least 3 characters</small>
+        <small class="error" ng-show="signup_form.pattern2.$error.maxlength">Your pattern cannot be longer than 20 characters</small>
+        <small class="error" ng-show="signup_form.pattern2.$error.validpattern">That pattern is invalid</small>
       </div>
     </div>  
     <div class="large-12 columns">
-      <label>Username</label><span><small>(backend call validation)</small></span>
+      <label for="username">Username</label><span><small>(backend call validation)</small></span>
         <input  type="text" placeholder="Desired username" name="username" ng-model="signup.username" ng-minlength=3 ng-maxlength=20 ensure-unique="username" required />
         <div class="error" ng-show="signup_form.username.$dirty && signup_form.username.$invalid">
       <small class="error" ng-show="signup_form.username.$error.required">Please input a username</small>
@@ -124,22 +137,31 @@ angular.module('myApp', [])
             link: function(scope, ele, attrs, c) {
                 console.log('local api call to validate ' + attrs.ensureValidpattern);
                 scope.$watch(attrs.ngModel, function() {
-                    var value = scope.pattern
+                    var value = scope.pattern2;
                     console.log('local watch validate ' + value);
-                    var mobileRegex = /^[789]\d{3}$/;
+                    var goodRegex = /^[789]\d{3}$/;
                     // for negative match use e.g. /(?!\*\*)/
-                    if (mobileRegex.test(value) && value.length === 4) {
+                    if (goodRegex.test(value) && value.length === 4) {
                         c.$setValidity('validpattern', true);
                         console.log('pass validation:' + value);
                     } else {
                         console.log('fail validation:' + value);
                         c.$setValidity('validpattern', false);
                     }
+                    var badRegex  = /.*(?:\*\*|\\\\).*/;
+                    if (badRegex.test(value)) {
+                        c.$setValidity('validpattern', false);
+                        console.log('detected bad pattern in:' + value);
+                    } else {
+                        console.log('no bad patterns:' + value);
+                        c.$setValidity('validpattern', true);
+                    }
                 });
             }
         };
     }]);
-/*
+</script>
+<!--	
 var x = /.*(?:\*\*|\\\\).*/;
 var v = null;
 try {
@@ -154,8 +176,7 @@ s = x.test(v);
   // malformed hexadecimal character escape sequence
   console.log(e)
 }
-*/
-</script>
+       -->
 </body>
 </html>
 
