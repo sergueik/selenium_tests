@@ -184,7 +184,7 @@ public class JsoupProbe2Test extends BaseTest {
 			// NOTE: unchecked conversion
 			// required: Map<String,Map<String,List<String>>>
 			// found: capture#1 of ? extends java.util.Map
-			data = yaml.loadAs(in, data.getClass());
+			data = (Map<String, Map<String, List<String>>>)yaml.loadAs(in, data.getClass());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

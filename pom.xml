@@ -9,7 +9,7 @@ processing instruction can not have PITarget with reserved xml name (position: S
   <groupId>com.mycompany.app</groupId>
   <artifactId>selenium_tests</artifactId>
   <packaging>jar</packaging>
-  <version>1.12-SNAPSHOT</version>
+  <version>1.13-SNAPSHOT</version>
   <name>app</name>
   <url>http://maven.apache.org</url>
   <developers>
@@ -65,7 +65,7 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/DesiredCapabilities
 with 3.13.0
 java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
 -->
-    <snakeyaml.version>1.32</snakeyaml.version>
+    <snakeyaml.version>2.0</snakeyaml.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
     <!-- 6.12+ cannot find symbol symbol:
         class Nullable location: package org.testng.internal

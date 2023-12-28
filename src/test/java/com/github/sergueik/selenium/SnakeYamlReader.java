@@ -28,7 +28,7 @@ public class SnakeYamlReader {
 		// https://ngeor.com/2018/11/28/yaml-schema-validation-with-maven.html
 		DumperOptions dumperOptions = new DumperOptions();
 		LoaderOptions loaderOptions = new LoaderOptions();
-		Representer representer = new Representer();
+		Representer representer = new Representer(dumperOptions );
 		// BaseConstructor constructor = new BaseConstructor();
 		// need to implement
 		// see
