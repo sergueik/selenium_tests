@@ -9,7 +9,7 @@ processing instruction can not have PITarget with reserved xml name (position: S
   <groupId>com.mycompany.app</groupId>
   <artifactId>selenium_tests</artifactId>
   <packaging>jar</packaging>
-  <version>1.13-SNAPSHOT</version>
+  <version>1.12-SNAPSHOT</version>
   <name>app</name>
   <url>http://maven.apache.org</url>
   <developers>
@@ -32,14 +32,14 @@ processing instruction can not have PITarget with reserved xml name (position: S
     <hamcrest-date.version>2.0.4</hamcrest-date.version>
     <htmlunit.version>2.37.0</htmlunit.version>
     <java.version>1.8</java.version>
-    <json.version>20080701</json.version>
+    <json.version>20230227</json.version>
     <!-- open-ended version expression will allow maven download snapshot versions like 2.10.0-SNAPSHOT
   from ossrh e.g.:
   https://oss.sonatype.org/content/repositories/snapshots/com/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotations-2.10.0-20190601.024115-4.pom
     which will lead to quickly polluting the maven local repository cache ~/.m2/repository/com/fasterxml/jackson with snapshot versions. -->
     <jackson.version>2.13.1</jackson.version>
     <jackson-databind.version>${jackson.version}</jackson-databind.version>
-    <json-path.version>2.6.0</json-path.version>
+    <json-path.version>2.9.0</json-path.version>
     <jsoup.version>1.15.3</jsoup.version>
     <junit.version>4.13.2</junit.version>
     <log4j.version>2.17.1</log4j.version>
@@ -65,22 +65,15 @@ java.lang.NoClassDefFoundError: org/openqa/selenium/remote/DesiredCapabilities
 with 3.13.0
 java.lang.NoClassDefFoundError: org/openqa/selenium/remote/JsonToBeanConverter
 -->
-    <snakeyaml.version>2.0</snakeyaml.version>
+    <snakeyaml.version>1.32</snakeyaml.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
     <!-- 6.12+ cannot find symbol symbol:
         class Nullable location: package org.testng.internal
     public @interface Nullable { removed past 6.11 release
     Mar 3 2017
     commit/6de2a49c5321dfb1e5aeaaf36578e8f6c577713e
-
     Replace internal @nullable by javax.annotation.Nullable
     -->
-<!-- NOTE: cannot upgrade to testng 7.7.0+ CVE-2022-4065
-without switching to Java 11 or later: 
- bad class file: .m2/repository/org/testng/testng/7.7.0/testng-7.7.0.jar(org/testng/Assert.class)
-[ERROR]     class file has wrong version 55.0, should be 52.0
-
--->
     <testng.version>6.14.3</testng.version>
     <unirest-java.version>1.4.9</unirest-java.version>
     <gson.version>2.8.9</gson.version>
