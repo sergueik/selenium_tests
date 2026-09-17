@@ -37,7 +37,7 @@ processing instruction can not have PITarget with reserved xml name (position: S
   from ossrh e.g.:
   https://oss.sonatype.org/content/repositories/snapshots/com/fasterxml/jackson/core/jackson-annotations/2.10.0-SNAPSHOT/jackson-annotations-2.10.0-20190601.024115-4.pom
     which will lead to quickly polluting the maven local repository cache ~/.m2/repository/com/fasterxml/jackson with snapshot versions. -->
-    <jackson.version>2.13.1</jackson.version>
+    <jackson.version>2.18.8</jackson.version>
     <jackson-databind.version>${jackson.version}</jackson-databind.version>
     <json-path.version>2.9.0</json-path.version>
     <jsoup.version>1.15.3</jsoup.version>
