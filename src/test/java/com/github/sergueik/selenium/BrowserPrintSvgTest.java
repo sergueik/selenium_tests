@@ -169,8 +169,32 @@ public class BrowserPrintSvgTest extends BaseTest {
 
 	}
 
+	@Test(expectedExceptions = { DownloadTimeoutException.class })
+	public void test4() throws DownloadTimeoutException {
+		// Arrange
+		testpageFilename = "mermaid_test.html";
+		outputFilename = "graph.png";
+		noop = true;
+		cssSelector = "svg#graph1";
+		scriptFilename = "svg_to_png.js";
+
+		driver.get(getPageContent(testpageFilename));
+
+		element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(cssSelector)));
+		assertThat(element, notNullValue());
+		assertThat(element.isDisplayed(), is(true));
+
+		// Act
+		Object result = executeAsyncScript(getScriptContent(scriptFilename), cssSelectorOfElement(element),
+				outputFilename, noop);
+		System.err.println("Script Console Log: " + result.toString());
+
+		Path filePath = Paths.get(downloadDirectory).resolve(outputFilename).toAbsolutePath();
+		waitDownloadFileExists(filePath);
+	}
+
 	@Test
-	public void test4() {
+	public void test5() {
 		// Arrange
 		testpageFilename = "mermaid_test.html";
 		outputFilename = "graph.png";
@@ -199,7 +223,7 @@ public class BrowserPrintSvgTest extends BaseTest {
 
 	@Ignore
 	@Test
-	public void test5() {
+	public void test6() {
 		// Arrange
 		testpageFilename = "mermaid_test.html";
 		outputFilename = "graph.png";
