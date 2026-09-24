@@ -2051,4 +2051,28 @@ public class BaseTest {
 		};
 	}
 
+	
+	// origin: https://qna.habr.com/q/1412412
+	/*
+	<div class="outer-div">
+	  Text to select
+	  <div class="inside-div">
+	    Text to ignore
+	  </div>
+	<div>
+	*/
+	public String selectTextOnly(final String selector /* ".outer-div" */) {
+		
+		WebElement element = driver.findElement(By.cssSelector(selector));
+
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		String script = "return Array.from(arguments[0].childNodes)\n" + 
+				"		        .filter(node => node.nodeType === Node.TEXT_NODE)\n" + 
+				"		        .map(node => node.textContent.trim())\n" + 
+				"		        .filter(Boolean)\n" + 
+				"		        .join(' ');";
+		String result = (String) js.executeScript(script, element);
+		return result;
+
+	}
 }
